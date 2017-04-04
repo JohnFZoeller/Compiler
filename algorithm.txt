@@ -1,0 +1,14 @@
+1. Create lexor
+	A. read the characters
+	B. initialize the maps...
+	C. figure out map types
+2. Create iterator for lexor
+3. iterate through tokens & print to file
+	A. next() method calls getToken(): 
+		returns an Token::Operator
+	B. reads first token
+		if it was special, read another one
+	C. iterate col count
+	D. Eat up either words or numbers
+	E. switch statement to find the correct operator
+	F. return "new" operator 
