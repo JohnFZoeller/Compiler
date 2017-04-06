@@ -1,88 +1,141 @@
+/**
+ * 
+ *
+ * @author Destiny Boyer
+ * @author John Zoeller
+ * @version 1.0
+ *
+ */
+
 package tokens;
 import java.util.*;
 import java.io.*;
 
-class Lex implements Iterable<Token>{
+class Lex implements Iterable<Token> {
 	private Reader input;								//final reading object
 	private OperatorMap opMap;							//operators
 	private KeywordMap kMap;							//keyword
 	private int col = 0, row = 0;						//[row, col]
 	private char currentChar = ' ', nextChar = ' ';		//characters trackers
-	private boolean isKeyword = false;					//for digit / string eater			
+	private boolean isKeyword = false;					//for digit / string eater
+	private boolean processPending = false;			
 
 	private boolean isSpecialCase(char cur){
-		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r' || cur == '\b')
-			return false;
-		else return true;
+		boolean specialCase = false;
+		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r' || cur == '\b') {
+			specialCase = true;
+		}
+		return specialCase;
 	}
 
 	private Token getNextT() throws IOException{
-		boolean successRead = true;
+		boolean successfulRead = true;					//tracks if read is successful
+		Token returnToken = null;						//return Token variable
 
-		// if(input.ready() == false)					//dont need this,
-		// 	throw new IOException();					//already in the iterator overload
+		//if processPending == true then we know that nextChar has been filled
+		//and that currentChar is a digit.
+		if(processPending == true)	{					//if we still need to process currentChar & nextChar
+			returnToken = createDigit();				//finish processing
+		} else {
 
-		if(successRead) 								//read first token
-      		currentChar = (char)input.read();			//cast to char
+			if(successfulRead) {							//read first character
+	      		currentChar = (char)input.read();			//cast to char
+			}
 
-      	while(isSpecialCase(currentChar))				//test special cases
-      		currentChar = (char)input.read();			//eat until not special
+			//at end of while loop currentChar will not be equal to a special case
+	      	while(isSpecialCase(currentChar)) {				//test special cases
+	      		currentChar = (char)input.read();			//eat until not special
+	      		col++;										//increment col
+	      	}
 
-      	col++;											//go to next char col
+	      	//	CHECK FOR OPERATOR CASE HERE!!!!!!
 
-      	if(Character.isDigit(currentChar))
-      		return createDigit();
-      	else if(Character.isLetter(currentChar)) {
-      		Token retVal = createStringIdentifier();	//could be either stringIdentifier or keyword
-      		// if(isKeyword == false) {					//process current, process next
-      		// 											//before reseting current to (char)input.read()
-      		// }
-      		// else{										//is a keyword identifier object
-      		// 	//need to reset current and next 
-      		// }
+
+	      	if(Character.isDigit(currentChar)) {			//checks if currentChar isDigit
+	      		returnToken = createDigit();				//creates digit identifier
+	      	}
+	      	else if(Character.isLetter(currentChar)) {
+	      		returnToken = createStringIdentifier();		//could be either stringIdentifier or keyword
+			}
 		}
 
-
-
-		return new Token(1,2);
+		return returnToken;
 	}
 
 	private DigitIdentifier createDigit() throws IOException{
-		int result, temp;
-		String convert = "";					//54673
+		int result;								//variable to hold final int value
+		String convert = "";					//convert string int to int value
 
-		while(Character.isDigit(currentChar)){	//while digit
-			convert += currentChar;				//5, 4, 6, 7, 3
-			currentChar = (char)input.read();	//4, 6, 7, 3
-			col++;
+		if(processPending == true) {				//if we still need to look at currentChar & nextChar
+			convert += currentChar;					//append currentChar since we know it is a digit
+			if(Character.isDigit(nextChar)) {		//check if nextChar is also a digit
+				convert += nextChar;				//if so append to convert
+				nextChar = ' ';						//reset nextChar
+				currentChar = (char)input.read();	//read next char from BufferReader
+				col++;								//increment col
+
+				while(Character.isDigit(currentChar)) {	//while digit
+					convert += currentChar;				//append char to convert
+					currentChar = (char)input.read();	//read next char from BufferedReader
+					col++;								//increment col
+				}
+
+			} else {								//otherwise nextChar is not a digit
+				currentChar = nextChar;				//set currentChar to nextChar
+				nextChar = ' ';						//reset nextChar
+			}
+		processPending = false;						//reset processPending
+		} else {
+			while(Character.isDigit(currentChar)){	//while digit
+				convert += currentChar;				//append char to convert
+				currentChar = (char)input.read();	//read next char from BufferedReader
+				col++;								//increment col
+			}
 		}
-
-		result = Integer.parseInt(convert);		//to int
+		result = Integer.parseInt(convert);		//convert string representation of int to integer value
 		return new DigitIdentifier(result, row, col);
 	}
 
 	private Token createStringIdentifier() throws IOException{
-		String result = "", temp = "";
+		String result = "", possibleKeyword = "";
 
-		while(Character.isLetter(currentChar)) {	//read in word
-			result += currentChar;
-			currentChar = (char)input.read();
-			col++;
+		//upon exiting while loop currentChar will NOT be equal to a letter
+		while(Character.isLetter(currentChar)) {	//while currentChar is a letter
+			result += currentChar;					//append currentChar to result
+			currentChar = (char)input.read();		//read next char from BufferedReader
+			col++;									//increment col
 		}
 
-		if(Character.isDigit(currentChar)){			//could be keyword so read nums
-			temp = result;						
-			nextChar = (char)input.read();
-			col++;
+		//code below checks the cases for keywords that contain both letters and numbers
+		//ex: int32, float64. Requires checking the two characters in the BufferedReader
+		//that are past the end of the string (result) IFF the first character after the end of
+		//the string is a digit.
 
-			if(Character.isDigit(nextChar))
-				temp += currentChar + nextChar;
+		if(Character.isDigit(currentChar)){			//checks if currentChar is a digit
+			possibleKeyword = result;				//sets possibleKeyword string to our result string						
+			nextChar = (char)input.read();			//reads the nextChar from the BufferedReader
+			col++;									//increments col
 
-			if(KeywordMap.keywords.containsKey(temp)) {
+			// ASSUMPTIONS:
+			// we know that if nextChar is filled, then currentChar was a digit
+
+
+			//KEYWORD CASE: both currentChar and nextChar are digits
+			//if true we must append currentChar and nextChar to possibleKeyword and check
+			//to see if it matches any keys in the KeywordMap
+			if(Character.isDigit(nextChar)) {
+				possibleKeyword += currentChar;		//appends currentChar
+				possibleKeyword += nextChar;		//appends nextChar
+			}
+
+			//checks if the resulting string (possibleKeyword) matches a key in the KeywordMap
+			//if true then we must return a new Keyword rather than a new stringIdentifier
+			if(KeywordMap.keywords.containsKey(possibleKeyword)) {
 				isKeyword = true;
-				return new Keyword(temp, KeywordMap.keywords.get(temp), row, col);
+				return new Keyword(possibleKeyword, KeywordMap.keywords.get(possibleKeyword), row, col);
 			} else {
-				isKeyword = false;
+				processPending = true;		//indicates that we must process currentChar & nextChar
+				isKeyword = false;			//before reading new character from BufferedReader
 			}
 		}
 		//no need for this line in this else clause
