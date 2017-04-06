@@ -9,6 +9,7 @@ class Lex implements Iterable<Token>{
 	private KeywordMap kMap;
 	private int col = 0, row = 0;
 	private char currentChar = ' ', nextChar = ' ';
+	private boolean isKeyword = false;
 
 	private boolean isSpecialCase(char  cur){
 		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r' || cur == '\b')
@@ -33,6 +34,18 @@ class Lex implements Iterable<Token>{
 
       	if(Character.isDigit(currentChar))
       		return createDigit();
+      	else if(Character.isLetter(currentChar)) {
+      		Token retVal = createStringIdentifier();
+      		if(isKeyword == false) {								//process current, process next
+      																//before reseting current to (char)input.read()
+
+      		}
+      		else{										//is a keyword identifier object
+      			//need to reset current and next 
+      		}
+		}
+
+
 
 		return new Token(1,2);
 	}
@@ -51,6 +64,34 @@ class Lex implements Iterable<Token>{
 
 
 		return new DigitIdentifier(result, row, col);
+	}
+
+	private StringIdentifier createStringIdentifier() {
+		String result = "";
+		String temp = "";
+		while(Character.isLetter(currentChar)) {
+			result += currentChar;
+			currentChar = (char)input.read();
+			col++;
+		}
+		if(Character.isDigit(currentChar)) {
+			temp = result;
+			next = (char)input.read();
+			col++;
+			if(Character.isDigit(next)) {
+				temp += currentChar + next;
+			}
+
+			if(KeywordMap.containsKey(temp)) {
+				isKeyword = true;
+				return new Keyword(temp, KeywordMap.get(temp));
+			} else {
+				isKeyword = false;
+				return new StringIdentifier(result);
+			}
+		}
+
+		return new StringIdentifier(result);
 	}
 
 	public Lex(String iFile){
