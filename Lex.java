@@ -3,15 +3,14 @@ import java.util.*;
 import java.io.*;
 
 class Lex implements Iterable<Token>{
-	private Reader input;
-	private Token current, next;
-	private OperatorMap opMap;
-	private KeywordMap kMap;
-	private int col = 0, row = 0;
-	private char currentChar = ' ', nextChar = ' ';
-	private boolean isKeyword = false;
+	private Reader input;								//final reading object
+	private OperatorMap opMap;							//operators
+	private KeywordMap kMap;							//keyword
+	private int col = 0, row = 0;						//[row, col]
+	private char currentChar = ' ', nextChar = ' ';		//characters trackers
+	private boolean isKeyword = false;					//for digit / string eater			
 
-	private boolean isSpecialCase(char  cur){
+	private boolean isSpecialCase(char cur){
 		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r' || cur == '\b')
 			return false;
 		else return true;
@@ -19,10 +18,9 @@ class Lex implements Iterable<Token>{
 
 	private Token getNextT() throws IOException{
 		boolean successRead = true;
-		currentChar = ' ';
 
-		if(input.ready() == false)						//istream ready?
-			throw new IOException();
+		// if(input.ready() == false)					//dont need this,
+		// 	throw new IOException();					//already in the iterator overload
 
 		if(successRead) 								//read first token
       		currentChar = (char)input.read();			//cast to char
@@ -35,14 +33,13 @@ class Lex implements Iterable<Token>{
       	if(Character.isDigit(currentChar))
       		return createDigit();
       	else if(Character.isLetter(currentChar)) {
-      		Token retVal = createStringIdentifier();
-      		if(isKeyword == false) {								//process current, process next
-      																//before reseting current to (char)input.read()
-
-      		}
-      		else{										//is a keyword identifier object
-      			//need to reset current and next 
-      		}
+      		Token retVal = createStringIdentifier();	//could be either stringIdentifier or keyword
+      		// if(isKeyword == false) {					//process current, process next
+      		// 											//before reseting current to (char)input.read()
+      		// }
+      		// else{										//is a keyword identifier object
+      		// 	//need to reset current and next 
+      		// }
 		}
 
 
@@ -50,48 +47,46 @@ class Lex implements Iterable<Token>{
 		return new Token(1,2);
 	}
 
-	private DigitIdentifier createDigit(){
+	private DigitIdentifier createDigit() throws IOException{
 		int result, temp;
-		String convert = "";
+		String convert = "";					//54673
 
-		while(Character.isDigit(currentChar)){
-			convert += currentChar;
-			currentChar = (char)input.read();
+		while(Character.isDigit(currentChar)){	//while digit
+			convert += currentChar;				//5, 4, 6, 7, 3
+			currentChar = (char)input.read();	//4, 6, 7, 3
 			col++;
 		}
 
-		result = Integer.parseInt(convert);
-
-
+		result = Integer.parseInt(convert);		//to int
 		return new DigitIdentifier(result, row, col);
 	}
 
-	private StringIdentifier createStringIdentifier() {
-		String result = "";
-		String temp = "";
-		while(Character.isLetter(currentChar)) {
+	private Token createStringIdentifier() throws IOException{
+		String result = "", temp = "";
+
+		while(Character.isLetter(currentChar)) {	//read in word
 			result += currentChar;
 			currentChar = (char)input.read();
 			col++;
 		}
-		if(Character.isDigit(currentChar)) {
-			temp = result;
-			next = (char)input.read();
-			col++;
-			if(Character.isDigit(next)) {
-				temp += currentChar + next;
-			}
 
-			if(KeywordMap.containsKey(temp)) {
+		if(Character.isDigit(currentChar)){			//could be keyword so read nums
+			temp = result;						
+			nextChar = (char)input.read();
+			col++;
+
+			if(Character.isDigit(nextChar))
+				temp += currentChar + nextChar;
+
+			if(KeywordMap.keywords.containsKey(temp)) {
 				isKeyword = true;
-				return new Keyword(temp, KeywordMap.get(temp));
+				return new Keyword(temp, KeywordMap.keywords.get(temp), row, col);
 			} else {
 				isKeyword = false;
-				return new StringIdentifier(result);
 			}
 		}
-
-		return new StringIdentifier(result);
+		//no need for this line in this else clause
+		return new StringIdentifier(result, row, col);
 	}
 
 	public Lex(String iFile){

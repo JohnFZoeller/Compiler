@@ -1,7 +1,7 @@
 package tokens;
 
 public class StringIdentifier extends Token{
-	public String Identifier(String s, int r, int c){
+	public StringIdentifier(String s, int r, int c){
 		super(s, r, c);
 	}
 
