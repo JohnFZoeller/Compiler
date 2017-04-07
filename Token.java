@@ -1,4 +1,4 @@
-package tokens;
+//package tokens;
 
 public class Token{
 	protected int row, col;

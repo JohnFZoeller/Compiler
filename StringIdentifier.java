@@ -1,4 +1,4 @@
-package tokens;
+//package tokens;
 
 public class StringIdentifier extends Token{
 	public StringIdentifier(String s, int r, int c){
@@ -7,6 +7,6 @@ public class StringIdentifier extends Token{
 
 	@Override
 	public String toString(){
-		return super.toString() + " (" + this.input + ")";
+		return super.toString() + " IDENTIFIER (" + this.input + ")";
 	}
 }

@@ -48,6 +48,8 @@ public final class OperatorMap {
                 put("^", "BITWISE_XOR");
                 put("==", "EQUALITY");
                 put("!=", "LOGICAL_NOT");
+                put("<<", "OUTPUT");
+                put(">>", "INPUT");
         
 	}};
 }
