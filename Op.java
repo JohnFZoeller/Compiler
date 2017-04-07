@@ -1,7 +1,5 @@
-//package tokens;
-
-public class Keyword extends Token{
-	public Keyword(String input, String output, int r, int c){
+public class Op extends Token{
+	public Op(String output, int r, int c){
 		super(output, r, c);
 	}
 

@@ -1,4 +1,4 @@
-package tokens;
+//package tokens;
 
 public class DigitIdentifier extends Token{
 	private int val;
@@ -8,8 +8,12 @@ public class DigitIdentifier extends Token{
 		this.val = v;
 	}
 
+	//I think there are going to be different cases for
+	//digit identifiers (ints, float32's, etc.. )
+	//for now just outputting DIGIT IDENTIFIER
+
 	@Override
 	public String toString(){
-		return super.toString() + " (" + val + ")";
+		return super.toString() + " DID (" + val + ")";
 	}
 }
