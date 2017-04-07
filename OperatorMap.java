@@ -13,7 +13,7 @@
  *
  */
 
-package tokens;
+//package tokens;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +44,10 @@ public final class OperatorMap {
                 put("&&", "LOGICAL_AND");
                 put("|", "BITWISE_OR");
                 put("||", "LOGICAL_OR");
+                put("!", "EXCLAMATION_POINT");
                 put("^", "BITWISE_XOR");
+                put("==", "EQUALITY");
+                put("!=", "LOGICAL_NOT");
         
 	}};
 }
