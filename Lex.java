@@ -7,42 +7,81 @@
  *
  */
 
-//package tokens;
+
+/**
+ * Imports java util library and io library
+ */
 import java.util.*;
 import java.io.*;
 
 class Lex implements Iterable<Token> {
-	private Reader input;								//final reading object
-	private OperatorMap opMap;							//operators
-	private KeywordMap kMap;							//keyword
-	private int col = 0, row = 1;						//[row, col]
-	private char currentChar = ' ', nextChar = ' ';		//characters trackers
-	private boolean isKeyword = false;					//for digit / string eater
-	private boolean processPending = false;
-	private boolean commentBool = true;					//set false if commentCheck found nothing
-	private boolean readOk = true;							//tracks if read is successful
 
+	/************************************************************************************************
+	*																								*
+ 	* 									Class data members											*
+ 	*																								*
+ 	************************************************************************************************/
+
+	private String OSName = System.getProperty("os.name");			//stores OS name
+	private boolean windowsMachine = OSName.startsWith("Windows");	//true if OS is Windows
+	private boolean unixMachine = OSName.startsWith("Unix");		//true if OS is Unix
+
+	private Reader input;											//BufferedStream reader
+	private OperatorMap opMap;										//language-specific Operators Map
+	private KeywordMap kMap;										//language-specific Keyword Map
+	private int col = 0, row = 1;									//track row and column of file
+	private char currentChar = ' ', nextChar = ' ';					//track characters from input
+	private boolean isKeyword = false;								//for digit / string eater
+	private boolean processPending = false;							//indicates unfinished currentChar processing
+	private boolean commentBool = true;								//set false if commentCheck found nothing
+	private boolean readOk = true;									//indicates if input should read() new char
+
+
+	/************************************************************************************************
+	*																								*
+ 	* 										Private Methods											*
+ 	*																								*
+ 	************************************************************************************************/
+
+	/**
+	*
+	* <h1>getNextT()</h1>
+	*
+	* getNextT() is the main processing method for the Lexical Analyzer. This method reads a
+	* Character from input (BufferedReader) and processes the Character into a Token based on
+	* the Character's respective type. Returned Token's can be of type StringIdentifier,
+	* DigitIdentifier, Keyword, or Operator.
+	* 
+	* @return Token
+	* @throws IOException
+	* @author Destiny Boyer
+	* @author John Zoeller
+	* @version %G%
+	*
+	*/	
 
 	private Token getNextT() throws IOException{
 		Token returnToken = null;						//return Token variable
 
-		//if (processPending) next char is filled and curChar isDigit
-		//might have to add commentBool to the below case, for now leave it
+		//this block indicates that currentChar needs to be processed
+		//before another Character is read from the BufferedReader
+		//currentChar is guaranteed to be a digit
+
 		//TODO: since createDigit() reads input, its possible that we could 
 		//read something by accident when the commentBool flag is restricting reads. 
-		if(processPending == true) {					//must process currentChar & nextChar
-			returnToken = createDigit();				//finish processing
-		} else {
 
-			if(readOk && commentBool)					//read first character
-	      		currentChar = (char)input.read();		//cast to char
+		if(processPending == true) {					//processes currentChar
+			returnToken = createDigit();
+		} else {
+			if(readOk && commentBool) {					//indicates Character should be read from input
+	      		currentChar = (char)input.read();		//reads char from BufferedReader
+	      	}
 
 	      	commentBool = true;							//can now keep reading
 	      	readOk = true;								//can now keep reading
 
-	      	while(isSpecialCase(currentChar)) {			//test special cases
-	      		currentChar = (char)input.read();		//eat until not special
-	      		//col++;									//increment col
+	      	if(isSpecialCase(currentChar)) {			//test special cases
+	      		processSpecial();
 	      	}
 
 	      	if(currentChar == '/'){						//possible comment
@@ -57,65 +96,74 @@ class Lex implements Iterable<Token> {
 		      	//current char will be set correctly and its safe to continue 
 	      	}
 
-			switch(currentChar){
-	      		case '(': return new Op(opMap.operators.get("("), row, ++col);
-	      		case ')': return new Op(opMap.operators.get(")"), row, ++col);
-	      		case '[': return new Op(opMap.operators.get("["), row, ++col);
-	      		case ']': return new Op(opMap.operators.get("]"), row, ++col);
-	      		case '{': return new Op(opMap.operators.get("{"), row, ++col);
-	      		case '}': return new Op(opMap.operators.get("}"), row, ++col);
-	      		case ',': return new Op(opMap.operators.get(","), row, ++col);
-	      		case ';': return new Op(opMap.operators.get(";"), row, ++col);
-	      		case '+': return new Op(opMap.operators.get("+"), row, ++col);
-	      		case '-': return new Op(opMap.operators.get("-"), row, ++col);
-	      		case '~': return new Op(opMap.operators.get("~"), row, ++col);
-	      		case '^': return new Op(opMap.operators.get("^"), row, ++col);
-	      		case '*': return new Op(opMap.operators.get("*"), row, ++col);
-	      		case '<': return new Op(opMap.operators.get(checkOperator()), row, col);
-	      		case '>': return new Op(opMap.operators.get(checkOperator()), row, col);
-	      	    case '&': return new Op(opMap.operators.get(checkOperator()), row, col);
-	      	    case '|': return new Op(opMap.operators.get(checkOperator()), row, col);
-	      	   	case '=': return new Op(opMap.operators.get(checkOperator()), row, col);
-	      	   	case '!': return new Op(opMap.operators.get(checkOperator()), row, col);
-
-	      		default: break;
-	      	}
-
-	      	if(Character.isDigit(currentChar)) {			//checks if currentChar isDigit
-	      		returnToken = createDigit();				//creates digit identifier
-	      	}
-	      	else if(Character.isLetter(currentChar)) {
-	      		returnToken = createStringIdentifier();		//either stringIdentifier or keyword
+	      	//checks if currentChar matches any of the operators in the Operators Map
+	      	if(opMap.operators.containsKey(String.valueOf(currentChar))) {
+	      		if(isSpecialOperator()) {
+	      			return new Op(opMap.operators.get(checkOperator()), row, col);
+	      		} else {
+	      			return new Op(opMap.operators.get(String.valueOf(currentChar)), row, ++col);
+	      		}
+	      	} else if(Character.isDigit(currentChar)) {				//checks if currentChar isDigit
+	      		returnToken = createDigit();					//creates digit identifier
+	      	} else if(Character.isLetter(currentChar)) {		//checks if currentChar isLetter
+	      		returnToken = createStringIdentifier();			//either stringIdentifier or keyword
 			}
-
-
 		}
-
 		return returnToken;
 	}
 
-	private String checkOperator() throws IOException{
+	/**
+	*
+	* <h1>checkOperator()</h1>
+	*
+	* Method reads a new character from the BufferedReader and checks to see if
+	* currentChar + nextChar are one of the two character operators in the Operators
+	* map. Returns a string equal to the two character operator if the map lookup
+	* is successful, original operator otherwise. If the two character operator is not
+	* in the operators map, then the readOk is set to false, indicating that currentChar
+	* must be processed before reading a new character from the BufferedReader.
+	* 
+	* @return String
+	* @throws IOException
+	* @author Destiny Boyer
+	* @author John Zoeller
+	* @version %G%
+	*
+	*/
+
+	private String checkOperator() throws IOException {
 		nextChar = (char)input.read();
 		col++;
-
 		String retVal;
 		String lookup = Character.toString(currentChar) + 
 						Character.toString(nextChar);
-
-		if(opMap.operators.get(lookup) != null){
+		if(opMap.operators.get(lookup) != null) {
 			retVal = lookup;
-
-			if(col != 1)
+			if(col != 1){
 				col++;
-
-		}else{
+			}
+		} else {
 			readOk = false;
 			retVal = Character.toString(currentChar);
 			currentChar = nextChar;
 		}
-
 		nextChar = ' ';
 		return retVal;
+	}
+
+	private boolean isSpecialOperator() {
+		boolean isSpecial = false;
+		if(currentChar == '<' || currentChar == '>' || currentChar == '&' ||
+			currentChar == '=' || currentChar == '!' || currentChar == '|') {
+			isSpecial = true;
+		}
+		return isSpecial;
+	}
+
+	private void processSpecial() throws IOException {
+		while(isSpecialCase(currentChar)) {
+			currentChar = (char)input.read();		//continue reading until not special
+		}
 	}
 
 
@@ -252,26 +300,42 @@ class Lex implements Iterable<Token> {
 		return new StringIdentifier(result, row, col);
 	}
 
-	private boolean isSpecialCase(char cur){
+	private boolean isSpecialCase(char cur)throws IOException{
 		boolean specialCase = false;
 
 		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r') {
 			specialCase = true;
+		
+			if(windowsMachine) {
+				if(cur == '\r') {							//in Windows machines \r\n is for newlines
+					currentChar = (char)input.read();		//know that we must eat up the next character
+					if(currentChar == '\n') {
+						row++;
+						col = 0;
+					}
+				}
+			} else if(unixMachine) {
+				if(cur == '\n' || cur == '\r'){
+					row++;
+					col = 0;
+				}
+			}
 
-			if(cur == '\n' || cur == '\r'){
-				row++;
-				col = 0;
-			}
-			else if(cur == ' '){
+			if(cur == ' ') {
 				col++;
-			}
-			else if(cur == '\t'){
+			} else if(cur == '\t') {
 				col = col + 4;
 			}
-
 		}
+
 		return specialCase;
 	}
+
+	/************************************************************************************************
+	*																								*
+ 	* 										Public Methods											*
+ 	*																								*
+ 	************************************************************************************************/
 
 	public Lex(String iFile){
 		//byteRead opens input file in byte code	
