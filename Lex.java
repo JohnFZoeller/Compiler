@@ -1,3 +1,16 @@
+	// TODO:
+
+	// createDigit()
+
+	// TODO: THINK ABOUT DOUBLE AND FLOATING POINT NUMBERS. THIS METHOD DOES NOT ACCOUNT
+	// FOR NUMBERS THAT HAVE A DECIMAL PLACE. ALSO NEED TO THINK ABOUT HOW TO HANDLE
+	// NUMBERS THAT MAY BE SPLIT ACROSS TWO ROW (people do weird shit... you never know)
+	
+	// comment()
+
+	// TODO: HANDLING COMMENTS ACROSS MULTIPLE LINES
+
+
 /**
  * 
  *
@@ -132,24 +145,40 @@ class Lex implements Iterable<Token> {
 	*/
 
 	private String checkOperator() throws IOException {
-		nextChar = (char)input.read();
-		col++;
-		String retVal;
-		String lookup = Character.toString(currentChar) + 
+		nextChar = (char)input.read();						//reads next Character from BufferedReader
+		col++;												//increments col
+		String retVal = "";									//string return value
+		String lookup = Character.toString(currentChar) + 	//string to lookup, equal to currentChar + nextChar
 						Character.toString(nextChar);
-		if(opMap.operators.get(lookup) != null) {
-			retVal = lookup;
-			if(col != 1){
+		if(opMap.operators.get(lookup) != null) {			//checks if lookup is in the Operators Map
+			retVal = lookup;								//sets retVal to lookup
+			if(col != 1){									//increments col if we are not in a new row
 				col++;
 			}
-		} else {
-			readOk = false;
-			retVal = Character.toString(currentChar);
+		} else {											//otherwise the operator was only one character
+			readOk = false;									//indicates currentChar still needs to be processed
+			retVal = Character.toString(currentChar);		//retVal equal to operator
 			currentChar = nextChar;
 		}
-		nextChar = ' ';
+		nextChar = ' ';										//resets nextChar
 		return retVal;
 	}
+
+	/**
+	*
+	* <h1>isSpecialOperator()</h1>
+	*
+	* Method returns a boolean indicating whether currentChar matches any of the
+	* operators that have a special case. Special case is defined as an operator
+	* that may exist as a single character, or may be concatenated with another
+	* character to form a two character operator.
+	* 
+	* @return isSpecial
+	* @author Destiny Boyer
+	* @author John Zoeller
+	* @version %G%
+	*
+	*/
 
 	private boolean isSpecialOperator() {
 		boolean isSpecial = false;
@@ -160,94 +189,141 @@ class Lex implements Iterable<Token> {
 		return isSpecial;
 	}
 
+	/**
+	*
+	* <h1>processSpecial()</h1>
+	*
+	* Method continues reading Characters from BufferedReader until a Character is
+	* encountered that is not a special case. See isSpecialCase() for special
+	* case characters.
+	* 
+	* @throws IOException
+	* @author Destiny Boyer
+	* @author John Zoeller
+	* @version %G%
+	*
+	*/
+
 	private void processSpecial() throws IOException {
 		while(isSpecialCase(currentChar)) {
 			currentChar = (char)input.read();		//continue reading until not special
 		}
 	}
 
+	/**
+	*
+	* <h1>commentCheck()</h1>
+	*
+	* If a comment found: return null, currentChar will be correct
+	* If just a backslash: return a backslash, currentChar wont be correct
+	*	Created a bool to fix this problem. The backslash will return from
+	*	getNextT(), thus completing the current iteration. The next iteration
+	*	will not be allowed to read a new character because this function
+	*	was forced to read it already to check for a comment. 
+	* 
+	* @return Token
+	* @throws IOException
+	* @author Destiny Boyer
+	* @author John Zoeller
+	* @version %G%
+	*
+	*/
 
-	//If a comment found: return null, currentChar will be correct
-	//If just a backslash: return a backslash, currentChar wont be correct
-		//Created a bool to fix this problem. The backslash will return from
-		//getNext, thus completing the current iteration. The next iteration
-		//will not be allowed to read a new character because this function
-		//was forced to read it already to check for a comment. 
-	private Token commentCheck() throws IOException{
+	private Token commentCheck() throws IOException {
 		nextChar = (char)input.read();					//check next for *				
 
 	    if(nextChar == '*') {							//found a comment
 	    	comment();									//read and col++
 	    	return null;								//no need to output '/'
-	    }
-	    else{ 											//no comment
+	    } else { 											//no comment
 	    	currentChar = nextChar;						//set new currentChar
 	      	nextChar = ' ';								//reset nextChar
 	      	return new Op("BACKSLASH", row, ++col);		//return the BACKSLASH
 	    }
 	}
 
-	//preconditions: currentChar = '/', nextChar = '*'
-	//postconditions: currentChar = newCurrent; nextChar = ' ';
-	private void comment() throws IOException{
-		nextChar = ' ';									//reset nextChar
-														//TODO: CHECK FOR /N
+	/**
+	*
+	* <h1>comment()</h1>
+	*
+	* Preconditions: currentChar = '/', nextChar = '*'
+	* Postconditions: currentChar = newCurrent; nextChar = ' ';
+	* 
+	* @return Token
+	* @throws IOException
+	* @author Destiny Boyer
+	* @author John Zoeller
+	* @version %G%
+	*
+	*/
 
-		while(true){									//until a return 
-			col++;										//increment line
-			currentChar = (char)input.read();			//read
+	private void comment() throws IOException {
+		nextChar = ' ';										//reset nextChar
+															//TODO: CHECK FOR /N
+		while(true) {										//until a return 
+			col++;											//increment line
+			currentChar = (char)input.read();				//read
 
 
-			while(currentChar == '*'){					//possible exit
-				currentChar = (char)input.read();		//read next
+			while(currentChar == '*'){						//possible exit
+				currentChar = (char)input.read();			//read next
 
-				if(currentChar == '/'){					//exit
-					currentChar = (char)input.read();	//jump char forward
-					return;								//done
+				if(currentChar == '/'){						//exit
+					currentChar = (char)input.read();		//jump char forward
+					return;									//done
 				}
 			}
-
 		}
-
 	}
 
-	//there is a tiny little bug in these two (that i didnt hunt down due to selfishness)
-		//that will eat one extra character from the stream... see the output screenshot
-	private DigitIdentifier createDigit() throws IOException{
-		int result;									//final int value
-		String convert = "";						//final int to string value
+	/**
+	*
+	* <h1>createDigit()</h1>
+	*
+	* Method reads Characters from the BufferedReader until a non-digit Character is encountered.
+	* A new DigitIdentifier is then created and returned.
+	* 
+	* @return DigitIdentifier
+	* @throws IOException
+	* @author Destiny Boyer
+	* @author John Zoeller
+	* @version %G%
+	*
+	*/
 
-		if(processPending == true) {				//thus atleast the curChar isDigit
-			convert += currentChar;					//append currentChar since we know it is a digit
-			if(Character.isDigit(nextChar)) {		//check if nextChar is also a digit
-				convert += nextChar;				//if so append to convert
-				nextChar = ' ';						//reset nextChar
-				currentChar = (char)input.read();	//read next char from BufferReader
-				col++;								//increment col
+	private DigitIdentifier createDigit() throws IOException {
+		int result;												//final int value
+		String convert = "";									//final int to string value
+		if(processPending == true) {							//thus atleast the curChar isDigit
+			convert += currentChar;								//append currentChar since we know it is a digit
+			if(Character.isDigit(nextChar)) {					//check if nextChar is also a digit
+				convert += nextChar;							//if so append to convert
+				nextChar = ' ';									//reset nextChar
+				currentChar = (char)input.read();				//read next char from BufferReader
+				col++;											//increment col
 
-				while(Character.isDigit(currentChar)) {	//while digit
-					convert += currentChar;				//append char to convert
-					currentChar = (char)input.read();	//read next char from BufferedReader
-					col++;								//increment col
+				while(Character.isDigit(currentChar)) {			//while digit
+					convert += currentChar;						//append char to convert
+					currentChar = (char)input.read();			//read next char from BufferedReader
+					col++;										//increment col
 				}
-
-			} else {								//otherwise nextChar is not a digit
-				currentChar = nextChar;				//set currentChar to nextChar
-				nextChar = ' ';						//reset nextChar
+			} else {											//otherwise nextChar is not a digit
+				currentChar = nextChar;							//set currentChar to nextChar
+				nextChar = ' ';									//reset nextChar
 			}
-		processPending = false;						//reset processPending
+		processPending = false;									//reset processPending
 		} else {
-			while(Character.isDigit(currentChar)){	//while digit
-				convert += currentChar;				//append char to convert
-				currentChar = (char)input.read();	//read next char from BufferedReader
-				col++;								//increment col
+			while(Character.isDigit(currentChar)) {				//while digit
+				convert += currentChar;							//append char to convert
+				currentChar = (char)input.read();				//read next char from BufferedReader
+				col++;											//increment col
 			}
 		}
 		result = Integer.parseInt(convert);		
 		return new DigitIdentifier(result, row, col);
 	}
 
-	private Token createStringIdentifier() throws IOException{
+	private Token createStringIdentifier() throws IOException {
 		String result = "", possibleKeyword = "";
 		int tempCol = col;
 
@@ -300,7 +376,7 @@ class Lex implements Iterable<Token> {
 		return new StringIdentifier(result, row, col);
 	}
 
-	private boolean isSpecialCase(char cur)throws IOException{
+	private boolean isSpecialCase(char cur)throws IOException {
 		boolean specialCase = false;
 
 		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r') {
@@ -331,13 +407,14 @@ class Lex implements Iterable<Token> {
 		return specialCase;
 	}
 
+
 	/************************************************************************************************
 	*																								*
  	* 										Public Methods											*
  	*																								*
  	************************************************************************************************/
 
-	public Lex(String iFile){
+	public Lex(String iFile) {
 		//byteRead opens input file in byte code	
 		//cReader -> byte code to char code
 		//input -> //char by char reading 
@@ -351,7 +428,7 @@ class Lex implements Iterable<Token> {
 	}
 
 	@Override
-	public Iterator<Token> iterator(){					//iterate buffered reader
+	public Iterator<Token> iterator() {					//iterate buffered reader
 		Iterator<Token> iter = new Iterator<Token>(){	//new iterator
 
 			@Override
