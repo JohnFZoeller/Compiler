@@ -2,9 +2,7 @@
 
 	// createDigit()
 
-	// TODO: THINK ABOUT DOUBLE AND FLOATING POINT NUMBERS. THIS METHOD DOES NOT ACCOUNT
-	// FOR NUMBERS THAT HAVE A DECIMAL PLACE. ALSO NEED TO THINK ABOUT HOW TO HANDLE
-	// NUMBERS THAT MAY BE SPLIT ACROSS TWO ROW (people do weird shit... you never know)
+	// BUG IN ROWS, MAY BE OS SPECIFIC
 	
 	// comment()
 
@@ -75,6 +73,7 @@ class Lex implements Iterable<Token> {
 
 	private Token getNextT() throws IOException{
 		Token returnToken = null;						//return Token variable
+		int tempCol = col;
 
 		//this block indicates that currentChar needs to be processed
 		//before another Character is read from the BufferedReader
@@ -88,6 +87,8 @@ class Lex implements Iterable<Token> {
 		} else {
 			if(readOk && commentBool) {					//indicates Character should be read from input
 	      		currentChar = (char)input.read();		//reads char from BufferedReader
+	      		increaseColumn(1);
+	      		tempCol++;
 	      	}
 
 	      	commentBool = true;							//can now keep reading
@@ -112,7 +113,7 @@ class Lex implements Iterable<Token> {
 	      	//checks if currentChar matches any of the operators in the Operators Map
 	      	if(opMap.operators.containsKey(String.valueOf(currentChar))) {
 	      		if(isSpecialOperator()) {
-	      			return new Op(opMap.operators.get(checkOperator()), row, col);
+	      			return new Op(opMap.operators.get(checkOperator()), row, tempCol);
 	      		} else {
 	      			return new Op(opMap.operators.get(String.valueOf(currentChar)), row, ++col);
 	      		}
@@ -146,14 +147,14 @@ class Lex implements Iterable<Token> {
 
 	private String checkOperator() throws IOException {
 		nextChar = (char)input.read();						//reads next Character from BufferedReader
-		col++;												//increments col
+		increaseColumn(1);											//increments col
 		String retVal = "";									//string return value
 		String lookup = Character.toString(currentChar) + 	//string to lookup, equal to currentChar + nextChar
 						Character.toString(nextChar);
 		if(opMap.operators.get(lookup) != null) {			//checks if lookup is in the Operators Map
 			retVal = lookup;								//sets retVal to lookup
 			if(col != 1){									//increments col if we are not in a new row
-				col++;
+				increaseColumn(1);
 			}
 		} else {											//otherwise the operator was only one character
 			readOk = false;									//indicates currentChar still needs to be processed
@@ -207,6 +208,7 @@ class Lex implements Iterable<Token> {
 	private void processSpecial() throws IOException {
 		while(isSpecialCase(currentChar)) {
 			currentChar = (char)input.read();		//continue reading until not special
+			increaseColumn(1);
 		}
 	}
 
@@ -261,7 +263,7 @@ class Lex implements Iterable<Token> {
 		nextChar = ' ';										//reset nextChar
 															//TODO: CHECK FOR /N
 		while(true) {										//until a return 
-			col++;											//increment line
+			increaseColumn(1);										//increment line
 			currentChar = (char)input.read();				//read
 
 
@@ -291,50 +293,75 @@ class Lex implements Iterable<Token> {
 	*
 	*/
 
-	private DigitIdentifier createDigit() throws IOException {
+	private Token createDigit() throws IOException {
 		int result;												//final int value
+		int column = col;
+		double dResult;
 		String convert = "";									//final int to string value
+		boolean isInt = true;
 		if(processPending == true) {							//thus atleast the curChar isDigit
 			convert += currentChar;								//append currentChar since we know it is a digit
 			if(Character.isDigit(nextChar)) {					//check if nextChar is also a digit
 				convert += nextChar;							//if so append to convert
 				nextChar = ' ';									//reset nextChar
 				currentChar = (char)input.read();				//read next char from BufferReader
-				col++;											//increment col
+				increaseColumn(1);											//increment col
 
 				while(Character.isDigit(currentChar)) {			//while digit
 					convert += currentChar;						//append char to convert
 					currentChar = (char)input.read();			//read next char from BufferedReader
-					col++;										//increment col
+					increaseColumn(1);									//increment col
+					if(currentChar == '.') {					//checks for decimal number
+						convert += currentChar;					//appends decimal to convert
+						currentChar = (char)input.read();		//reads next char from BufferedReader
+						increaseColumn(1);
+						isInt = false;
+					}
 				}
 			} else {											//otherwise nextChar is not a digit
 				currentChar = nextChar;							//set currentChar to nextChar
 				nextChar = ' ';									//reset nextChar
 			}
-		processPending = false;									//reset processPending
+			processPending = false;									//reset processPending
 		} else {
 			while(Character.isDigit(currentChar)) {				//while digit
 				convert += currentChar;							//append char to convert
 				currentChar = (char)input.read();				//read next char from BufferedReader
-				col++;											//increment col
+				increaseColumn(1);									//increment col
+				if(currentChar == '.') {					//checks for decimal number
+					convert += currentChar;					//appends decimal to convert
+					currentChar = (char)input.read();		//reads next char from BufferedReader
+					increaseColumn(1);
+					isInt = false;
+				}
 			}
 		}
-		result = Integer.parseInt(convert);		
-		return new DigitIdentifier(result, row, col);
+		if(isInt) {
+			result = Integer.parseInt(convert);
+			return new IntIdentifier(result, row, column);
+		} else {
+			dResult = Float.parseFloat(convert);
+			return new FloatIdentifier((float)dResult, row, column);
+		}
 	}
 
 	private Token createStringIdentifier() throws IOException {
-		String result = "", possibleKeyword = "";
+		String result = "" + currentChar + "";
+		String possibleKeyword = "";
 		int tempCol = col;
 
-		if(col == 0)
+		if(col == 0) {
 			tempCol++;
+		}
+
+		currentChar = (char)input.read();		//read next char from BufferedReader
+		increaseColumn(1);
 
 		//upon exiting while loop currentChar will NOT be equal to a letter
 		while(Character.isLetter(currentChar)) {	//while currentChar is a letter
 			result += currentChar;					//append currentChar to result
 			currentChar = (char)input.read();		//read next char from BufferedReader
-			col++;									//increment col
+			increaseColumn(1);								//increment col
 		}
 
 		//code below checks the cases for keywords that contain both letters and numbers
@@ -345,7 +372,7 @@ class Lex implements Iterable<Token> {
 		if(Character.isDigit(currentChar)){			//checks if currentChar is a digit
 			possibleKeyword = result;				//sets possibleKeyword string to our result string						
 			nextChar = (char)input.read();			//reads the nextChar from the BufferedReader
-			col++;									//increments col
+			increaseColumn(1);								//increments col
 
 			// ASSUMPTIONS:
 			// we know that if nextChar is filled, then currentChar was a digit
@@ -370,10 +397,10 @@ class Lex implements Iterable<Token> {
 		}
 
 		//if there were no digits, result could still be a keyword
-		if(KeywordMap.keywords.containsKey(result))
-			return new Keyword(result, KeywordMap.keywords.get(result), row, col);
-
-		return new StringIdentifier(result, row, col);
+		if(KeywordMap.keywords.containsKey(result)) {
+			return new Keyword(result, KeywordMap.keywords.get(result), row, tempCol);
+		}
+		return new StringIdentifier(result, row, tempCol);
 	}
 
 	private boolean isSpecialCase(char cur)throws IOException {
@@ -386,25 +413,35 @@ class Lex implements Iterable<Token> {
 				if(cur == '\r') {							//in Windows machines \r\n is for newlines
 					currentChar = (char)input.read();		//know that we must eat up the next character
 					if(currentChar == '\n') {
-						row++;
-						col = 0;
+						resetColumn();
 					}
+				} else if(cur == '\n') {
+					resetColumn();
 				}
+				row++;
 			} else if(unixMachine) {
 				if(cur == '\n' || cur == '\r'){
 					row++;
-					col = 0;
+					resetColumn();
 				}
 			}
 
 			if(cur == ' ') {
-				col++;
+				increaseColumn(1);
 			} else if(cur == '\t') {
-				col = col + 4;
+				increaseColumn(4);
 			}
 		}
 
 		return specialCase;
+	}
+
+	private void resetColumn() {
+		this.col = 0;
+	}
+
+	private void increaseColumn(int count) {
+		this.col = this.col + count;
 	}
 
 
