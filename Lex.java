@@ -73,6 +73,7 @@ class Lex implements Iterable<Token> {
 
 	private Token getNextT() throws IOException{
 		Token returnToken = null;						//return Token variable
+		int column = col;
 		int tempCol = col;
 
 		//this block indicates that currentChar needs to be processed
@@ -82,20 +83,21 @@ class Lex implements Iterable<Token> {
 		//TODO: since createDigit() reads input, its possible that we could 
 		//read something by accident when the commentBool flag is restricting reads. 
 
-		if(processPending == true) {					//processes currentChar
+		if(processPending == true) {					//if true then a digit character must be processed
 			returnToken = createDigit();
 		} else {
 			if(readOk && commentBool) {					//indicates Character should be read from input
 	      		currentChar = (char)input.read();		//reads char from BufferedReader
-	      		increaseColumn(1);
-	      		tempCol++;
+	      		increaseColumn(1);						//increments column
 	      	}
 
 	      	commentBool = true;							//can now keep reading
 	      	readOk = true;								//can now keep reading
 
 	      	if(isSpecialCase(currentChar)) {			//test special cases
-	      		processSpecial();
+	      		currentChar = (char)input.read();		//reads new char
+	      		increaseColumn(1);
+	      		processSpecial();						//processes all special
 	      	}
 
 	      	if(currentChar == '/'){						//possible comment
@@ -109,13 +111,17 @@ class Lex implements Iterable<Token> {
 		      	//if it did return null that means the comment has been read,
 		      	//current char will be set correctly and its safe to continue 
 	      	}
-
+	      	System.out.print(tempCol);
 	      	//checks if currentChar matches any of the operators in the Operators Map
 	      	if(opMap.operators.containsKey(String.valueOf(currentChar))) {
+	      		tempCol = col;
 	      		if(isSpecialOperator()) {
+	      			if(col == 0) {
+	      				tempCol++;
+	      			}
 	      			return new Op(opMap.operators.get(checkOperator()), row, tempCol);
 	      		} else {
-	      			return new Op(opMap.operators.get(String.valueOf(currentChar)), row, ++col);
+	      			return new Op(opMap.operators.get(String.valueOf(currentChar)), row, tempCol);
 	      		}
 	      	} else if(Character.isDigit(currentChar)) {				//checks if currentChar isDigit
 	      		returnToken = createDigit();					//creates digit identifier
@@ -332,6 +338,7 @@ class Lex implements Iterable<Token> {
 					convert += currentChar;					//appends decimal to convert
 					currentChar = (char)input.read();		//reads next char from BufferedReader
 					increaseColumn(1);
+					System.out.print(col);
 					isInt = false;
 				}
 			}
@@ -349,6 +356,10 @@ class Lex implements Iterable<Token> {
 		String result = "" + currentChar + "";
 		String possibleKeyword = "";
 		int tempCol = col;
+
+		System.out.print("COL" + col + "   ");
+
+		System.out.print("tempCOL" + tempCol + "   ");
 
 		if(col == 0) {
 			tempCol++;
@@ -400,50 +411,65 @@ class Lex implements Iterable<Token> {
 		if(KeywordMap.keywords.containsKey(result)) {
 			return new Keyword(result, KeywordMap.keywords.get(result), row, tempCol);
 		}
+		//tempCol++;
+		System.out.print("tempCOL" + tempCol + "   ");
 		return new StringIdentifier(result, row, tempCol);
 	}
 
 	private boolean isSpecialCase(char cur)throws IOException {
 		boolean specialCase = false;
 
-		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r') {
-			specialCase = true;
+		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r') {		//special cases
+			specialCase = true;												//return value to true
 		
-			if(windowsMachine) {
-				if(cur == '\r') {							//in Windows machines \r\n is for newlines
-					currentChar = (char)input.read();		//know that we must eat up the next character
-					if(currentChar == '\n') {
-						resetColumn();
-					}
-				} else if(cur == '\n') {
-					resetColumn();
-				}
-				row++;
-			} else if(unixMachine) {
-				if(cur == '\n' || cur == '\r'){
-					row++;
-					resetColumn();
-				}
-			}
-
-			if(cur == ' ') {
-				increaseColumn(1);
-			} else if(cur == '\t') {
-				increaseColumn(4);
-			}
+		switch(currentChar) {
+			case ' ':	increaseColumn(1);
+						break;
+			case '\t':	increaseColumn(4);
+						break;
+			case '\n':	resetColumn();
+						increaseRow();
+			default:	break;
 		}
-
+		// 	if(cur == ' ') {
+		// 		increaseColumn(1);
+		// 	} else if(cur == '\t') {
+		// 		increaseColumn(4);
+		// 	} else {
+		// 		if(windowsMachine) {
+		// 			if(cur == '\r') {											//in Windows machines \r\n is for newlines
+		// 				currentChar = (char)input.read();						//know that we must eat up the next character
+		// 				increaseColumn(1);
+		// 				if(currentChar == '\n') {
+		// 					resetColumn();
+		// 					increaseRow();
+		// 				}
+		// 			} else if(cur == '\n') {
+		// 				resetColumn();
+		// 				increaseColumn();
+		// 			}
+		// 		} else if(unixMachine) {
+		// 			if(cur == '\n' || cur == '\r'){
+		// 				resetColumn();
+		// 				increaseRow();
+		// 			}
+		// 		}
+		// 	}
+		 }
 		return specialCase;
 	}
 
 	private void resetColumn() {
-		this.col = 0;
+		this.col = 1;
 	}
 
 	private void increaseColumn(int count) {
 		this.col = this.col + count;
 	}
 
+	private void increaseRow() {
+		this.row = this.row + 1;
+	}
 
 	/************************************************************************************************
 	*																								*
