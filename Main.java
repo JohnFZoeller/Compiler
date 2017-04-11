@@ -15,7 +15,7 @@ public class Main{
 
 		while(iter.hasNext()){
 			temp = iter.next();
-			System.out.println(temp);
+			System.err.println(temp);
 		}
 
 	}
