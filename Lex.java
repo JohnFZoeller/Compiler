@@ -71,6 +71,8 @@ class Lex implements Iterable<Token> {
 	*
 	*/	
 
+
+	//JOHN: LINE 104, LINE 129
 	private Token getNextT() throws IOException{
 		Token returnToken = null;						//return Token variable
 		int column = col;
@@ -97,8 +99,11 @@ class Lex implements Iterable<Token> {
 	      	readOk = true;								//can now keep reading
 
 	      	if(isSpecialCase(currentChar)) {			//test special cases
-	      		currentChar = (char)input.read();		//reads new char
-	      		//increaseColumn(1);
+	      		currentChar = (char)input.read();		//reads new cha
+
+	      		if(Character.isLetter(currentChar) && col == 0)
+	      			col++;
+
 	      		processSpecial();						//processes all special
 	      	}
 
@@ -121,6 +126,7 @@ class Lex implements Iterable<Token> {
 	      		if(isSpecialOperator()) {
 	      			if(col == 0) {
 	      				tempCol++;
+	      				col++;
 	      			}
 	      			return new Op(opMap.operators.get(checkOperator()), row, tempCol);
 	      		} else {
@@ -234,11 +240,11 @@ class Lex implements Iterable<Token> {
 				case ' ':	increaseColumn(1);
 							break;
 				case '\t':	increaseColumn(4);
-							System.out.println("tab");
+							//System.out.println("tab");
 							break;
 				case '\n':	resetColumn();
 							increaseRow();
-							System.out.println("newline");
+							//System.out.println("newline");
 							break;
 				default:	break;
 			}
@@ -294,9 +300,10 @@ class Lex implements Iterable<Token> {
 	*
 	*/
 
+	//JOHN : INCREASE COL BY 4 TO ACCOUNT FOR /**/
 	private void comment() throws IOException {
 		nextChar = ' ';										//reset nextChar
-		increaseColumn(3);
+		increaseColumn(4);
 															//TODO: CHECK FOR /N
 		while(true) {										//until a return 
 			increaseColumn(1);										//increment line
