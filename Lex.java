@@ -232,11 +232,9 @@ class Lex implements Iterable<Token> {
 
 	private boolean isSpecialCase(char cur)throws IOException {
 		boolean specialCase = false;
-		int tabW = 4;
+		int tabW;
 
-		if(unixMachine)
-			tabW = 8;
-		
+		tabW = (!windowsMachine) ? 8 : 4;			//fanciness
 
 		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r') {		//special cases
 			specialCase = true;												//return value to true
@@ -244,14 +242,14 @@ class Lex implements Iterable<Token> {
 			switch(cur) {
 				case ' ':	increaseColumn(1);
 				    		//System.out.println("space");
-						break;
+							break;
 				case '\t':	increaseColumn(tabW);
-						//System.out.println("tab");
-						break;
+							//System.out.println("tab");
+							break;
 				case '\n':	resetColumn();
-						increaseRow();
-						//System.out.println("newline");
-						break;
+							increaseRow();
+							//System.out.println("newline");
+							break;
 				default:	break;
 			}
 		}
@@ -280,17 +278,16 @@ class Lex implements Iterable<Token> {
 
 	private Token commentCheck() throws IOException {
 		nextChar = (char)input.read();	
-		System.out.println("CHECK called");				//check next for *				
+		//System.out.println("CHECK called");				//check next for *				
 
 	    if(nextChar == '*') {							//found a comment
 	    	nextChar = ' ';
-		comment();									//read and col++
+			comment();									//read and col++
 	    	return null;								//no need to output '/'
-	    } else { 											//no comment
+	    } else { 										//no comment
 	    	currentChar = nextChar;						//set new currentChar
 	      	nextChar = ' ';								//reset nextChar
-
-	      	return new Op("BACKSLASH", row, col++);				//return the BACKSLASH
+	      	return new Op("BACKSLASH", row, col++);		//return the BACKSLASH
 	    }
 	}
 
@@ -309,21 +306,22 @@ class Lex implements Iterable<Token> {
 	*
 	*/
 
-	//JOHN : INCREASE COL BY 4 TO ACCOUNT FOR /**/
+	//JOHN : initial increaseColumn only needs to be one, not two...
+		//getNextT will take care of the first one
 	private void comment() throws IOException {
-		increaseColumn(2);
-		System.out.println("Comment called");
+		col++;
 															//TODO: CHECK FOR /N
 		while(true) {										//until a return 
+			currentChar = (char)input.read();	
 
-			currentChar = (char)input.read();				//read
-			increaseColumn(1);										//increment line
-			isSpecialCase(currentChar);
+			if(!isSpecialCase(currentChar))					//if it was special the func()
+				col++;										//will take care of col
 
 			while(currentChar == '*'){						//possible exit
 				currentChar = (char)input.read();			//read next
-				increaseColumn(1);
-				isSpecialCase(currentChar);
+
+				if(!isSpecialCase(currentChar))
+					col++;
 
 				if(currentChar == '/'){						//exit
 					currentChar = (char)input.read();		//jump char forward
@@ -350,11 +348,11 @@ class Lex implements Iterable<Token> {
 	*/
 
 	private Token createDigit() throws IOException {
-		int result;												//final int value
-		int column = col;
+		int result, column = col;
 		double dResult;
 		String convert = "";									//final int to string value
 		boolean isInt = true;
+
 		if(processPending == true) {							//thus atleast the curChar isDigit
 			convert += currentChar;								//append currentChar since we know it is a digit
 			if(Character.isDigit(nextChar)) {					//check if nextChar is also a digit
@@ -384,6 +382,7 @@ class Lex implements Iterable<Token> {
 				convert += currentChar;							//append char to convert
 				currentChar = (char)input.read();				//read next char from BufferedReader
 				increaseColumn(1);									//increment col
+
 				if(currentChar == '.') {					//checks for decimal number
 					convert += currentChar;					//appends decimal to convert
 					currentChar = (char)input.read();		//reads next char from BufferedReader
@@ -395,9 +394,11 @@ class Lex implements Iterable<Token> {
 		}
 		if(isInt) {
 			result = Integer.parseInt(convert);
+			readOk = false;
 			return new IntIdentifier(result, row, column);
 		} else {
 			dResult = Float.parseFloat(convert);
+			readOk = false;
 			return new FloatIdentifier((float)dResult, row, column);
 		}
 	}
