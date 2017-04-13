@@ -11,4 +11,5 @@
 	C. iterate col count
 	D. Eat up either words or numbers
 	E. switch statement to find the correct operator
-	F. return "new" operator 
+	F. return "new" operator
+	df;kajsdf;k 
