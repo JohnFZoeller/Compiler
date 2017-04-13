@@ -1,16 +1,4 @@
-	// TODO:
-
-	// createDigit()
-
-	// BUG IN ROWS, MAY BE OS SPECIFIC
-	
-	// comment()
-
-	// TODO: HANDLING COMMENTS ACROSS MULTIPLE LINES
-
-
 /**
- * 
  *
  * @author Destiny Boyer
  * @author John Zoeller
@@ -18,10 +6,6 @@
  *
  */
 
-
-/**
- * Imports java util library and io library
- */
 import java.util.*;
 import java.io.*;
 
@@ -43,9 +27,9 @@ class Lex implements Iterable<Token> {
 	private int col = 0, row = 1;									//track row and column of file
 	private char currentChar = ' ', nextChar = ' ';					//track characters from input
 	private boolean isKeyword = false;								//for digit / string eater
-	private boolean processPending = false;							//indicates unfinished currentChar processing
-	private boolean commentBool = true;								//set false if commentCheck found nothing
-	private boolean readOk = true;									//indicates if input should read() new char
+	private boolean processPending = false;							//unfinished currentChar processing
+	private boolean commentBool = true;								//false if commentCheck found nothing
+	private boolean readOk = true;									//input should read() new char
 
 
 	/************************************************************************************************
@@ -78,22 +62,13 @@ class Lex implements Iterable<Token> {
 		int column = col;
 		int tempCol = col;
 
-		//this block indicates that currentChar needs to be processed
-		//before another Character is read from the BufferedReader
-		//currentChar is guaranteed to be a digit
-
-		//TODO: since createDigit() reads input, its possible that we could 
-		//read something by accident when the commentBool flag is restricting reads. 
-
-		if(processPending == true) {					//if true then a digit character must be processed
+		if(processPending == true) {					//if true then a digit char must be processed
 			returnToken = createDigit();
 		} else {
 			if(readOk && commentBool) {					//indicates Character should be read from input
 	      		currentChar = (char)input.read();		//reads char from BufferedReader
 	      		increaseColumn(1);						//increments column
 	      	}
-
-	      	//System.out.println(col);
 
 	      	commentBool = true;							//can now keep reading
 	      	readOk = true;								//can now keep reading
@@ -114,15 +89,12 @@ class Lex implements Iterable<Token> {
 		      		commentBool = false;				//dont read on next iter
 		      		return returnToken;					//returning a BACKSLASH operator
 		      	}
-		      	//if it did return null that means the comment has been read,
-		      	//current char will be set correctly and its safe to continue 
+		      	//if returnToken == null, the comment has been read... safe to continue
 	      	}
 
-
-	      	//System.out.print(tempCol);
-	      	//checks if currentChar matches any of the operators in the Operators Map
-	      	if(opMap.operators.containsKey(String.valueOf(currentChar))) {
+	      	if(opMap.operators.containsKey(String.valueOf(currentChar))) {	//cur in opMap?
 	      		tempCol = col;
+
 	      		if(isSpecialOperator()) {
 	      			if(col == 0) {
 	      				tempCol++;
@@ -164,16 +136,13 @@ class Lex implements Iterable<Token> {
 		nextChar = (char)input.read();						//reads next Character from BufferedReader
 		increaseColumn(1);											//increments col
 		String retVal = "";									//string return value
-		String lookup = Character.toString(currentChar) + 	//string to lookup, equal to currentChar + nextChar
+		String lookup = Character.toString(currentChar) + 	//string to lookup = currentChar + nextChar
 						Character.toString(nextChar);
 
 		if(opMap.operators.get(lookup) != null) {			//checks if lookup is in the Operators Map
 			retVal = lookup;								//sets retVal to lookup
-			if(col != 1){									//increments col if we are not in a new row
-				//increaseColumn(1);
-			}
-		} else {											//otherwise the operator was only one character
-			readOk = false;									//indicates currentChar still needs to be processed
+		} else {											//otherwise the operator was only one char
+			readOk = false;									//indicates currentChar  to be processed
 			retVal = Character.toString(currentChar);		//retVal equal to operator
 			currentChar = nextChar;
 		}
@@ -237,7 +206,7 @@ class Lex implements Iterable<Token> {
 		tabW = (!windowsMachine) ? 8 : 4;			//fanciness
 
 		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r') {		//special cases
-			specialCase = true;												//return value to true
+			specialCase = true;												//return true
 		
 			switch(cur) {
 				case ' ':	increaseColumn(1);
@@ -278,7 +247,6 @@ class Lex implements Iterable<Token> {
 
 	private Token commentCheck() throws IOException {
 		nextChar = (char)input.read();	
-		//System.out.println("CHECK called");				//check next for *				
 
 	    if(nextChar == '*') {							//found a comment
 	    	nextChar = ' ';
@@ -336,7 +304,7 @@ class Lex implements Iterable<Token> {
 	*
 	* <h1>createDigit()</h1>
 	*
-	* Method reads Characters from the BufferedReader until a non-digit Character is encountered.
+	* Method reads Characters from the BufferedReader until a non-digit  is encountered.
 	* A new DigitIdentifier is then created and returned.
 	* 
 	* @return DigitIdentifier
@@ -354,7 +322,7 @@ class Lex implements Iterable<Token> {
 		boolean isInt = true;
 
 		if(processPending == true) {							//thus atleast the curChar isDigit
-			convert += currentChar;								//append currentChar since we know it is a digit
+			convert += currentChar;								//append currentChar bc its a digit
 			if(Character.isDigit(nextChar)) {					//check if nextChar is also a digit
 				convert += nextChar;							//if so append to convert
 				nextChar = ' ';									//reset nextChar
