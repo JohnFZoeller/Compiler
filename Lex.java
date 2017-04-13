@@ -34,8 +34,8 @@ class Lex implements Iterable<Token> {
  	************************************************************************************************/
 
 	private String OSName = System.getProperty("os.name");			//stores OS name
-	private boolean windowsMachine = OSName.startsWith("Windows");		//true if OS is Windows
-	private boolean unixMachine = OSName.startsWith("Linux");		//true if OS is Unix
+	private boolean windowsMachine = OSName.startsWith("Windows");	//true if OS is Windows
+	private boolean unixMachine = OSName.startsWith("Unix");		//true if OS is Unix
 
 	private Reader input;											//BufferedStream reader
 	private OperatorMap opMap;										//language-specific Operators Map
@@ -232,26 +232,20 @@ class Lex implements Iterable<Token> {
 
 	private boolean isSpecialCase(char cur)throws IOException {
 		boolean specialCase = false;
-		int tabW = 4;
-
-		if(unixMachine)
-			tabW = 8;
-		
 
 		if(cur == ' ' || cur == '\n' || cur == '\t' || cur == '\r') {		//special cases
 			specialCase = true;												//return value to true
 		
-			switch(cur) {
+			switch(currentChar) {
 				case ' ':	increaseColumn(1);
-				    		//System.out.println("space");
-						break;
-				case '\t':	increaseColumn(tabW);
-						//System.out.println("tab");
-						break;
+							break;
+				case '\t':	increaseColumn(4);
+							//System.out.println("tab");
+							break;
 				case '\n':	resetColumn();
-						increaseRow();
-						//System.out.println("newline");
-						break;
+							increaseRow();
+							//System.out.println("newline");
+							break;
 				default:	break;
 			}
 		}
@@ -279,18 +273,15 @@ class Lex implements Iterable<Token> {
 	*/
 
 	private Token commentCheck() throws IOException {
-		nextChar = (char)input.read();	
-		System.out.println("CHECK called");				//check next for *				
+		nextChar = (char)input.read();					//check next for *				
 
 	    if(nextChar == '*') {							//found a comment
-	    	nextChar = ' ';
-		comment();									//read and col++
+	    	comment();									//read and col++
 	    	return null;								//no need to output '/'
 	    } else { 											//no comment
 	    	currentChar = nextChar;						//set new currentChar
 	      	nextChar = ' ';								//reset nextChar
-
-	      	return new Op("BACKSLASH", row, col++);				//return the BACKSLASH
+	      	return new Op("BACKSLASH", row, col++);		//return the BACKSLASH
 	    }
 	}
 
@@ -311,23 +302,18 @@ class Lex implements Iterable<Token> {
 
 	//JOHN : INCREASE COL BY 4 TO ACCOUNT FOR /**/
 	private void comment() throws IOException {
-		increaseColumn(2);
-		System.out.println("Comment called");
+		nextChar = ' ';										//reset nextChar
+		increaseColumn(4);
 															//TODO: CHECK FOR /N
 		while(true) {										//until a return 
-
-			currentChar = (char)input.read();				//read
 			increaseColumn(1);										//increment line
-			isSpecialCase(currentChar);
+			currentChar = (char)input.read();				//read
 
 			while(currentChar == '*'){						//possible exit
 				currentChar = (char)input.read();			//read next
-				increaseColumn(1);
-				isSpecialCase(currentChar);
 
 				if(currentChar == '/'){						//exit
 					currentChar = (char)input.read();		//jump char forward
-					increaseColumn(1);
 					return;									//done
 				}
 			}
@@ -423,8 +409,7 @@ class Lex implements Iterable<Token> {
 		while(Character.isLetter(currentChar)) {	//while currentChar is a letter
 			result += currentChar;					//append currentChar to result
 			currentChar = (char)input.read();		//read next char from BufferedReader
-			increaseColumn(1);
-							//increment col
+			increaseColumn(1);								//increment col
 		}
 
 
@@ -463,10 +448,10 @@ class Lex implements Iterable<Token> {
 
 		//if there were no digits, result could still be a keyword
 		if(KeywordMap.keywords.containsKey(result)) {
-			readOk = false;
 			return new Keyword(result, KeywordMap.keywords.get(result), row, tempCol);
 		}
-
+		//tempCol++;
+		//System.out.print("tempCOL" + tempCol + "   ");
 		readOk = false;
 		return new StringIdentifier(result, row, tempCol);
 	}

@@ -1,5 +1,5 @@
-int32=32.45 intisodij
+int32=32.45 intisodij <=||
 inoh const   xxxx
 /*comment*/=
 =
-=3333
+=3333	const
