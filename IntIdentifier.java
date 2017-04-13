@@ -12,3 +12,4 @@ public class IntIdentifier extends Token {
 		return super.toString() + " INT_IDENTIFIER (" + val + ")";
 	}
 }
+//
