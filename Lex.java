@@ -66,8 +66,7 @@ class Lex implements Iterable<Token> {
 			returnToken = createDigit();
 		} else {
 			if(readOk && commentBool) {					//indicates Character should be read from input
-	      		currentChar = (char)input.read();		//reads char from BufferedReader
-	      		increaseColumn(1);						//increments column
+	      		readNextChar();							//increments column
 	      	}
 
 	      	commentBool = true;							//can now keep reading
@@ -113,6 +112,11 @@ class Lex implements Iterable<Token> {
 		return returnToken;
 	}
 
+
+	private void readNextChar()throws IOException{
+		currentChar = (char)input.read();
+		increaseColumn(1);
+	}
 	/**
 	*
 	* <h1>checkOperator()</h1>
@@ -133,8 +137,7 @@ class Lex implements Iterable<Token> {
 	*/
 
 	private String checkOperator() throws IOException {
-		nextChar = (char)input.read();						//reads next Character from BufferedReader
-		increaseColumn(1);											//increments col
+		readNextChar();											//increments col
 		String retVal = "";									//string return value
 		String lookup = Character.toString(currentChar) + 	//string to lookup = currentChar + nextChar
 						Character.toString(nextChar);
@@ -292,8 +295,7 @@ class Lex implements Iterable<Token> {
 					col++;
 
 				if(currentChar == '/'){						//exit
-					currentChar = (char)input.read();		//jump char forward
-					increaseColumn(1);
+					readNextChar();
 					return;									//done
 				}
 			}
@@ -326,17 +328,14 @@ class Lex implements Iterable<Token> {
 			if(Character.isDigit(nextChar)) {					//check if nextChar is also a digit
 				convert += nextChar;							//if so append to convert
 				nextChar = ' ';									//reset nextChar
-				currentChar = (char)input.read();				//read next char from BufferReader
-				increaseColumn(1);											//increment col
+				readNextChar();										//increment col
 
 				while(Character.isDigit(currentChar)) {			//while digit
 					convert += currentChar;						//append char to convert
-					currentChar = (char)input.read();			//read next char from BufferedReader
-					increaseColumn(1);									//increment col
+					readNextChar();								//increment col
 					if(currentChar == '.') {					//checks for decimal number
 						convert += currentChar;					//appends decimal to convert
-						currentChar = (char)input.read();		//reads next char from BufferedReader
-						increaseColumn(1);
+						readNextChar();
 						isInt = false;
 					}
 				}
@@ -348,14 +347,11 @@ class Lex implements Iterable<Token> {
 		} else {
 			while(Character.isDigit(currentChar)) {				//while digit
 				convert += currentChar;							//append char to convert
-				currentChar = (char)input.read();				//read next char from BufferedReader
-				increaseColumn(1);									//increment col
+				readNextChar();								//increment col
 
 				if(currentChar == '.') {					//checks for decimal number
 					convert += currentChar;					//appends decimal to convert
-					currentChar = (char)input.read();		//reads next char from BufferedReader
-					increaseColumn(1);
-					//System.out.print(col);
+					readNextChar();
 					isInt = false;
 				}
 			}
@@ -391,8 +387,7 @@ class Lex implements Iterable<Token> {
 		//upon exiting while loop currentChar will NOT be equal to a letter
 		while(Character.isLetter(currentChar)) {	//while currentChar is a letter
 			result += currentChar;					//append currentChar to result
-			currentChar = (char)input.read();		//read next char from BufferedReader
-			increaseColumn(1);
+			readNextChar();
 							//increment col
 		}
 
