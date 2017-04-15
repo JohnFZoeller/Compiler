@@ -13,12 +13,15 @@ public class Main{
 		Iterator<Token> iter = lexer.iterator();
 		Token temp;
 		ArrayList<Token> toks = new ArrayList<Token>();
+		//AST parser = new AST();
 
 		while(iter.hasNext()){
 			temp = iter.next();
 			toks.add(temp);
 			System.err.println(temp);
 		}
+
+		//AST recursive descent part
 
 	}
 }
