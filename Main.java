@@ -13,7 +13,7 @@ public class Main{
 		Iterator<Token> iter = lexer.iterator();
 		Token temp;
 		ArrayList<Token> toks = new ArrayList<Token>();
-		//AST parser = new AST();
+		ASTTree parser;
 
 		while(iter.hasNext()){
 			temp = iter.next();
@@ -21,7 +21,6 @@ public class Main{
 			System.out.println(temp);
 		}
 
-		//AST recursive descent part
-
+		parser = new ASTTree(toks);
 	}
 }

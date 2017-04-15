@@ -7,4 +7,10 @@ class ASTTree{
 		root = null;
 	}
 
+	public ASTTree(ArrayList<Token> list){
+		root = new ASTNode(list);
+	}
+
+	
+
 }

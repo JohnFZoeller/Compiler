@@ -3,24 +3,22 @@ import java.io.*;
 
 class ASTNode{
 	protected String memAddress;
-	protected ArrayList<ASTNode> children;
 	protected int row, col;
-	protected Token token;
+	protected ArrayList<Token> tokens;
+	protected String type;
 
 	ASTNode(){
 		memAddress = "";
-		children = new ArrayList<ASTNode>();
 		row = col = 0;
-		token = null;
+		tokens = null;
+		type = "";
 	}
 
-
-	ASTNode(Token t){
-		//memAddress = t.getMemAdd();?
-		//children = t.getChildren();?
-		token = t;
-		row = token.getRow();
-		setRunningCol(token.getCol());
+	ASTNode(ArrayList<Token> t){
+		memAddress = "";
+		tokens = t;
+		row = col = 0;
+		type = "";
 	}
 
 	private void setRunningCol(int c){
@@ -30,7 +28,6 @@ class ASTNode{
 
 	class Statement extends ASTNode{
 		protected int level = 0;
-		String type;
 		Statement left;
 		Statement right;
 
@@ -239,37 +236,37 @@ class ASTNode{
 
 	//class TypeCast extends 
 
-			class TypeDescriptor extends TypeDecl {
+			// class TypeDescriptor extends TypeDecl {
 
-			}
+			// }
 
-				class NonArrayTypeDescrip extends TypeDescriptor {
+			// 	class NonArrayTypeDescrip extends TypeDescriptor {
 
-				}
+			// 	}
 
-					class RecordDescrip extends NonArrayTypeDescrip {
+			// 		class RecordDescrip extends NonArrayTypeDescrip {
 
-					}
+			// 		}
 
-					class Identifier extends NonArrayTypeDescrip {
+			// 		class Identifier extends NonArrayTypeDescrip {
 
-					}
+			// 		}
 
-					class BasicType extends NonArrayTypeDescrip {
+			// 		class BasicType extends NonArrayTypeDescrip {
 
-					}
+			// 		}
 
-					// LEAF NODE
-					class BasicByte extends BasicType {
+			// 		// LEAF NODE
+			// 		class BasicByte extends BasicType {
 
-					}
+			// 		}
 
-					// LEAF NODE
-					class BasicInt extends BasicType {
+			// 		// LEAF NODE
+			// 		class BasicInt extends BasicType {
 
-					}
+			// 		}
 
-					// LEAF NODE
-					class BasicFloat extends BasicType {
+			// 		// LEAF NODE
+			// 		class BasicFloat extends BasicType {
 
-					}
+			// 		}
