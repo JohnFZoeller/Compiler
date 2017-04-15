@@ -12,9 +12,11 @@ public class Main{
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		Token temp;
+		ArrayList<Token> toks = new ArrayList<Token>();
 
 		while(iter.hasNext()){
 			temp = iter.next();
+			toks.add(temp);
 			System.err.println(temp);
 		}
 

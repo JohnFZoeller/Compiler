@@ -37,7 +37,7 @@ public final class KeywordMap {
                 put("ref", "KEYWORD_REF");
                 put("return", "KEYWORD_RETURN");
                 put("static", "KEYWORD_STATIC");
-                put("type", "KEYWORD_STATIC");
+                put("type", "KEYWORD_TYPE");
                 put("var", "KEYWORD_VAR");
                 put("while", "KEYWORD_WHILE");
         
