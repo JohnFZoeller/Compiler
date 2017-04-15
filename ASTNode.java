@@ -192,22 +192,64 @@ class ASTNode{
 						EXPRESSION-STATEMENT
 		*****************************************************/
 
-		class ExprStatement extends Statement {
-			private Expression expr;
+		class Expr extends Statement {
+			private Token value;			//string literal
+			private ExprRest rest;			//rest of the expression
 
-			public ExprStatement(){
+			public Expr(){
 				super();
+			}
+
+			public boolean parser(BufferedReader input) {
+				boolean successful = false;
+				Token currentTok = (Token)input.read();
+				match(currentTok);
+				rest = new ExprRest();
+				successful = rest.parse(input);
+				return successful;
+			}
+
+			public boolean match(Token toCompare) {
+				boolean match = false;
+				if(toCompare instanceof StringIdentifier) { 
+					value = toCompare;
+				} else {
+					throw new ParseError();
+				}
 			}
 		}
 
-			class Expression extends ExprStatement {
-				private Expression current;
-				private Expression children;
+		class ExprRest extends Expr {
+			private Operator operation;
+			private ExprRest rest;
 
-				public Expression(){
-					super();
+			public ExprRest(){
+				super();
+			}
+
+			public boolean parser(BufferedReader input) {
+				boolean successful = false;
+				Token currentTok = (Token)input.read();
+				match(currentTok);
+
+				if(operation == ')' || operation == ';') {	//end of the expression
+					successful == true;
+				} else {
+					rest = new ExprRest();
+					successful = rest.parse(input);
+				}
+				return successful;
+			}
+
+			public boolean match(Token toCompare) {
+				boolean match = false;
+				if(toCompare instanceof Operator) {
+					operation = toCompare.getTokenType();
+				} else {
+					throw new ParseError();
 				}
 			}
+		}
 
 
 
