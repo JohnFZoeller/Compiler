@@ -91,6 +91,8 @@ class Lex implements Iterable<Token> {
 		      	//if returnToken == null, the comment has been read... safe to continue
 	      	}
 
+
+
 	      	if(opMap.operators.containsKey(String.valueOf(currentChar))) {	//cur in opMap?
 	      		tempCol = col;
 
@@ -109,6 +111,10 @@ class Lex implements Iterable<Token> {
 	      		returnToken = createStringIdentifier();			//either stringIdentifier or keyword
 			}
 		}
+
+		//System.out.println(readOk);
+		//System.out.println(currentChar);
+
 		return returnToken;
 	}
 
@@ -134,7 +140,8 @@ class Lex implements Iterable<Token> {
 	*/
 
 	private String checkOperator() throws IOException {
-		readNextChar();											//increments col
+		nextChar = (char)input.read();			//reads the nextChar from the BufferedReader
+		increaseColumn(1);
 		String retVal = "";									//string return value
 		String lookup = Character.toString(currentChar) + 	//string to lookup = currentChar + nextChar
 						Character.toString(nextChar);
@@ -217,6 +224,7 @@ class Lex implements Iterable<Token> {
 							break;
 				case '\n':	resetColumn();
 							increaseRow();
+							col++;
 							//System.out.println("newline");
 							break;
 				default:	break;
@@ -377,11 +385,8 @@ class Lex implements Iterable<Token> {
 		String possibleKeyword = "";
 		int tempCol = col;
 
-		//System.out.print("tempCOL" + tempCol + "   ");
-
-		if(col == 0) {
+		if(col == 0)
 			tempCol++;
-		}
 
 		readNextChar();
 

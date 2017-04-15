@@ -18,7 +18,7 @@ public class Main{
 		while(iter.hasNext()){
 			temp = iter.next();
 			toks.add(temp);
-			System.err.println(temp);
+			System.out.println(temp);
 		}
 
 		//AST recursive descent part
