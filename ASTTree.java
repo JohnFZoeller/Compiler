@@ -11,6 +11,10 @@ class ASTTree{
 		root = new ASTNode(list);
 	}
 
-	
+	public void printTree(){
+		while(root.hasChildren()){
+			break;
+		}
+	}
 
 }

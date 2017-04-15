@@ -18,9 +18,10 @@ public class Main{
 		while(iter.hasNext()){
 			temp = iter.next();
 			toks.add(temp);
-			System.out.println(temp);
+			System.err.println(temp);
 		}
 
 		parser = new ASTTree(toks);
+		parser.printTree();
 	}
 }

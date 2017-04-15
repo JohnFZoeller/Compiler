@@ -7,18 +7,24 @@ class ASTNode{
 	protected ArrayList<Token> tokens;
 	protected String type;
 
-	ASTNode(){
+	public ASTNode(){
 		memAddress = "";
 		row = col = 0;
 		tokens = null;
 		type = "";
 	}
 
-	ASTNode(ArrayList<Token> t){
+	public ASTNode(ArrayList<Token> t){
 		memAddress = "";
 		tokens = t;
 		row = col = 0;
 		type = "";
+	}
+
+	
+
+	public Boolean hasChildren(){
+		return (!tokens.isEmpty());
 	}
 
 	private void setRunningCol(int c){
@@ -31,11 +37,8 @@ class ASTNode{
 		Statement left;
 		Statement right;
 
-
 		Statement() {
 			super();
-			row = 0;		//row = t.getRow();
-			col = 0;		//col = setCol(t.getCol());
 		}
 
 		String printNode() {
