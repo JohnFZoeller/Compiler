@@ -21,8 +21,6 @@ class ASTNode{
 		type = "";
 	}
 
-	
-
 	public Boolean hasChildren(){
 		return (!tokens.isEmpty());
 	}

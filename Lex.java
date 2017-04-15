@@ -31,6 +31,9 @@ class Lex implements Iterable<Token> {
 	private boolean commentBool = true;								//false if commentCheck found nothing
 	private boolean readOk = true;									//input should read() new char
 
+	private boolean leftOver = false;
+	private int lastRow, lastCol;
+
 
 	/************************************************************************************************
 	*																								*
@@ -92,7 +95,6 @@ class Lex implements Iterable<Token> {
 	      	}
 
 
-
 	      	if(opMap.operators.containsKey(String.valueOf(currentChar))) {	//cur in opMap?
 	      		tempCol = col;
 
@@ -112,8 +114,24 @@ class Lex implements Iterable<Token> {
 			}
 		}
 
-		//System.out.println(readOk);
-		//System.out.println(currentChar);
+		//EXTREMELY SPECIAL CASE
+		//Because createDigit() must eat one character ahead, if the last
+		//line in the input stream is "var a = 55;", the semicolon will be 
+		//eaten and lost by accident. Thus, if createDigit() has just been
+		//called (meaning readOk is false), and input.ready() is false,
+		// and the last character of the input stream is a semicolon...
+		//  we must process that semicolon.  
+
+		// I left the text file on that example, 
+		// so Comment out the following if statement to see what I mean
+
+		//this is easily the ugliest and least elegant solution I have 
+		//ever created, if you have a better one, for the love of God, do it. 
+		if(!input.ready() && !readOk && currentChar == ';'){
+			leftOver = true;
+			lastRow = row;
+			lastCol = col;
+		}
 
 		return returnToken;
 	}
@@ -507,6 +525,19 @@ class Lex implements Iterable<Token> {
 		};
 		return iter;									//return the instance
 	}
+
+	public boolean leftOverSemi(){
+		return leftOver;
+	}
+
+	public int getLastRow(){
+		return lastRow;
+	}
+
+	public int getLastCol(){
+		return lastCol;
+	}
+
 
 }
 

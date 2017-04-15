@@ -21,6 +21,12 @@ public class Main{
 			System.err.println(temp);
 		}
 
+		if(lexer.leftOverSemi()){
+			temp = new Op("SEMICOLON", lexer.getLastRow(), lexer.getLastCol());
+			toks.add(temp);
+			System.err.println(temp);
+		}
+
 		parser = new ASTTree(toks);
 		parser.printTree();
 	}
