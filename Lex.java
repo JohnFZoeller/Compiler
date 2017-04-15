@@ -113,10 +113,7 @@ class Lex implements Iterable<Token> {
 	}
 
 
-	private void readNextChar()throws IOException{
-		currentChar = (char)input.read();
-		increaseColumn(1);
-	}
+
 	/**
 	*
 	* <h1>checkOperator()</h1>
@@ -367,6 +364,12 @@ class Lex implements Iterable<Token> {
 		}
 	}
 
+
+	private void readNextChar()throws IOException{
+		currentChar = (char)input.read();
+		increaseColumn(1);
+	}
+
 	//JOHN: 
 	//		ADDED readOK = false if a new stringIdentifier is created
 	private Token createStringIdentifier() throws IOException {
@@ -380,17 +383,13 @@ class Lex implements Iterable<Token> {
 			tempCol++;
 		}
 
-
-		currentChar = (char)input.read();		//read next char from BufferedReader
-		increaseColumn(1);
+		readNextChar();
 
 		//upon exiting while loop currentChar will NOT be equal to a letter
 		while(Character.isLetter(currentChar)) {	//while currentChar is a letter
 			result += currentChar;					//append currentChar to result
-			readNextChar();
-							//increment col
+			readNextChar();							//increment col
 		}
-
 
 		//code below checks the cases for keywords that contain both letters and numbers
 		//ex: int32, float64. Requires checking the two characters in the BufferedReader
@@ -401,9 +400,7 @@ class Lex implements Iterable<Token> {
 			possibleKeyword = result;				//sets possibleKeyword string to our result string						
 			nextChar = (char)input.read();			//reads the nextChar from the BufferedReader
 			increaseColumn(1);								//increments col
-
-			// ASSUMPTIONS:
-			// we know that if nextChar is filled, then currentChar was a digit
+			//result += currentChar;
 
 			//KEYWORD CASE: both currentChar and nextChar are digits
 			//if true we must append currentChar and nextChar to possibleKeyword and check
@@ -411,7 +408,13 @@ class Lex implements Iterable<Token> {
 			if(Character.isDigit(nextChar)) {
 				possibleKeyword += currentChar;		//appends currentChar
 				possibleKeyword += nextChar;		//appends nextChar
-				//col++;
+			}
+			else if(!Character.isDigit(nextChar)){	//covers fib1 case
+				result += currentChar;
+				currentChar = nextChar;
+				nextChar = ' ';
+				readOk = false;
+				return new StringIdentifier(result, row, tempCol);
 			}
 
 			//checks if the resulting string (possibleKeyword) matches a key in the KeywordMap
