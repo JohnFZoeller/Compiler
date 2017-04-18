@@ -11,25 +11,22 @@ public class Main{
 	public static void run(String in){
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
+		SyntaxParser par = new SyntaxParser();
 		Token temp;
-		ArrayList<Token> toks = new ArrayList<Token>();
-		ASTTree parser;
 
-		while(iter.hasNext()){
+
+		while(iter.hasNext() && par.canParse()){
 			temp = iter.next();
-			toks.add(temp);
-			System.err.println(temp);
+			System.out.println(temp.getTokenType());
 
+
+			//System.err.println(temp);
 		}
 
-		if(lexer.leftOverSemi()){
-			temp = new Op("SEMICOLON", lexer.getLastRow(), lexer.getLastCol());
-			toks.add(temp);
-			System.err.println(temp);
-		}
+		// if(lexer.leftOverSemi()){
+		// 	temp = new Op("SEMICOLON", lexer.getLastRow(), lexer.getLastCol());
+		// 	System.err.println(temp);
+		// }
 
-
-		parser = new ASTTree(toks);
-		parser.printTree();
 	}
 }

@@ -4,6 +4,24 @@ class SyntaxParser {
 	private Token currentTok;
 	private ASTNode toInsert;
 	private BufferedReader tokenReader;
+	private Boolean parseOk;
+
+	public SyntaxParser(){
+		currentTok = null;
+		toInsert = null;
+		tokenReader = null;
+		parseOk = true;
+	}
+
+	//aka : getParseOk
+	public Boolean canParse(){
+		return parseOk;
+	}
+
+	//aka : setParseOk
+	public void setParse(Boolean p){
+		parseOk = p;
+	}
 
 	/*
 		Main match function for the program. Logic is based off of the fact that the only

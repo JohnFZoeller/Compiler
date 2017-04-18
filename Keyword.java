@@ -1,8 +1,16 @@
 //package tokens;
 
 public class Keyword extends Token{
-	public Keyword(String input, String output, int r, int c){
-		super(output, r, c);
+	String input;
+
+	public Keyword(String in, String out, int r, int c){
+		super(out, r, c);
+		this.input = in;
+	}
+
+	@Override
+	public String getTokenType(){
+		return input;
 	}
 
 	@Override

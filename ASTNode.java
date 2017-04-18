@@ -219,13 +219,13 @@ class ASTNode{
 		// 		if(toCompare instanceof StringIdentifier) { 
 		// 			value = toCompare;
 		// 		} else {
-		// 			throw new ParseError();
+		// 			//throw new ParseError();
 		// 		}
 		// 	}
 		// }
 
 		// class ExprRest extends Expr {
-		// 	private Operator operation;
+		// 	private Op operation;
 		// 	private ExprRest rest;
 
 		// 	public ExprRest(){
@@ -248,10 +248,10 @@ class ASTNode{
 
 		// 	public boolean match(Token toCompare) {
 		// 		boolean match = false;
-		// 		if(toCompare instanceof Operator) {
+		// 		if(toCompare instanceof Op) {
 		// 			operation = toCompare.getTokenType();
 		// 		} else {
-		// 			throw new ParseError();
+		// 			//throw new ParseError();
 		// 		}
 		// 	}
 		// }
@@ -277,44 +277,26 @@ class ASTNode{
 		}
 	}
 
-	class Parameter extends ASTNode{
-		StringIdentifier name;
-		//collapse
+	class Descriptor extends ASTNode{
+		NonArrayTypeDescrip current;
+		Dimension arrayDimension;
 	}
 
-	//class TypeCast extends 
+	class NonArrayTypeDescrip {
 
-			// class TypeDescriptor extends TypeDecl {
+	}
 
-			// }
+		class RecordDescrip extends NonArrayTypeDescrip {
+			Keyword record;
+			Keyword end;
 
-			// 	class NonArrayTypeDescrip extends TypeDescriptor {
 
-			// 	}
+		}
 
-			// 		class RecordDescrip extends NonArrayTypeDescrip {
+		class Identifier extends NonArrayTypeDescrip {
 
-			// 		}
+		}
 
-			// 		class Identifier extends NonArrayTypeDescrip {
+		class BasicType extends NonArrayTypeDescrip {
 
-			// 		}
-
-			// 		class BasicType extends NonArrayTypeDescrip {
-
-			// 		}
-
-			// 		// LEAF NODE
-			// 		class BasicByte extends BasicType {
-
-			// 		}
-
-			// 		// LEAF NODE
-			// 		class BasicInt extends BasicType {
-
-			// 		}
-
-			// 		// LEAF NODE
-			// 		class BasicFloat extends BasicType {
-
-			// 		}
+		}
