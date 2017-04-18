@@ -75,6 +75,10 @@ class ASTNode{
 				super();
 				name = n;
 			}
+
+			Declaration(){
+				super();
+			}
 		}
 
 			class TypeDecl extends Declaration {
@@ -192,64 +196,65 @@ class ASTNode{
 						EXPRESSION-STATEMENT
 		*****************************************************/
 
-		class Expr extends Statement {
-			private Token value;			//string literal
-			private ExprRest rest;			//rest of the expression
+		// class Expr extends Statement {
+		// 	private Token value;			//string literal
+		// 	private ExprRest rest;			//rest of the expression
 
-			public Expr(){
-				super();
-			}
+		// 	public Expr(){
+		// 		super();
+		// 	}
 
-			public boolean parser(BufferedReader input) {
-				boolean successful = false;
-				Token currentTok = (Token)input.read();
-				match(currentTok);
-				rest = new ExprRest();
-				successful = rest.parse(input);
-				return successful;
-			}
+		// 	public boolean parser(BufferedReader input) {
+		// 		boolean successful = false;
+		// 		Token currentTok = (Token)input.read();
+				
+		// 		match(currentTok);
+		// 		rest = new ExprRest();
+		// 		successful = rest.parse(input);
+		// 		return successful;
+		// 	}
 
-			public boolean match(Token toCompare) {
-				boolean match = false;
-				if(toCompare instanceof StringIdentifier) { 
-					value = toCompare;
-				} else {
-					throw new ParseError();
-				}
-			}
-		}
+		// 	public boolean match(Token toCompare) {
+		// 		boolean match = false;
+		// 		if(toCompare instanceof StringIdentifier) { 
+		// 			value = toCompare;
+		// 		} else {
+		// 			throw new ParseError();
+		// 		}
+		// 	}
+		// }
 
-		class ExprRest extends Expr {
-			private Operator operation;
-			private ExprRest rest;
+		// class ExprRest extends Expr {
+		// 	private Operator operation;
+		// 	private ExprRest rest;
 
-			public ExprRest(){
-				super();
-			}
+		// 	public ExprRest(){
+		// 		super();
+		// 	}
 
-			public boolean parser(BufferedReader input) {
-				boolean successful = false;
-				Token currentTok = (Token)input.read();
-				match(currentTok);
+		// 	public boolean parser(BufferedReader input) {
+		// 		boolean successful = false;
+		// 		Token currentTok = (Token)input.read();
+		// 		match(currentTok);
 
-				if(operation == ')' || operation == ';') {	//end of the expression
-					successful == true;
-				} else {
-					rest = new ExprRest();
-					successful = rest.parse(input);
-				}
-				return successful;
-			}
+		// 		if(operation == ')' || operation == ';') {	//end of the expression
+		// 			successful = true;
+		// 		} else {
+		// 			rest = new ExprRest();
+		// 			successful = rest.parse(input);
+		// 		}
+		// 		return successful;
+		// 	}
 
-			public boolean match(Token toCompare) {
-				boolean match = false;
-				if(toCompare instanceof Operator) {
-					operation = toCompare.getTokenType();
-				} else {
-					throw new ParseError();
-				}
-			}
-		}
+		// 	public boolean match(Token toCompare) {
+		// 		boolean match = false;
+		// 		if(toCompare instanceof Operator) {
+		// 			operation = toCompare.getTokenType();
+		// 		} else {
+		// 			throw new ParseError();
+		// 		}
+		// 	}
+		// }
 
 
 

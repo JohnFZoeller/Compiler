@@ -12,6 +12,10 @@ public class Token{
 		return col;
 	}
 
+	public String getTokenType(){
+		return input;
+	}
+
 	public Token(String i, int r, int c){
 	 	this.input = i;
 	 	this.row = r;

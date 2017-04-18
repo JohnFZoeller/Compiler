@@ -19,6 +19,7 @@ public class Main{
 			temp = iter.next();
 			toks.add(temp);
 			System.err.println(temp);
+
 		}
 
 		if(lexer.leftOverSemi()){
@@ -26,6 +27,7 @@ public class Main{
 			toks.add(temp);
 			System.err.println(temp);
 		}
+
 
 		parser = new ASTTree(toks);
 		parser.printTree();

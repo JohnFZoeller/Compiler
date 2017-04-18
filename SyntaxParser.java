@@ -1,8 +1,9 @@
+import java.io.*;
+
 class SyntaxParser {
 	private Token currentTok;
 	private ASTNode toInsert;
 	private BufferedReader tokenReader;
-	private ASTTree syntaxTree;
 
 	/*
 		Main match function for the program. Logic is based off of the fact that the only
@@ -13,47 +14,48 @@ class SyntaxParser {
 
 	public void match() {
 		switch(currentTok.getTokenType()) {
-			case "for":		toInsert = new ForNode();
+			case "for":		toInsert = new For();
 							break;
-			case "while":	toInsert = new WhileNode();
+			case "while":	toInsert = new While();
 							break;
-			case "if":		toInsert = new IfNode();
+			case "if":		toInsert = new If();
 							break;
-			case "print":	toInsert = new PrintNode();
+			case "print":	toInsert = new Print();
 							break;
-			case "return":	toInsert = new ReturnNode();
+			case "return":	toInsert = new Return();
 							break;
-			case "type":	toInsert = new DeclNode();
+			case "type":	toInsert = new Declaration();
 							break;
-			case "exit":	toInsert = new ExitNode();
+			case "exit":	toInsert = new Exit();
 							break;
-			case "func":	toInsert = new DeclNode();
+			case "func":	toInsert = new Declaration();
 							break;
-			case "var":		toInsert = new DeclNode();
+			case "var":		toInsert = new Declaration();
 							break;
-			default:		toInsert = new ExprNode();
+			default:		//toInsert = new Expr();
 							break;
 		}
 	}
 
-	/*
-		Function is called after match(). The BufferedReader is passed to toInsert via the function
-		call parse(tokenReader). This function call is when toInsert will use the tokenReader to
-		parse tokens in order to populate it's data members. toInsert.parse() is successful then
-		it means that toInsert should be inserted into the Tree, otherwise it will be set to null
-		as the tokens were not good data.
+	
+		// Function is called after match(). The BufferedReader is passed to toInsert via the function
+		// call parse(tokenReader). This function call is when toInsert will use the tokenReader to
+		// parse tokens in order to populate it's data members. toInsert.parse() is successful then
+		// it means that toInsert should be inserted into the Tree, otherwise it will be set to null
+		// as the tokens were not good data.
 
-		Function sets toInsert to null so that it can again be used to create a new Node for the
-		next statement read from the BufferedReader.
-	*/
+		// Function sets toInsert to null so that it can again be used to create a new Node for the
+		// next statement read from the BufferedReader.
+	
 
 	public boolean populate() {
-		boolean success = toInsert.parse(tokenReader)
-		return success;
+		//boolean success = toInsert.parse(tokenReader);
+		//return success;
+		return true;
 	}
 
 	public void readNextTok() {
-		currentTok = (Token)tokenReader.read();
+		//currentTok = (Token)tokenReader.read();
 	}
 
 	/*
@@ -61,7 +63,7 @@ class SyntaxParser {
 		data from the BufferedReader.
 	*/
 
-	public void parse() {
+	public void parse() throws IOException{
 		readNextTok();						//reads next Token into currentTok
 		match();							//matches currentTok to a statement type, toInsert is
 											//set to new Node of the appropriate type
@@ -69,7 +71,7 @@ class SyntaxParser {
 		success = populate();				//data members. Sets success to populate()'s return value
 
 		if(success) {						//if toInsert was able to successfully populate it's data members
-			syntaxTree.insert(toInsert);	//insert toInsert into our AST
+			//syntaxTree.insert(toInsert);	//insert toInsert into our AST
 		}
 
 		if(tokenReader.ready()) {			//if there are still Tokens to read from tokenReader

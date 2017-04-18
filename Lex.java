@@ -9,7 +9,7 @@
 import java.util.*;
 import java.io.*;
 
-class Lex implements Iterable<Token> {
+class Lex implements Iterable<Token> { 
 
 	/************************************************************************************************
 	*																								*

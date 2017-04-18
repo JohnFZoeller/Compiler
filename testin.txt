@@ -1,1 +1,8 @@
 var x = 4;
+for (x = 0; x < 10; x = x + 1) {
+  print x;
+  print '\t';
+  var result = fib1(x);
+  print result;
+  print '\n';
+}
