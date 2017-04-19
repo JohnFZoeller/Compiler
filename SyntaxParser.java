@@ -1,26 +1,18 @@
 import java.io.*;
+import java.util.*;
 
 class SyntaxParser {
 	private Token currentTok;
 	private ASTNode toInsert;
-	private BufferedReader tokenReader;
 	private Boolean parseOk;
+	private Iterator<Token> i;
 
-	public SyntaxParser(){
+	public SyntaxParser(Lex lex){
 		currentTok = null;
 		toInsert = null;
-		tokenReader = null;
-		parseOk = true;
-	}
+		parseOk = false;
 
-	//aka : getParseOk
-	public Boolean canParse(){
-		return parseOk;
-	}
-
-	//aka : setParseOk
-	public void setParse(Boolean p){
-		parseOk = p;
+		i = lex.iterator();
 	}
 
 	/*
@@ -31,6 +23,7 @@ class SyntaxParser {
 	*/
 
 	public void match() {
+
 		switch(currentTok.getTokenType()) {
 			case "for":		toInsert = new For();
 							break;
@@ -48,10 +41,11 @@ class SyntaxParser {
 							break;
 			case "func":	toInsert = new Declaration();
 							break;
-			case "var":		toInsert = new Declaration();
+			case "var":		toInsert = new VarDecl();
 							break;
-			default:		//toInsert = new Expr();
+			case "static":	toInsert = new VarDecl();
 							break;
+			default:		break;
 		}
 	}
 
@@ -73,7 +67,20 @@ class SyntaxParser {
 	}
 
 	public void readNextTok() {
-		//currentTok = (Token)tokenReader.read();
+		currentTok = i.next();
+
+		if(currentTok != null){
+			System.err.println(currentTok.getTokenType());
+		}
+
+		//parseOk = (i.hasNext()) ? true : false;
+	}
+
+	public Token getNextToken(){
+		if(i.hasNext())
+			readNextTok();
+
+		return currentTok;
 	}
 
 	/*
@@ -81,7 +88,7 @@ class SyntaxParser {
 		data from the BufferedReader.
 	*/
 
-	public void parse() throws IOException{
+	public void parse(){
 		readNextTok();						//reads next Token into currentTok
 		match();							//matches currentTok to a statement type, toInsert is
 											//set to new Node of the appropriate type
@@ -92,9 +99,25 @@ class SyntaxParser {
 			//syntaxTree.insert(toInsert);	//insert toInsert into our AST
 		}
 
-		if(tokenReader.ready()) {			//if there are still Tokens to read from tokenReader
+		if(parseOk) {						//if there are still Tokens to read from tokenReader
 			parse();						//recursively call parse to continue populating the AST
 		}
 	}
+
+	//aka : getParseOk
+	public Boolean canParse(){
+		return parseOk;
+		//collapse
+	}
+
+	//aka : setParseOk
+	public void setParse(Boolean p){
+		parseOk = p;
+		//collapse
+	}
+
+
+
+
 
 }

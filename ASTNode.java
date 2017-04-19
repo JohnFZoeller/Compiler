@@ -1,34 +1,34 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 class ASTNode{
-	protected String memAddress;
-	protected int row, col;
-	protected ArrayList<Token> tokens;
-	protected String type;
+		protected String memAddress;
+		protected int row, col;
+		protected ArrayList<Token> tokens;
+		protected String type;
 
-	public ASTNode(){
-		memAddress = "";
-		row = col = 0;
-		tokens = null;
-		type = "";
-	}
+		public ASTNode(){
+			memAddress = "";
+			row = col = 0;
+			tokens = null;
+			type = "";
+		}
 
-	public ASTNode(ArrayList<Token> t){
-		memAddress = "";
-		tokens = t;
-		row = col = 0;
-		type = "";
-	}
+		public ASTNode(ArrayList<Token> t){
+			memAddress = "";
+			tokens = t;
+			row = col = 0;
+			type = "";
+		}
 
-	public Boolean hasChildren(){
-		return (!tokens.isEmpty());
-	}
+		public Boolean hasChildren(){
+			return (!tokens.isEmpty());
+		}
 
-	private void setRunningCol(int c){
-		col += c;
+		private void setRunningCol(int c){
+			col += c;
+		}
 	}
-}
 
 	class Statement extends ASTNode{
 		protected int level = 0;
@@ -51,16 +51,17 @@ class ASTNode{
 			return retVal;
 		}
 	}
+	
 
 		/****************************************************
 						BLOCK-STATEMENT
 		*****************************************************/
 
 		class BlockStatement extends Statement{
-			private ArrayList<Statement> statements;
+			//private ArrayList<Statement> statements;
 
 			public BlockStatement(){
-				statements = new ArrayList<Statement>();
+				//statements = new ArrayList<Statement>();
 			}
 		}
 
@@ -79,6 +80,10 @@ class ASTNode{
 			Declaration(){
 				super();
 			}
+
+			public void setName(StringIdentifier n){
+				name = n;
+			}
 		}
 
 			class TypeDecl extends Declaration {
@@ -91,19 +96,34 @@ class ASTNode{
 
 			class FuncDecl extends Declaration {
 				//name, memAddress inherited from Declaration
-				private Parameters params;
+				//private Parameters params;
 				private TypeDescriptor returnType;
 				private BlockStatement body;
 
 				public FuncDecl(StringIdentifier f){
 					super(f);
-
 				}
 			}
 
 			class VarDecl extends Declaration {
+			//variable-declaration ::=
+  				// staticopt constopt var identifier type-descriptor ;
+  				// staticopt constopt var identifier = expression ;
+
 				public VarDecl(StringIdentifier v){
 					super(v);
+				}
+
+				public VarDecl(){
+					super();
+					parser();
+
+				}
+
+				public void parser(){
+					System.out.println("here");
+					Token currentToken;
+					return;
 				}
 			}
 
@@ -255,10 +275,7 @@ class ASTNode{
 		// 		}
 		// 	}
 		// }
-
-
-
-
+	
 
 	class Dimension extends ASTNode {
 		private ArrayList<Expression> exprs;
@@ -282,21 +299,27 @@ class ASTNode{
 		Dimension arrayDimension;
 	}
 
-	class NonArrayTypeDescrip {
-
-	}
-
-		class RecordDescrip extends NonArrayTypeDescrip {
-			Keyword record;
-			Keyword end;
+	
 
 
-		}
 
-		class Identifier extends NonArrayTypeDescrip {
 
-		}
 
-		class BasicType extends NonArrayTypeDescrip {
+	// class NonArrayTypeDescrip {
 
-		}
+	// }
+
+	// 	class RecordDescrip extends NonArrayTypeDescrip {
+	// 		Keyword record;
+	// 		Keyword end;
+
+
+	// 	}
+
+	// 	class Identifier extends NonArrayTypeDescrip {
+
+	// 	}
+
+	// 	class BasicType extends NonArrayTypeDescrip {
+
+	// 	}
