@@ -1,1 +1,2 @@
-var x = 4;
+var x int32;
+

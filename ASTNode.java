@@ -4,25 +4,21 @@ import java.util.*;
 class ASTNode{
 		protected String memAddress;
 		protected int row, col;
-		protected ArrayList<Token> tokens;
 		protected String type;
+		protected Iterator<Token> it;
 
 		public ASTNode(){
 			memAddress = "";
 			row = col = 0;
-			tokens = null;
 			type = "";
+			it = null;
 		}
 
-		public ASTNode(ArrayList<Token> t){
+		public ASTNode(Iterator<Token> i){
 			memAddress = "";
-			tokens = t;
 			row = col = 0;
 			type = "";
-		}
-
-		public Boolean hasChildren(){
-			return (!tokens.isEmpty());
+			it = i;
 		}
 
 		private void setRunningCol(int c){
@@ -39,6 +35,10 @@ class ASTNode{
 			super();
 		}
 
+		Statement(Iterator<Token> i){
+			super(i);
+		}
+
 		String printNode() {
 			String retVal = "";
 			String indent = "+--";
@@ -52,7 +52,6 @@ class ASTNode{
 		}
 	}
 	
-
 		/****************************************************
 						BLOCK-STATEMENT
 		*****************************************************/
@@ -75,6 +74,10 @@ class ASTNode{
 			Declaration(StringIdentifier n) {
 				super();
 				name = n;
+			}
+
+			Declaration(Iterator<Token> i){
+				super(i);
 			}
 
 			Declaration(){
@@ -115,25 +118,35 @@ class ASTNode{
 				}
 
 				public VarDecl(Iterator<Token> i){
-					super();
-					parser(i);
-
+					super(i);
+					parser();
 				}
 
 				public VarDecl(){
 					super();
 				}
 
-				public void parser(Iterator<Token> i){
-					System.out.println("here");
+				public void parser(){
+					Token currentToken = it.next();
 
-					Token currentToken = i.next();
-
-					System.out.println(currentToken.getTokenType());
+					match(currentToken);
+					//parser();
 
 					
 					return;
 				}
+
+				public void match(Token tok){
+					if(tok instanceof StringIdentifier){
+						System.out.println(tok.getTokenType());
+					}
+					//else if(tok instanceof basicType)
+					else
+						throw new Error("Wrong input");
+
+
+				}
+
 			}
 
 			class FieldDecl extends Declaration {

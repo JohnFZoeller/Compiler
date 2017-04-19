@@ -12,8 +12,11 @@ public class Main{
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		SyntaxParser par = new SyntaxParser(lexer);
-
+		Token temp;
+		
 		par.parse();
+
+
 
 	}
 
@@ -23,13 +26,13 @@ public class Main{
 /*------------------------------------------------------------------*/
 /*-------Please dont delete below, still need to debug Lexer--------*/
 
+		// while(iter.hasNext()){
+		// 	temp = iter.next();
 
-// while(iter.hasNext()){
-// 	temp = iter.next();
+		// 	if(temp != null)
+		// 		System.out.println(temp.getTokenType());
+		// }
 
-// 	if(temp != null)
-// 		System.out.println(temp.getTokenType());
-// }
 
 // if(lexer.leftOverSemi()){
 // 	temp = new Op("SEMICOLON", lexer.getLastRow(), lexer.getLastCol());
