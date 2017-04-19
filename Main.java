@@ -12,7 +12,7 @@ public class Main{
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		SyntaxParser par = new SyntaxParser(lexer);
-		Token temp;
+		//Token temp;
 		
 		par.parse();
 

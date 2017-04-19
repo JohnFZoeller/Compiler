@@ -127,6 +127,8 @@ class ASTNode{
 				}
 
 				public void parser(){
+					//need to account for possible start with static or const
+					//simplest case first
 					Token currentToken = it.next();
 
 					match(currentToken);
