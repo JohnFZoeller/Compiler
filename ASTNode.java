@@ -114,15 +114,24 @@ class ASTNode{
 					super(v);
 				}
 
-				public VarDecl(){
+				public VarDecl(Iterator<Token> i){
 					super();
-					parser();
+					parser(i);
 
 				}
 
-				public void parser(){
+				public VarDecl(){
+					super();
+				}
+
+				public void parser(Iterator<Token> i){
 					System.out.println("here");
-					Token currentToken;
+
+					Token currentToken = i.next();
+
+					System.out.println(currentToken.getTokenType());
+
+					
 					return;
 				}
 			}

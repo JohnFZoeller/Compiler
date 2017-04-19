@@ -41,7 +41,7 @@ class SyntaxParser {
 							break;
 			case "func":	toInsert = new Declaration();
 							break;
-			case "var":		toInsert = new VarDecl();
+			case "var":		toInsert = new VarDecl(i);
 							break;
 			case "static":	toInsert = new VarDecl();
 							break;
