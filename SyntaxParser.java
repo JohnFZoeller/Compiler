@@ -61,9 +61,8 @@ class SyntaxParser {
 	
 
 	public boolean populate() {
-		//boolean success = toInsert.parse(tokenReader);
-		//return success;
-		return true;
+		//boolean success = toInsert.parser(); return success;
+		return toInsert.parser();
 	}
 
 	public void readNextTok() {
@@ -95,7 +94,7 @@ class SyntaxParser {
 		boolean success = false;			//passes BufferedReader to toInsert to populate it's
 		success = populate();				//data members. Sets success to populate()'s return value
 
-		if(success) {						//if toInsert was able to successfully populate it's data members
+		if(success){						//if toInsert was able to successfully populate it's data members
 			//syntaxTree.insert(toInsert);	//insert toInsert into our AST
 		}
 

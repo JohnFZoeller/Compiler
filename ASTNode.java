@@ -21,6 +21,10 @@ class ASTNode{
 			it = i;
 		}
 
+		public Boolean parser(){
+			return true;
+		}
+
 		private void setRunningCol(int c){
 			col += c;
 		}
@@ -37,6 +41,11 @@ class ASTNode{
 
 		Statement(Iterator<Token> i){
 			super(i);
+		}
+
+		@Override
+		public Boolean parser(){
+			return true;
 		}
 
 		String printNode() {
@@ -84,6 +93,11 @@ class ASTNode{
 				super();
 			}
 
+			@Override
+			public Boolean parser(){
+				return true;
+			}
+
 			public void setName(StringIdentifier n){
 				name = n;
 			}
@@ -119,23 +133,23 @@ class ASTNode{
 
 				public VarDecl(Iterator<Token> i){
 					super(i);
-					parser();
 				}
 
 				public VarDecl(){
 					super();
 				}
 
-				public void parser(){
-					//need to account for possible start with static or const
-					//simplest case first
+				@Override
+				public Boolean parser(){
+					// need to account for possible start with static or const
+					// simplest case first tho
 					Token currentToken = it.next();
 
 					match(currentToken);
-					//parser();
+					// parser();
 
 					
-					return;
+					return true;
 				}
 
 				public void match(Token tok){
@@ -300,7 +314,6 @@ class ASTNode{
 		// 	}
 		// }
 	
-
 	class Dimension extends ASTNode {
 		private ArrayList<Expression> exprs;
 
