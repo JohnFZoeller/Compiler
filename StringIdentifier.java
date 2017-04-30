@@ -1,8 +1,11 @@
 //package tokens;
 
 public class StringIdentifier extends Token{
+	String varName;
+
 	public StringIdentifier(String s, int r, int c){
-		super(s, r, c);
+		super("StringIdentifier", r, c);
+		varName = s;
 	}
 
 	@Override
