@@ -273,9 +273,65 @@ class SyntaxParser {
 		}
 	}
 
+	public void params(){
+		//ORIGINAL LEFT RECURSION : parameters ::= ( parameters , )* parameter
+		//THIS IS SIMPIFIED FORM, IN NON-SIMPLIFIED FORM THE LEFT RECURSION IS
+		//PARAMETERS -> PARAMETERS , PARAM || PARAM
+
+		//TRANSLATED TO RIGHT RECURSION
+
+		//PARAMETERS -> PARAM Z
+		//         Z -> , PARAM Z || empty
+
+		//example string (int x, int y, char z)
+		//match(param); z(); 
+		//public void z(){ if(currentTok != ','){ return; } match(comma); match(param); z(); }
+		parameter();
+		z();
+	}
+
+	public void z(){
+		if(!currentTok.getTokenType().equals("COMMA")) return;
+
+		match("COMMA");
+		parameter();
+		z();
+	}
+
+	public void dimWilds(){
+		wildCard();
+		x();
+	}
+
+	public void wildCard(){
+		//collapse
+		match("ASTERISK");
+	}
+
+	public void x(){
+		if(!currentTok.getTokenType().equals("COMMA")) return;
+
+		match("COMMA");
+		wildCard();
+		x();
+	}
+
 	public void fieldDeclaration(){
 		match("StringIdentifier");
 		typeDescriptor();
+	}
+
+	public void fieldDeclarations(){
+		fieldDeclaration();
+		y();
+	}
+
+	public void y(){
+		if(currentTok.getTokenType().equals("end")) return;
+
+		match("COMMA");
+		fieldDeclaration();
+		y();
 	}
 
 	public void dimensh(){
@@ -525,34 +581,6 @@ class SyntaxParser {
 	private void and(){}
 
 	private void or(){}
-
-
-	/***********************RECURSIONS**************************/
-
-	public void fieldDeclarations(){}
-
-	public void params(){
-		//ORIGINAL LEFT RECURSION : parameters ::= ( parameters , )* parameter
-		//THIS IS SIMPIFIED FORM, IN NON-SIMPLIFIED FORM THE LEFT RECURSION IS
-		//PARAMETERS -> PARAMETERS , PARAM || PARAM
-
-		//TRANSLATED TO RIGHT RECURSION
-
-		//PARAMETERS -> PARAM Z
-		//         Z -> , PARAM Z || empty
-
-		//example string (int x, int y, char z)
-		//match(param); z(); 
-		//public void z(){ if(currentTok != ','){ return; } match(comma); match(param); z(); }
-
-
-
-
-		//collapse
-		readNextTok();
-	}
-
-	public void dimWilds(){}
 
 	/***********************UTILITIES************************/
 

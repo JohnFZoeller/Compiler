@@ -1,4 +1,4 @@
-function john (=) byte{
+function john (v byte, z int32, johnnnnn float64) byte{
 	var x byte;
 }
 var y int32;
