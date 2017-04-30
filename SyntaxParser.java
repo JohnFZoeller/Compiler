@@ -101,11 +101,11 @@ class SyntaxParser {
 		match("for");
 
 		match("OPEN_PARENTHESIS");
-		expresh();
+		expression();
 		match("SEMICOLON");
-		expresh();
+		expression();
 		match("SEMICOLON");
-		expresh();
+		expression();
 		match("CLOSE_PARENTHESIS");
 
 		block();
@@ -115,7 +115,7 @@ class SyntaxParser {
 		match("while");
 
 		match("OPEN_PARENTHESIS");
-		expresh();
+		expression();
 		match("CLOSE_PARENTHESIS");
 
 		block();
@@ -125,7 +125,7 @@ class SyntaxParser {
 		match("if");
 
 		match("OPEN_PARENTHESIS");
-		expresh();
+		expression();
 		match("CLOSE_PARENTHESIS");
 
 		block();
@@ -139,7 +139,7 @@ class SyntaxParser {
 	public void print(){
 		match("print");
 
-		expresh();
+		expression();
 
 		match("SEMICOLON");
 	}		
@@ -148,7 +148,7 @@ class SyntaxParser {
 		match("return");
 
 		if(isExpresh())
-			expresh();
+			expression();
 
 		match("SEMICOLON");
 	}	
@@ -166,7 +166,7 @@ class SyntaxParser {
 		match("exit");								//match exit
 
 		if(isExpresh())								//optional expression next?
-			expresh();								//parse it
+			expression();								//parse it
 
 		match("SEMICOLON");
 	}
@@ -201,7 +201,7 @@ class SyntaxParser {
 		//assignment case ELSE declaration case
 		if(currentTok.getTokenType().equals("ASSIGNMENT_OPERATOR")){
 			match("ASSIGNMENT_OPERATOR");
-			expresh();
+			expression();
 		} 
 		else 
 			typeDescriptor();
@@ -260,7 +260,7 @@ class SyntaxParser {
 
 		if(currentTok.getTokenType().equals("ASSIGNMENT_OPERATOR")){
 			match("ASSIGNMENT_OPERATOR");
-			expresh();
+			expression();
 		}
 		else{
 			naTypeDescriptor();
@@ -280,7 +280,7 @@ class SyntaxParser {
 
 	public void dimensh(){
 		match("OPEN_BRACKET");
-		expreshs();
+		expressions();
 		match("CLOSE_BRACKET");
 	}
 	/*********************TESTERS**************************/
@@ -314,23 +314,24 @@ class SyntaxParser {
 
 	public boolean isExpresh(){ return true; }
 
-	public void expresh(){ match("StringIdentifier"); }
-
-	public void expreshs(){}
-
 	/**********************EXPRESSIONS*************************/
 
 	/*
 	Expressions can either go to a '(' or 
 	*/
 	public void expressions() {
+		//temporary
+		return;
+		//temporary
+
 		//indicates that we are dealing with a list of expressions
 		//each expression should be separated by a comma
-		if(currentTok.getTokenType().equals("OPEN_PARENTHESIS")){
-			expression();
-		} else {
-			expression();
-		}
+
+		// if(currentTok.getTokenType().equals("OPEN_PARENTHESIS")){
+		// 	expression();
+		// } else {
+		// 	expression();
+		// }
 	}
 
 	public void readNextToken() {
@@ -342,50 +343,54 @@ class SyntaxParser {
 	}
 
 	public void expression() {
-		indentUp();
-		switch(currentTok.getTokenType()) {
-			case ("("):					//sub-expression
-				expression();
-				break;
-			case ("INT_IDENTIFIER"):	//integer, ready for operator
-				numExpr();
-				break;
-			case ("FLOAT_IDENTIFIER"):	//float, ready for operator
-				numExpr();
-				break;
-			case ("BYTE_IDENTIFIER"):	//byte, math expressions not allowed
-				byteExpr();
-				break;
-			//special case, could be a function call or variable
-			case ("IDENTIFIER"):
-				funcCall();
-				break;
-			case ("KEYWORD_BYTE"):		//byte keyword, must be typecast
-				typeCast();
-				break;
-			case ("KEYWORD_INT32"):		//int32 keyword, must be typecast
-				typeCast();
-				break;
-			case ("KEYWORD_FLOAT64"):	//float64 keyword, must be typecast
-				typeCast();
-				break;
-			case ("VAR_IDENTIFIER"):		//expression references declared variable
-				varExpr();
-				break;
-			case ("["):					//must be subscript
-				expressions();
-				break;
-			case ("STRING_IDENTIFIER"):	//lhs is string
-				string();
-				break;
-			case (")"):
-				return;
-			case ("]"):
-				return;
-			default:
-				exprRest();
-				break;
-		}
+		//temporary
+		return;
+		//temporary
+
+		// indentUp();
+		// switch(currentTok.getTokenType()) {
+		// 	case ("("):					//sub-expression
+		// 		expression();
+		// 		break;
+		// 	case ("INT_IDENTIFIER"):	//integer, ready for operator
+		// 		numExpr();
+		// 		break;
+		// 	case ("FLOAT_IDENTIFIER"):	//float, ready for operator
+		// 		numExpr();
+		// 		break;
+		// 	case ("BYTE_IDENTIFIER"):	//byte, math expressions not allowed
+		// 		byteExpr();
+		// 		break;
+		// 	//special case, could be a function call or variable
+		// 	case ("IDENTIFIER"):
+		// 		funcCall();
+		// 		break;
+		// 	case ("KEYWORD_BYTE"):		//byte keyword, must be typecast
+		// 		typeCast();
+		// 		break;
+		// 	case ("KEYWORD_INT32"):		//int32 keyword, must be typecast
+		// 		typeCast();
+		// 		break;
+		// 	case ("KEYWORD_FLOAT64"):	//float64 keyword, must be typecast
+		// 		typeCast();
+		// 		break;
+		// 	case ("VAR_IDENTIFIER"):		//expression references declared variable
+		// 		varExpr();
+		// 		break;
+		// 	case ("["):					//must be subscript
+		// 		expressions();
+		// 		break;
+		// 	case ("STRING_IDENTIFIER"):	//lhs is string
+		// 		string();
+		// 		break;
+		// 	case (")"):
+		// 		return;
+		// 	case ("]"):
+		// 		return;
+		// 	default:
+		// 		exprRest();
+		// 		break;
+		// }
 	}
 
 	/*
@@ -527,6 +532,22 @@ class SyntaxParser {
 	public void fieldDeclarations(){}
 
 	public void params(){
+		//ORIGINAL LEFT RECURSION : parameters ::= ( parameters , )* parameter
+		//THIS IS SIMPIFIED FORM, IN NON-SIMPLIFIED FORM THE LEFT RECURSION IS
+		//PARAMETERS -> PARAMETERS , PARAM || PARAM
+
+		//TRANSLATED TO RIGHT RECURSION
+
+		//PARAMETERS -> PARAM Z
+		//         Z -> , PARAM Z || empty
+
+		//example string (int x, int y, char z)
+		//match(param); z(); 
+		//public void z(){ if(currentTok != ','){ return; } match(comma); match(param); z(); }
+
+
+
+
 		//collapse
 		readNextTok();
 	}
