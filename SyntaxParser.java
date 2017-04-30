@@ -18,7 +18,7 @@ class SyntaxParser {
 		Function matches currentTok's token type
 	*/
 
-	public void match() {
+	public void match(){
 		switch(currentTok.getTokenType()) {
 			case "for":		forr();
 							break;
@@ -50,13 +50,14 @@ class SyntaxParser {
 	/******************MAIN FUNCTIONAILITY*********************/
 	
 	public void parse(){
-		if(firstOne){
-			readNextTok();					//reads next Token into currentTok
-			firstOne = false;
-		}
+		while(i.hasNext()){
+			if(firstOne){
+				readNextTok();					//reads next Token into currentTok
+				firstOne = false;
+			}
 
-		match();							//matches currentTok to a statement type, toInsert is
-		parse();
+			match();	
+		}						//matches currentTok to a statement type, toInsert is
 	}
 
 	public void match(String expect){
