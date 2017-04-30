@@ -5,11 +5,13 @@ class SyntaxParser {
 	private Token currentTok;
 	private Iterator<Token> i;
 	private boolean firstOne;
+	private String indent;
 
 	public SyntaxParser(Lex lex){
 		currentTok = null;
 		i = lex.iterator();
 		firstOne = true;
+		indent = "";
 	}
 
 	/*
@@ -50,13 +52,16 @@ class SyntaxParser {
 	/******************MAIN FUNCTIONAILITY*********************/
 	
 	public void parse(){
+		indentUp();
+
 		while(i.hasNext()){
 			if(firstOne){
 				readNextTok();					//reads next Token into currentTok
 				firstOne = false;
 			}
 
-			match();	
+			match();
+			resetIndent();	
 		}						//matches currentTok to a statement type, toInsert is
 	}
 
@@ -73,8 +78,10 @@ class SyntaxParser {
 		else 
 			System.exit(0);
 
-		if(currentTok != null)
-			System.err.println(currentTok.getTokenType());
+		if(currentTok != null){
+
+			System.err.println(indent + currentTok.getTokenType());
+		}
 	}
 
 	/******************STATEMENT TYPES*************************/
@@ -154,8 +161,12 @@ class SyntaxParser {
 	}
 
 	public void func(){
+		indentUp();
 		match("function");
+
+		indentUp();
 		match("StringIdentifier");
+
 		match("OPEN_PARENTHESIS");
 
 		if(hasParams())
@@ -315,4 +326,15 @@ class SyntaxParser {
 	}
 
 	public void dimWilds(){}
+
+	/***********************UTILITIES************************/
+
+	public void indentUp(){
+		//collapse
+		indent += "+---";
+	}
+
+	public void resetIndent(){
+		indent = "+---";
+	}
 }

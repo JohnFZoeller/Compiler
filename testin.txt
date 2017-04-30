@@ -1,1 +1,4 @@
-function john (=) byte{}
+function john (=) byte{
+	var x byte;
+}
+var y int32;

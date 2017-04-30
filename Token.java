@@ -3,6 +3,7 @@
 public class Token{
 	protected int row, col;
 	protected String input;
+	protected String name;
 
 	public int getRow(){
 		return row;
@@ -26,6 +27,7 @@ public class Token{
 	 	this.row = r;
 	 	this.col = c;
 	}
+
 
 
 	 @Override
