@@ -6,12 +6,14 @@ class SyntaxParser {
 	private Iterator<Token> i;
 	private boolean firstOne;
 	private String indent;
+	private int row, col;
 
 	public SyntaxParser(Lex lex){
 		currentTok = null;
 		i = lex.iterator();
 		firstOne = true;
 		indent = "";
+		row = col = 0;
 	}
 
 	/*
@@ -52,6 +54,9 @@ class SyntaxParser {
 	/******************MAIN FUNCTIONAILITY*********************/
 	
 	public void parse(){
+		System.out.println("(" + row + ", " + col + ")" + " " + 
+			System.identityHashCode(this) + " list");
+
 		indentUp();
 
 		while(i.hasNext()){
@@ -66,22 +71,28 @@ class SyntaxParser {
 	}
 
 	public void match(String expect){
-		if(currentTok.getTokenType().equals(expect))
+		if(currentTok.getTokenType().equals(expect)){
 			readNextTok();
+		}
 		else throw new 
 			Error("Expected: " + expect + "Got: " + currentTok.getTokenType());
 	}
 
 	public void readNextTok() {
-		if(i.hasNext())
+		if(i.hasNext()){
 			currentTok = i.next();
+
+			if(currentTok != null){
+
+				System.err.println(indent + "(" + row + ", " 
+					+ runningCol() + ")" + " " 
+					+ System.identityHashCode(currentTok)
+					+ " " + currentTok.getTokenType() + " " 
+					+ currentTok.getName());
+			}
+		}
 		else 
 			System.exit(0);
-
-		if(currentTok != null){
-
-			System.err.println(indent + currentTok.getTokenType());
-		}
 	}
 
 	/******************STATEMENT TYPES*************************/
@@ -161,12 +172,9 @@ class SyntaxParser {
 	}
 
 	public void func(){
-		indentUp();
+		System.out.println(indent + "+---name");
 		match("function");
-
-		indentUp();
 		match("StringIdentifier");
-
 		match("OPEN_PARENTHESIS");
 
 		if(hasParams())
@@ -304,17 +312,215 @@ class SyntaxParser {
 
 	/***********************PLACE HOLDERS**********************/
 
-	public boolean isExpresh(){
-		//return true if currentTok is an expression
-		return true;
-	}
+	public boolean isExpresh(){ return true; }
 
-	public void expresh(){
-		//collapse
-		match("StringIdentifier");
-	}
+	public void expresh(){ match("StringIdentifier"); }
 
 	public void expreshs(){}
+
+	/**********************EXPRESSIONS*************************/
+
+	/*
+	Expressions can either go to a '(' or 
+	*/
+	public void expressions() {
+		//indicates that we are dealing with a list of expressions
+		//each expression should be separated by a comma
+		if(currentTok.getTokenType().equals("OPEN_PARENTHESIS")){
+			expression();
+		} else {
+			expression();
+		}
+	}
+
+	public void readNextToken() {
+		if(i.hasNext()) {
+			currentTok = i.next();
+		} else {
+			System.exit(0);
+		}
+	}
+
+	public void expression() {
+		indentUp();
+		switch(currentTok.getTokenType()) {
+			case ("("):					//sub-expression
+				expression();
+				break;
+			case ("INT_IDENTIFIER"):	//integer, ready for operator
+				numExpr();
+				break;
+			case ("FLOAT_IDENTIFIER"):	//float, ready for operator
+				numExpr();
+				break;
+			case ("BYTE_IDENTIFIER"):	//byte, math expressions not allowed
+				byteExpr();
+				break;
+			//special case, could be a function call or variable
+			case ("IDENTIFIER"):
+				funcCall();
+				break;
+			case ("KEYWORD_BYTE"):		//byte keyword, must be typecast
+				typeCast();
+				break;
+			case ("KEYWORD_INT32"):		//int32 keyword, must be typecast
+				typeCast();
+				break;
+			case ("KEYWORD_FLOAT64"):	//float64 keyword, must be typecast
+				typeCast();
+				break;
+			case ("VAR_IDENTIFIER"):		//expression references declared variable
+				varExpr();
+				break;
+			case ("["):					//must be subscript
+				expressions();
+				break;
+			case ("STRING_IDENTIFIER"):	//lhs is string
+				string();
+				break;
+			case (")"):
+				return;
+			case ("]"):
+				return;
+			default:
+				exprRest();
+				break;
+		}
+	}
+
+	/*
+	 *	Called when an int32 type is on the lhs of the expression. If there is a float
+	 *	anywhere of the rhs then the the int32 type must be converted to float
+	 *	
+	 */
+
+	private void numExpr() {
+		//reads the next token from the buffered reader
+		readNextToken();
+		//an operand is expected as the next token
+		switch(currentTok.getTokenType()) {
+			case ("+"):
+				addition();
+				break;
+			case ("-"):
+				subtraction();
+				break;
+			case ("*"):
+				multipication();
+				break;
+			case ("/"):
+				division();
+				break;
+			case ("|"):
+				or();
+				break;
+			case ("&"):
+				and();
+				break;
+			case ("^"):
+				exponent();
+				break;
+			case ("<<"):
+				leftshift();
+				break;
+			case (">>"):
+				rightshift();
+				break;
+			case ("=="):
+				equality();
+				break;
+			case ("!="):
+				inequality();
+				break;
+			case ("<"):
+				less();
+				break;
+			case ("<="):
+				lessEqual();
+				break;
+			case (">"):
+				greater();
+				break;
+			case (">="):
+				greaterEqual();
+				break;
+			case ("&&"):
+				logicAnd();
+				break;
+			case ("||"):
+				logicOr();
+				break;
+			case ("("):
+				expression();
+				break;
+			default:
+				break;
+		}
+	}
+
+	private void typeCast() {
+		readNextToken();
+		if(currentTok.getTokenType().equals("(")) {
+			expression();
+		}
+	}
+
+	private void varExpr() {
+		readNextToken();
+		switch(currentTok.getTokenType()) {
+			case ("["):
+				expressions();
+				break;
+			case ("("):
+				varExpr();
+				break;
+			default:
+				break;
+		}
+	}
+
+	private void byteExpr(){}
+
+	private void funcCall(){}
+
+	private void string(){}
+
+	private void exprRest(){}
+
+	private void logicOr(){}
+
+	private void logicAnd(){}
+
+	private void greaterEqual(){}
+
+	private void greater(){}
+
+	private void lessEqual(){}
+
+	private void less(){}
+
+	private void inequality(){}
+
+	private void equality(){}
+
+	private void rightshift(){}
+
+	private void leftshift(){}
+
+	private void exponent(){}
+
+	private void addition(){}
+
+	private void subtraction(){}
+
+	private void multipication(){}
+
+	private void division(){}
+
+	private void and(){}
+
+	private void or(){}
+
 
 	/***********************RECURSIONS**************************/
 
@@ -335,6 +541,14 @@ class SyntaxParser {
 	}
 
 	public void resetIndent(){
+		//collapse
 		indent = "+---";
+	}
+
+	public int runningCol(){
+		col = (currentTok.getCol() < col) ? 
+		(col + currentTok.getCol()) : currentTok.getCol();
+
+		return col;
 	}
 }
