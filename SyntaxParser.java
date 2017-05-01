@@ -372,215 +372,139 @@ class SyntaxParser {
 
 	/**********************EXPRESSIONS*************************/
 
-	/*
-	Expressions can either go to a '(' or 
-	*/
-	public void expressions() {
-		//temporary
-		return;
-		//temporary
-
-		//indicates that we are dealing with a list of expressions
-		//each expression should be separated by a comma
-
-		// if(currentTok.getTokenType().equals("OPEN_PARENTHESIS")){
-		// 	expression();
-		// } else {
-		// 	expression();
-		// }
+public void expressions() {
+	switch(currentTok.getTokenType()) {
+		case "LEFT_PARENTHESIS":
+			exprRest();
+			break;
+		case "EXCLAMATION_POINT":
+			exprRest();
+			break;
+		case "MINUS":
+			exprRest();
+			break;
+		case "TILDE":
+			exprRest();
+			break;
+		case "KEYWORD_INT32":
+			match("KEYWORD_INT32");
+			typeCast();
+			break;
+		case "KEYWORD_FLOAT64":
+			match("KEYWORD_FLOAT64");
+			typeCast();
+			break;
+		case "KEYWORD_BYTE":
+			match("KEYWORD_BYTE");
+			typeCast();
+			break;
+		case "IDENTIFIER":
+			match("IDENTIFIER");
+			varOrFunc();
+			break;
+		case "STRING_IDENTIFIER":
+			match("STRING_IDENTIFIER");
+			exprRest();
+			break;
+		case "INT_IDENTIFIER":
+			match("INT_IDENTIFIER");
+			exprRest();
+			break;
+		case "FLOAT_IDENTIFIER":
+			match("FLOAT_IDENTIFIER");
+			exprRest();
+			break;
+		default:
+			break; 
 	}
+}
 
-	public void readNextToken() {
-		if(i.hasNext()) {
-			currentTok = i.next();
+//Not sure about the logic of this one
+public void varOrFunc() {
+	if(currentTok.getTokenType().equals("SUBSCRIPT")) {
+		variable();
+	} else if(currentTok.getTokenType().equals("LEFT_PARENTHESIS")) {
+		match("LEFT_PARENTHESIS");
+		if(currentTok.getTokenType().equals("PERIOD")) {
+			variable();
 		} else {
-			System.exit(0);
+			funcCall();
 		}
 	}
+}
 
-	public void expression() {
-		//temporary
-		return;
-		//temporary
+public void typeCast() {
+	match("LEFT_PARENTHESIS");
+	expression();
+	match("RIGHT_PARANTHESIS");
+}
 
-		// indentUp();
-		// switch(currentTok.getTokenType()) {
-		// 	case ("("):					//sub-expression
-		// 		expression();
-		// 		break;
-		// 	case ("INT_IDENTIFIER"):	//integer, ready for operator
-		// 		numExpr();
-		// 		break;
-		// 	case ("FLOAT_IDENTIFIER"):	//float, ready for operator
-		// 		numExpr();
-		// 		break;
-		// 	case ("BYTE_IDENTIFIER"):	//byte, math expressions not allowed
-		// 		byteExpr();
-		// 		break;
-		// 	//special case, could be a function call or variable
-		// 	case ("IDENTIFIER"):
-		// 		funcCall();
-		// 		break;
-		// 	case ("KEYWORD_BYTE"):		//byte keyword, must be typecast
-		// 		typeCast();
-		// 		break;
-		// 	case ("KEYWORD_INT32"):		//int32 keyword, must be typecast
-		// 		typeCast();
-		// 		break;
-		// 	case ("KEYWORD_FLOAT64"):	//float64 keyword, must be typecast
-		// 		typeCast();
-		// 		break;
-		// 	case ("VAR_IDENTIFIER"):		//expression references declared variable
-		// 		varExpr();
-		// 		break;
-		// 	case ("["):					//must be subscript
-		// 		expressions();
-		// 		break;
-		// 	case ("STRING_IDENTIFIER"):	//lhs is string
-		// 		string();
-		// 		break;
-		// 	case (")"):
-		// 		return;
-		// 	case ("]"):
-		// 		return;
-		// 	default:
-		// 		exprRest();
-		// 		break;
-		// }
-	}
-
-	/*
-	 *	Called when an int32 type is on the lhs of the expression. If there is a float
-	 *	anywhere of the rhs then the the int32 type must be converted to float
-	 *	
-	 */
-
-	private void numExpr() {
-		//reads the next token from the buffered reader
-		readNextToken();
-		//an operand is expected as the next token
-		switch(currentTok.getTokenType()) {
-			case ("+"):
-				addition();
-				break;
-			case ("-"):
-				subtraction();
-				break;
-			case ("*"):
-				multipication();
-				break;
-			case ("/"):
-				division();
-				break;
-			case ("|"):
-				or();
-				break;
-			case ("&"):
-				and();
-				break;
-			case ("^"):
-				exponent();
-				break;
-			case ("<<"):
-				leftshift();
-				break;
-			case (">>"):
-				rightshift();
-				break;
-			case ("=="):
-				equality();
-				break;
-			case ("!="):
-				inequality();
-				break;
-			case ("<"):
-				less();
-				break;
-			case ("<="):
-				lessEqual();
-				break;
-			case (">"):
-				greater();
-				break;
-			case (">="):
-				greaterEqual();
-				break;
-			case ("&&"):
-				logicAnd();
-				break;
-			case ("||"):
-				logicOr();
-				break;
-			case ("("):
-				expression();
-				break;
-			default:
-				break;
-		}
-	}
-
-	private void typeCast() {
-		readNextToken();
-		if(currentTok.getTokenType().equals("(")) {
+public void expression() {
+	switch(token.getTokenType()) {
+		case "LEFT_PARENTHESIS":					//sub-expression
+			match("LEFT_PARENTHESIS");
 			expression();
-		}
+			break();
+		case "INT_IDENTIFIER":	//integer, ready for operator
+			match("INT_IDENTIFIER")
+			exprRest();
+			break;
+		case "FLOAT_IDENTIFIER":	//float, ready for operator
+			readNextToken();
+			exprRest();
+			break;
+		case "BYTE_IDENTIFIER":	//byte, math expressions not allowed
+			readNextToken();
+			byteExpr();
+			break;
+		//special case, could be a function call or variable
+		/*case ("IDENTIFIER"):
+			funcCall();
+			break;
+		case ("KEYWORD_BYTE"):		//byte keyword, must be typecast
+			typeCast();
+			break;
+		case ("KEYWORD_INT32"):		//int32 keyword, must be typecast
+			typeCast();
+			break;
+		case ("KEYWORD_FLOAT64"):	//float64 keyword, must be typecast
+			typeCast();
+			break;
+		case ("VAR_IDENTIFIER"):		//expression references declared variable
+			varExpr();
+			break;
+		case ("STRING_IDENTIFIER"):	//lhs is string
+			string();
+			break;
+			*/
+		default:
+			exprRest();
+			break;
 	}
 
-	private void varExpr() {
-		readNextToken();
-		switch(currentTok.getTokenType()) {
-			case ("["):
-				expressions();
-				break;
-			case ("("):
-				varExpr();
-				break;
-			default:
-				break;
-		}
+}
+
+public void exprRest() {
+	//match to a math expression
+	//read in the next part of the expression
+	switch(token.getTokenType()) {
+		case "EXCLAMATION_POINT":
+			match("EXCLAMATION_POINT")
+			//something matching the operand
+			exprRest();
+			break;
+		case "TILDE":
+			match("TILDE")
+			//something matching the operand
+			exprRest();
+			break;
+		case ("MINUS"):
+			match("MINUS")
+			//something matching the operand
+			exprRest();
+			break;
 	}
-
-	private void byteExpr(){}
-
-	private void funcCall(){}
-
-	private void string(){}
-
-	private void exprRest(){}
-
-	private void logicOr(){}
-
-	private void logicAnd(){}
-
-	private void greaterEqual(){}
-
-	private void greater(){}
-
-	private void lessEqual(){}
-
-	private void less(){}
-
-	private void inequality(){}
-
-	private void equality(){}
-
-	private void rightshift(){}
-
-	private void leftshift(){}
-
-	private void exponent(){}
-
-	private void addition(){}
-
-	private void subtraction(){}
-
-	private void multipication(){}
-
-	private void division(){}
-
-	private void and(){}
-
-	private void or(){}
+}
 
 	/***********************UTILITIES************************/
 
