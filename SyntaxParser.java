@@ -374,7 +374,7 @@ class SyntaxParser {
 
 public void expressions() {
 	switch(currentTok.getTokenType()) {
-		case "LEFT_PARENTHESIS":
+		case "OPEN_PARENTHESIS":
 			exprRest();
 			break;
 		case "EXCLAMATION_POINT":
@@ -441,8 +441,8 @@ public void typeCast() {
 
 public void expression() {
 	switch(token.getTokenType()) {
-		case "LEFT_PARENTHESIS":					//sub-expression
-			match("LEFT_PARENTHESIS");
+		case "OPEN_PARENTHESIS":					//sub-expression
+			match("OPEN_PARENTHESIS");
 			expression();
 			break();
 		case "INT_IDENTIFIER":	//integer, ready for operator
@@ -483,25 +483,104 @@ public void expression() {
 	}
 
 }
+//NEEDS TO HAVE SOMETHING IN THE CASE THAT A SUB-EXPRESSION IS ENCOUNTERED
+public boolean matchOperand() {
+	isMatch = false;
+	if(token.getTokenType().equals("INT_IDENTIFIER")) {
+		match("INT_IDENTIFIER")
+	} else if (token.getTokenType().equals("FLOAT_IDENTIFIER")) {
+		match("FLOAT_IDENTIFIER");
+	} else if(token.getTokenType().equals("IDENTIFIER")) {
+		match("IDENTIFIER");
+	} else if (token.getTokenType().equals("STRING_IDENTIFIER")) {
+			match("STRING_IDENTIFIER");
+	} else if(token.getTokenType().equals("OPEN_PARENTHESIS")){
+		match("OPEN_PARENTHESIS");
+		expression();
+	} else {
+		//error();
+	}
+}
 
 public void exprRest() {
+	//NEED SOME SORT OF STOPPING POINT OR BASE CASE
+
 	//match to a math expression
 	//read in the next part of the expression
 	switch(token.getTokenType()) {
+		case "COMMA":
+			match("COMMA");
+			expression();
+			break;
+		case "SEMICOLON":
+			match("SEMICOLON");
+			break;
+		case "CLOSE_PARENTHESIS":
+			match("CLOSE_PARENTHESIS");
+			break;
 		case "EXCLAMATION_POINT":
 			match("EXCLAMATION_POINT")
-			//something matching the operand
+			matchOperand();
 			exprRest();
 			break;
 		case "TILDE":
 			match("TILDE")
-			//something matching the operand
+			matchOperand();
 			exprRest();
 			break;
-		case ("MINUS"):
+		case "MINUS":
 			match("MINUS")
-			//something matching the operand
+			matchOperand();
 			exprRest();
+			break;
+		case "CLOSE_BRACKET":
+			match("CLOSE_BRACKET");
+			break;
+		case "OPEN_BRACKET":
+			match("OPEN_BRACKET");
+			expression();
+			break;
+		case "ASSIGNMENT_OPERATOR":
+			match("ASSIGNMENT_OPERATOR");
+			expression();
+			break;
+		case "PLUS":
+			match("PLUS");
+			matchOperand();
+			exprRest();
+			break;
+		case "MINUS":
+			match("MINUS");
+			matchOperand();
+			exprRest();
+			break;
+		case "ASTERISK":
+			match("ASTERISK");
+			matchOperand();
+			exprRest();
+			break;
+		case "BACKSLASH":
+			match("BACKSLASH");
+			matchOperand();
+			exprRest();
+			break;
+		case "BITWISE_OR":
+			match("BITWISE_OR");
+			//something special here
+			break;
+		case "BITWISE_AND":
+			match("BITWISE_AND");
+			//something special here
+			break;
+		case "LOGICAL_OR":
+			match("LOGICAL_OR");
+			//something special here
+			break;
+		case "LOGICAL_AND":
+			match("LOGICAL_AND");
+			//something special here
+			break;
+		default:
 			break;
 	}
 }
