@@ -10,6 +10,8 @@ public class Subtree {
 
 	public Subtree(Token current) {
 		this.token = current;
+		this.row = current.getRow();
+		this.col = current.getCol();
 	}
 
 	public void addChild(AST subtree) {
@@ -17,5 +19,16 @@ public class Subtree {
 			children = new ArrayList<Subtree>();
 		}
 		children.add(subtree);
+	}
+
+	public void print() {
+		String toPrint = "+---";
+		int count = 0;
+		while(count < level) {
+			toPrint += toPrint;
+			count++;
+		}
+		toPrint += "(" + row + ", " + col + ") ";
+		System.out.println(toPrint);
 	}
 }
