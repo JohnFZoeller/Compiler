@@ -444,7 +444,7 @@ public void expression() {
 		case "OPEN_PARENTHESIS":					//sub-expression
 			match("OPEN_PARENTHESIS");
 			expression();
-			break();
+			break;
 		case "INT_IDENTIFIER":	//integer, ready for operator
 			match("INT_IDENTIFIER")
 			exprRest();
@@ -487,7 +487,7 @@ public void expression() {
 public boolean matchOperand() {
 	isMatch = false;
 	if(token.getTokenType().equals("INT_IDENTIFIER")) {
-		match("INT_IDENTIFIER")
+		match("INT_IDENTIFIER");
 	} else if (token.getTokenType().equals("FLOAT_IDENTIFIER")) {
 		match("FLOAT_IDENTIFIER");
 	} else if(token.getTokenType().equals("IDENTIFIER")) {
