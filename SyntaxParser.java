@@ -1,12 +1,13 @@
 import java.io.*;
 import java.util.*;
 
-class SyntaxParser {
+public class SyntaxParser {
 	private Token currentTok;
 	private Iterator<Token> i;
 	private boolean firstOne;
 	private String indent;
 	private int row, col;
+	private Subtree root;
 
 	public SyntaxParser(Lex lex){
 		currentTok = null;
@@ -24,27 +25,27 @@ class SyntaxParser {
 
 	public void match(){
 		switch(currentTok.getTokenType()) {
-			case "for":		forr();
+			case "for":		root.addChild(new For(currentTok, i));
 							break;
-			case "while":	whilee();
+			case "while":	root.addChild(new While(currentTok, i));
 							break;
-			case "if":		iff();
+			case "if":		root.addChild(new If(currentTok, i));
 							break;
-			case "print":	print();
+			case "print":	root.addChild(new Print(currentTok, i));
 							break;
-			case "return":	retur();
+			case "return":	root.addChild(new Retur(currentTok, i));
 							break;
-			case "type":	type();
+			case "type":	root.addChild(new Type(currentTok, i));
 							break;
-			case "exit":	exit();
+			case "exit":	root.addChild(new Exit(currentTok, i));
 							break;
-			case "function":func();
+			case "function":root.addChild(new Func(currentTok, i));
 							break;
-			case "var":		var();
+			case "var":		root.addChild(new Var(currentTok, i));
 							break;
-			case "static":	var();
+			case "static":	root.addChild(new Var(currentTok, i));
 							break;
-			case "const":	var();
+			case "const":	root.addChild(new Var(currentTok, i));
 							break;
 			default:		System.exit(0);
 							break;
@@ -54,20 +55,22 @@ class SyntaxParser {
 	/******************MAIN FUNCTIONAILITY*********************/
 	
 	public void parse(){
-		System.out.println("(" + row + ", " + col + ")" + " " + 
-			System.identityHashCode(this) + " list");
 
 		indentUp();
 
-		while(i.hasNext()){
-			if(firstOne){
-				readNextTok();					//reads next Token into currentTok
-				firstOne = false;
-			}
+		root = new Subtree(i); 				//default constructor makes root
 
-			match();
+		while(i.hasNext()){
+			readNextTok();					//reads next Token into currentTok
+
+			if(currentTok != null)
+				match();
+
 			resetIndent();	
-		}						//matches currentTok to a statement type, toInsert is
+		}	
+
+		root.printTree();
+
 	}
 
 	public void match(String expect){
@@ -84,11 +87,8 @@ class SyntaxParser {
 
 			if(currentTok != null){
 
-				System.err.println(indent + "(" + row + ", " 
-					+ runningCol() + ")" + " " 
-					+ System.identityHashCode(currentTok)
-					+ " " + currentTok.getTokenType() + " " 
-					+ currentTok.getName());
+				// System.err.println(currentTok.getTokenType() + " " 
+				// 	+ currentTok.getName());
 			}
 		}
 		else 
@@ -101,7 +101,9 @@ class SyntaxParser {
 		match("for");
 
 		match("OPEN_PARENTHESIS");
+
 		expression();
+
 		match("SEMICOLON");
 		expression();
 		match("SEMICOLON");
@@ -136,23 +138,6 @@ class SyntaxParser {
 		}
 	}
 
-	public void print(){
-		match("print");
-
-		expression();
-
-		match("SEMICOLON");
-	}		
-
-	public void retur(){
-		match("return");
-
-		if(isExpresh())
-			expression();
-
-		match("SEMICOLON");
-	}	
-
 	public void type(){
 		match("type");
 		match("StringIdentifier");
@@ -162,23 +147,18 @@ class SyntaxParser {
 		match("SEMICOLON");
 	}
 
-	public void exit(){
-		match("exit");								//match exit
-
-		if(isExpresh())								//optional expression next?
-			expression();								//parse it
-
-		match("SEMICOLON");
-	}
-
 	public void func(){
-		System.out.println(indent + "+---name");
 		match("function");
+
 		match("StringIdentifier");
+
 		match("OPEN_PARENTHESIS");
+
 
 		if(hasParams())
 			params();
+
+
 
 		match("CLOSE_PARENTHESIS");
 
@@ -186,6 +166,7 @@ class SyntaxParser {
 			typeDescriptor();
 
 		block();
+
 	}
 
 	public void var(){
@@ -422,13 +403,13 @@ public void expressions() {
 //Not sure about the logic of this one
 public void varOrFunc() {
 	if(currentTok.getTokenType().equals("SUBSCRIPT")) {
-		variable();
+		//variable();
 	} else if(currentTok.getTokenType().equals("LEFT_PARENTHESIS")) {
 		match("LEFT_PARENTHESIS");
 		if(currentTok.getTokenType().equals("PERIOD")) {
-			variable();
+			//variable();
 		} else {
-			funcCall();
+			//funcCall();
 		}
 	}
 }
@@ -440,22 +421,22 @@ public void typeCast() {
 }
 
 public void expression() {
-	switch(token.getTokenType()) {
+	switch(currentTok.getTokenType()) {
 		case "OPEN_PARENTHESIS":					//sub-expression
 			match("OPEN_PARENTHESIS");
 			expression();
 			break;
 		case "INT_IDENTIFIER":	//integer, ready for operator
-			match("INT_IDENTIFIER")
+			match("INT_IDENTIFIER");
 			exprRest();
 			break;
 		case "FLOAT_IDENTIFIER":	//float, ready for operator
-			readNextToken();
+			//readNextToken();
 			exprRest();
 			break;
 		case "BYTE_IDENTIFIER":	//byte, math expressions not allowed
-			readNextToken();
-			byteExpr();
+			//readNextToken();
+			//byteExpr();
 			break;
 		//special case, could be a function call or variable
 		/*case ("IDENTIFIER"):
@@ -485,21 +466,22 @@ public void expression() {
 }
 //NEEDS TO HAVE SOMETHING IN THE CASE THAT A SUB-EXPRESSION IS ENCOUNTERED
 public boolean matchOperand() {
-	isMatch = false;
-	if(token.getTokenType().equals("INT_IDENTIFIER")) {
+	//isMatch = false;
+	if(currentTok.getTokenType().equals("INT_IDENTIFIER")) {
 		match("INT_IDENTIFIER");
-	} else if (token.getTokenType().equals("FLOAT_IDENTIFIER")) {
+	} else if (currentTok.getTokenType().equals("FLOAT_IDENTIFIER")) {
 		match("FLOAT_IDENTIFIER");
-	} else if(token.getTokenType().equals("IDENTIFIER")) {
+	} else if(currentTok.getTokenType().equals("IDENTIFIER")) {
 		match("IDENTIFIER");
-	} else if (token.getTokenType().equals("STRING_IDENTIFIER")) {
+	} else if (currentTok.getTokenType().equals("STRING_IDENTIFIER")) {
 			match("STRING_IDENTIFIER");
-	} else if(token.getTokenType().equals("OPEN_PARENTHESIS")){
+	} else if(currentTok.getTokenType().equals("OPEN_PARENTHESIS")){
 		match("OPEN_PARENTHESIS");
 		expression();
 	} else {
 		//error();
 	}
+	return true;
 }
 
 public void exprRest() {
@@ -507,7 +489,7 @@ public void exprRest() {
 
 	//match to a math expression
 	//read in the next part of the expression
-	switch(token.getTokenType()) {
+	switch(currentTok.getTokenType()) {
 		case "COMMA":
 			match("COMMA");
 			expression();
@@ -519,17 +501,17 @@ public void exprRest() {
 			match("CLOSE_PARENTHESIS");
 			break;
 		case "EXCLAMATION_POINT":
-			match("EXCLAMATION_POINT")
+			match("EXCLAMATION_POINT");
 			matchOperand();
 			exprRest();
 			break;
 		case "TILDE":
-			match("TILDE")
+			match("TILDE");
 			matchOperand();
 			exprRest();
 			break;
 		case "MINUS":
-			match("MINUS")
+			match("MINUS");
 			matchOperand();
 			exprRest();
 			break;
@@ -546,11 +528,6 @@ public void exprRest() {
 			break;
 		case "PLUS":
 			match("PLUS");
-			matchOperand();
-			exprRest();
-			break;
-		case "MINUS":
-			match("MINUS");
 			matchOperand();
 			exprRest();
 			break;

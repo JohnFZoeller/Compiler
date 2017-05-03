@@ -13,8 +13,6 @@ public class Main{
 		SyntaxParser par = new SyntaxParser(lexer);
 		Token temp;
 
-		System.out.println("\n root node " + System.identityHashCode(par));
-
 		par.parse();
 
 		// while(iter.hasNext()){
