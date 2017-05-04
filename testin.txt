@@ -1,6 +1,7 @@
 var john float64;
-var n int32;
 
 function fib1(n byte, a int32, x float64) byte {
 	var zoell byte;
+	var john float64;
+	var n int32;
 }

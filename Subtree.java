@@ -38,6 +38,7 @@ public class Subtree {
 			children = new ArrayList<Subtree>();
 		}
 		children.add(subtree);
+		token = children.get(children.size() -1).token;
 	}
 
 	public boolean hasChildren(){
@@ -98,8 +99,8 @@ public class Subtree {
 
 			if(token != null){
 
-				// System.err.println(token.getTokenType() + " " 
-				// 	+ token.getName());
+				System.err.println(token.getTokenType() + " " 
+					+ token.getName());
 			}
 		}
 		else 
@@ -141,18 +142,19 @@ class For extends Subtree{
 		match("OPEN_PARENTHESIS");
 
 		addChild(new Expression(token, it));
-		token = children.get(0).token;
+		//token = children.get(0).token;
 		match("SEMICOLON");
 
 		addChild(new Expression(token, it));
-		token = children.get(1).token;
+		//token = children.get(1).token;
 		match("SEMICOLON");
 
 		addChild(new Expression(token, it));
-		token = children.get(2).token;
+		//token = children.get(2).token;
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
+		//token = children.get(3).token;
 	}
 }
 
@@ -164,10 +166,12 @@ class While extends Subtree{
 		match("OPEN_PARENTHESIS");
 
 		addChild(new Expression(token, it));
+		//token = children.get(0).token;
 
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
+		//token = children.get(1).token;
 	}
 }
 
@@ -201,27 +205,27 @@ class Func extends Subtree{
 	Func(Token t, Iterator<Token> i){
 		super(t, i);
 
+		int j = 1;
 		match("function");
 
 		addChild(new Symbol(token));
-
 		match("StringIdentifier");
 		match("OPEN_PARENTHESIS");
 
 		if(hasParams()){
 			addChild(new Params(token, it));
-			token = children.get(1).token;
+			//token = children.get(j++).token;
 		}
 
 		match("CLOSE_PARENTHESIS");
 
 		if(hasTypeDesc()){
-			TypeDescriptor td = new TypeDescriptor(token, it);
-			addChild(td);
-			token = td.token;
+			addChild(new TypeDescriptor(token, it));
+			//token = children.get(j++).token;
 		}
 
 		addChild(new Block(token, it));
+		//token = children.get(j).token;
 	}
 
 	@Override
@@ -253,7 +257,8 @@ class Func extends Subtree{
 		}
 
 		System.out.println(print + "body");
-		//next step
+		children.get(i).printUp(print);
+		children.get(i).print();
 
 	}
 }
@@ -280,7 +285,7 @@ class Var extends Subtree{
 		} 
 		else {
 			addChild(new TypeDescriptor(token, it));
-			token = children.get(1).token;
+			//token = children.get(1).token;
 		}
 
 		match("SEMICOLON");
@@ -379,7 +384,7 @@ class Block extends Subtree{
 
 		for(int j = 0; !token.getTokenType().equals("CLOSE_BRACE"); j++){
 			match();
-			token = children.get(j).token;
+			//token = children.get(j).token;
 		}
 
 		match("CLOSE_BRACE");
@@ -415,6 +420,20 @@ class Block extends Subtree{
 							break;
 		}
 	}
+
+	@Override
+	public void print(){
+		printUp("+---");
+
+		System.out.println(print + "(,) " 
+			+ System.identityHashCode(this) 
+			+ " list");
+
+		for(int i = 0; i < children.size(); i++){
+			children.get(i).printUp(print + "+---");
+			children.get(i).print();
+		}
+	}
 }
 
 class TypeDescriptor extends Subtree{
@@ -422,7 +441,7 @@ class TypeDescriptor extends Subtree{
 		super(t, i);
 
 		addChild(new NaTypeDescriptor(token, it));
-		token = children.get(0).token;
+		//token = children.get(0).token;
 
 		if(isDimensh())								//optional expression next?
 			addChild(new Dimension(token, it));	
@@ -445,7 +464,7 @@ class NaTypeDescriptor extends Subtree{
 
 		if(token.getTokenType().equals("record")){
 			addChild(new RecordDescriptor(token, it));
-			token = children.get(0).token;
+			//token = children.get(0).token;
 		}
 		else if(token.getTokenType().equals("StringIdentifier")){
 			addChild(new Symbol(token));
@@ -531,7 +550,7 @@ class Params extends Subtree{
 		super(t, i);
 
 		addChild(new Param(token, it));
-		token = children.get(0).token;
+		//token = children.get(0).token;
 
 		x();
 	}
@@ -543,7 +562,7 @@ class Params extends Subtree{
 
 		Param p = new Param(token, it);
 		addChild(p);
-		token = p.token;
+		//token = p.token;
 
 		x();
 	}
@@ -590,7 +609,7 @@ class Param extends Subtree{
 			}
 		}
 
-		token = children.get(1).token;
+		//token = children.get(1).token;
 	}
 
 	@Override
