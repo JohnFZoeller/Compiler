@@ -47,7 +47,9 @@ public class SyntaxParser {
 							break;
 			case "const":	root.addChild(new Var(currentTok, i));
 							break;
-			default:		System.exit(0);
+			default:		System.out.println("Bad root token "
+							+ currentTok.getTokenType());
+							System.exit(0);
 							break;
 		}
 	}
@@ -55,22 +57,20 @@ public class SyntaxParser {
 	/******************MAIN FUNCTIONAILITY*********************/
 	
 	public void parse(){
-
-		indentUp();
-
 		root = new Subtree(i); 				//default constructor makes root
 
-		while(i.hasNext()){
-			readNextTok();					//reads next Token into currentTok
+		if(i.hasNext())
+			readNextTok();
+
+		for(int j = 0; i.hasNext(); j++){
 
 			if(currentTok != null)
 				match();
 
-			resetIndent();	
+			currentTok = root.children.get(j).token;
 		}	
 
 		root.printTree();
-
 	}
 
 	public void match(String expect){
@@ -94,262 +94,74 @@ public class SyntaxParser {
 		else 
 			System.exit(0);
 	}
+	// public void dimWilds(){
+	// 	wildCard();
+	// 	x();
+	// }
+
+	// public void wildCard(){
+	// 	//collapse
+	// 	match("ASTERISK");
+	// }
+
+	// public void x(){
+	// 	if(!currentTok.getTokenType().equals("COMMA")) return;
+
+	// 	match("COMMA");
+	// 	wildCard();
+	// 	x();
+	// }
+
+	// public void fieldDeclaration(){
+	// 	match("StringIdentifier");
+	// 	typeDescriptor();
+	// }
+
+	// public void fieldDeclarations(){
+	// 	fieldDeclaration();
+	// 	y();
+	// }
+
+	// public void y(){
+	// 	if(currentTok.getTokenType().equals("end")) return;
+
+	// 	match("COMMA");
+	// 	fieldDeclaration();
+	// 	y();
+	// }
+
+	// public void dimensh(){
+	// 	match("OPEN_BRACKET");
+	// 	expressions();
+	// 	match("CLOSE_BRACKET");
+	// }
+	// /*********************TESTERS**************************/
+
+	// public boolean hasTypeDesc(){
+	// 	//collapse
+	// 	return !currentTok.getTokenType().equals("OPEN_BRACE");
+	// }
+
+	// public boolean hasParams(){
+	// 	//collapse
+	// 	return !currentTok.getTokenType().equals("CLOSE_PARENTHESIS");
+	// }
+
+	// public boolean isDimensh(){
+	// 	//collapse
+	// 	return currentTok.getTokenType().equals("OPEN_BRACKET");
+	// }
+
+	// public boolean isElse(){
+	// 	//collapse
+	// 	return currentTok.getTokenType().equals("else");
+	// }
+
+	// public boolean hasWilds(){
+	// 	//collapse
+	// 	return currentTok.getTokenType().equals("OPEN_BRACKET");
+	// }
 
-	/******************STATEMENT TYPES*************************/
-
-	public void forr(){
-		match("for");
-
-		match("OPEN_PARENTHESIS");
-
-		expression();
-
-		match("SEMICOLON");
-		expression();
-		match("SEMICOLON");
-		expression();
-		match("CLOSE_PARENTHESIS");
-
-		block();
-	}
-
-	public void whilee(){
-		match("while");
-
-		match("OPEN_PARENTHESIS");
-		expression();
-		match("CLOSE_PARENTHESIS");
-
-		block();
-	}
-
-	public void iff(){
-		match("if");
-
-		match("OPEN_PARENTHESIS");
-		expression();
-		match("CLOSE_PARENTHESIS");
-
-		block();
-
-		if(isElse()){
-			match("else");
-			block();
-		}
-	}
-
-	public void type(){
-		match("type");
-		match("StringIdentifier");
-
-		typeDescriptor();
-
-		match("SEMICOLON");
-	}
-
-	public void func(){
-		match("function");
-
-		match("StringIdentifier");
-
-		match("OPEN_PARENTHESIS");
-
-
-		if(hasParams())
-			params();
-
-
-
-		match("CLOSE_PARENTHESIS");
-
-		if(hasTypeDesc())
-			typeDescriptor();
-
-		block();
-
-	}
-
-	public void var(){
-		if(currentTok.getTokenType().equals("static"))
-			match("static");
-		
-		if(currentTok.getTokenType().equals("const"))
-			match("const");
-
-		match("var");
-		match("StringIdentifier");
-
-		//assignment case ELSE declaration case
-		if(currentTok.getTokenType().equals("ASSIGNMENT_OPERATOR")){
-			match("ASSIGNMENT_OPERATOR");
-			expression();
-		} 
-		else 
-			typeDescriptor();
-
-		match("SEMICOLON");
-	}
-
-
-	/******************SUPPORT STATEMENTS*********************/
-
-	public void typeDescriptor(){
-		naTypeDescriptor();
-
-		if(isDimensh())								//optional expression next?
-			dimensh();								//parse it
-	}
-
-	public void naTypeDescriptor(){
-
-		// record-descriptor ELSE IF identifier ELSE basic-type
-		if(currentTok.getTokenType().equals("record")){
-			match("record");
-			fieldDeclarations();
-			match("end");
-		}
-		else if(currentTok.getTokenType().equals("StringIdentifier")){
-			match("StringIdentifier");
-		}
-		else{
-			switch(currentTok.getTokenType()){
-				case "byte" : 	match("byte"); break;
-				case "int32": 	match("int32"); break;
-				case "float64": match("float64"); break;
-				default : break;
-			}
-		}
-	}
-
-	public void block(){
-		match("OPEN_BRACE");
-		
-		while(!currentTok.getTokenType().equals("CLOSE_BRACE"))
-			match();
-
-		match("CLOSE_BRACE");
-	}
-
-	public void parameter(){
-		if(currentTok.getTokenType().equals("ref"))
-			match("ref");
-
-		if(currentTok.getTokenType().equals("const"))
-			match("const");
-
-		match("StringIdentifier");
-
-		if(currentTok.getTokenType().equals("ASSIGNMENT_OPERATOR")){
-			match("ASSIGNMENT_OPERATOR");
-			expression();
-		}
-		else{
-			naTypeDescriptor();
-
-			if(hasWilds()){
-				match("OPEN_BRACKET");
-				dimWilds();
-				match("CLOSE_BRACKET");
-			}
-		}
-	}
-
-	public void params(){
-		//ORIGINAL LEFT RECURSION : parameters ::= ( parameters , )* parameter
-		//THIS IS SIMPIFIED FORM, IN NON-SIMPLIFIED FORM THE LEFT RECURSION IS
-		//PARAMETERS -> PARAMETERS , PARAM || PARAM
-
-		//TRANSLATED TO RIGHT RECURSION
-
-		//PARAMETERS -> PARAM Z
-		//         Z -> , PARAM Z || empty
-
-		//example string (int x, int y, char z)
-		//match(param); z(); 
-		//public void z(){ if(currentTok != ','){ return; } match(comma); match(param); z(); }
-		parameter();
-		z();
-	}
-
-	public void z(){
-		if(!currentTok.getTokenType().equals("COMMA")) return;
-
-		match("COMMA");
-		parameter();
-		z();
-	}
-
-	public void dimWilds(){
-		wildCard();
-		x();
-	}
-
-	public void wildCard(){
-		//collapse
-		match("ASTERISK");
-	}
-
-	public void x(){
-		if(!currentTok.getTokenType().equals("COMMA")) return;
-
-		match("COMMA");
-		wildCard();
-		x();
-	}
-
-	public void fieldDeclaration(){
-		match("StringIdentifier");
-		typeDescriptor();
-	}
-
-	public void fieldDeclarations(){
-		fieldDeclaration();
-		y();
-	}
-
-	public void y(){
-		if(currentTok.getTokenType().equals("end")) return;
-
-		match("COMMA");
-		fieldDeclaration();
-		y();
-	}
-
-	public void dimensh(){
-		match("OPEN_BRACKET");
-		expressions();
-		match("CLOSE_BRACKET");
-	}
-	/*********************TESTERS**************************/
-
-	public boolean hasTypeDesc(){
-		//collapse
-		return !currentTok.getTokenType().equals("OPEN_BRACE");
-	}
-
-	public boolean hasParams(){
-		//collapse
-		return !currentTok.getTokenType().equals("CLOSE_PARENTHESIS");
-	}
-
-	public boolean isDimensh(){
-		//collapse
-		return currentTok.getTokenType().equals("OPEN_BRACKET");
-	}
-
-	public boolean isElse(){
-		//collapse
-		return currentTok.getTokenType().equals("else");
-	}
-
-	public boolean hasWilds(){
-		//collapse
-		return currentTok.getTokenType().equals("OPEN_BRACKET");
-	}
-
-	/***********************PLACE HOLDERS**********************/
-
-	public boolean isExpresh(){ return true; }
 
 	/**********************EXPRESSIONS*************************/
 
@@ -562,22 +374,4 @@ public void exprRest() {
 	}
 }
 
-	/***********************UTILITIES************************/
-
-	public void indentUp(){
-		//collapse
-		indent += "+---";
-	}
-
-	public void resetIndent(){
-		//collapse
-		indent = "+---";
-	}
-
-	public int runningCol(){
-		col = (currentTok.getCol() < col) ? 
-		(col + currentTok.getCol()) : currentTok.getCol();
-
-		return col;
-	}
 }

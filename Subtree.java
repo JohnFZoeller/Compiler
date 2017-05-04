@@ -106,6 +106,13 @@ public class Subtree {
 			return;
 	}
 
+	public int runningCol(){
+		// col = (currentTok.getCol() < col) ? 
+		// (col + currentTok.getCol()) : currentTok.getCol();
+
+		return col;
+	}
+
 	public boolean isExpresh(){ return true; }
 
 	public boolean hasWilds(){ return false; }
@@ -134,12 +141,15 @@ class For extends Subtree{
 		match("OPEN_PARENTHESIS");
 
 		addChild(new Expression(token, it));
+		token = children.get(0).token;
 		match("SEMICOLON");
 
 		addChild(new Expression(token, it));
+		token = children.get(1).token;
 		match("SEMICOLON");
 
 		addChild(new Expression(token, it));
+		token = children.get(2).token;
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
@@ -270,10 +280,10 @@ class Var extends Subtree{
 		} 
 		else {
 			addChild(new TypeDescriptor(token, it));
+			token = children.get(1).token;
 		}
 
-		// if(!token.getTokenType().equals("SEMICOLON"))
-		// 	throw new Error("Expected SEMICOLON, GOT: " + token.getTokenType());
+		match("SEMICOLON");
 	}
 
 	@Override
@@ -367,9 +377,43 @@ class Block extends Subtree{
 
 		match("OPEN_BRACE");
 
-		//while();
+		for(int j = 0; !token.getTokenType().equals("CLOSE_BRACE"); j++){
+			match();
+			token = children.get(j).token;
+		}
 
 		match("CLOSE_BRACE");
+	}
+
+	public void match(){
+		switch(token.getTokenType()) {
+			case "for":		addChild(new For(token, it));
+							break;
+			case "while":	addChild(new While(token, it));
+							break;
+			case "if":		addChild(new If(token, it));
+							break;
+			case "print":	addChild(new Print(token, it));
+							break;
+			case "return":	addChild(new Retur(token, it));
+							break;
+			case "type":	addChild(new Type(token, it));
+							break;
+			case "exit":	addChild(new Exit(token, it));
+							break;
+			case "function":addChild(new Func(token, it));
+							break;
+			case "var":		addChild(new Var(token, it));
+							break;
+			case "static":	addChild(new Var(token, it));
+							break;
+			case "const":	addChild(new Var(token, it));
+							break;
+			default:		System.out.println("Unrecognized token type "
+				+ token.getTokenType());
+							System.exit(0);
+							break;
+		}
 	}
 }
 
