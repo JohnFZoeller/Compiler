@@ -15,6 +15,7 @@ public class Expressions extends Subtree {
 
 	private void addAllChildren() {
 		if(token.getTokenType().equals("COMMA")) {
+			match("COMMA");
 			addChild(new Expression(token, it));
 			addAllChildren();
 		} else {
