@@ -94,284 +94,216 @@ public class SyntaxParser {
 		else 
 			System.exit(0);
 	}
-	// public void dimWilds(){
-	// 	wildCard();
-	// 	x();
-	// }
-
-	// public void wildCard(){
-	// 	//collapse
-	// 	match("ASTERISK");
-	// }
-
-	// public void x(){
-	// 	if(!currentTok.getTokenType().equals("COMMA")) return;
-
-	// 	match("COMMA");
-	// 	wildCard();
-	// 	x();
-	// }
-
-	// public void fieldDeclaration(){
-	// 	match("StringIdentifier");
-	// 	typeDescriptor();
-	// }
-
-	// public void fieldDeclarations(){
-	// 	fieldDeclaration();
-	// 	y();
-	// }
-
-	// public void y(){
-	// 	if(currentTok.getTokenType().equals("end")) return;
-
-	// 	match("COMMA");
-	// 	fieldDeclaration();
-	// 	y();
-	// }
-
-	// public void dimensh(){
-	// 	match("OPEN_BRACKET");
-	// 	expressions();
-	// 	match("CLOSE_BRACKET");
-	// }
-	// /*********************TESTERS**************************/
-
-	// public boolean hasTypeDesc(){
-	// 	//collapse
-	// 	return !currentTok.getTokenType().equals("OPEN_BRACE");
-	// }
-
-	// public boolean hasParams(){
-	// 	//collapse
-	// 	return !currentTok.getTokenType().equals("CLOSE_PARENTHESIS");
-	// }
-
-	// public boolean isDimensh(){
-	// 	//collapse
-	// 	return currentTok.getTokenType().equals("OPEN_BRACKET");
-	// }
-
-	// public boolean isElse(){
-	// 	//collapse
-	// 	return currentTok.getTokenType().equals("else");
-	// }
-
-	// public boolean hasWilds(){
-	// 	//collapse
-	// 	return currentTok.getTokenType().equals("OPEN_BRACKET");
-	// }
-
 
 	/**********************EXPRESSIONS*************************/
 
-public void expressions() {
-	switch(currentTok.getTokenType()) {
-		case "OPEN_PARENTHESIS":
-			exprRest();
-			break;
-		case "EXCLAMATION_POINT":
-			exprRest();
-			break;
-		case "MINUS":
-			exprRest();
-			break;
-		case "TILDE":
-			exprRest();
-			break;
-		case "KEYWORD_INT32":
-			match("KEYWORD_INT32");
-			typeCast();
-			break;
-		case "KEYWORD_FLOAT64":
-			match("KEYWORD_FLOAT64");
-			typeCast();
-			break;
-		case "KEYWORD_BYTE":
-			match("KEYWORD_BYTE");
-			typeCast();
-			break;
-		case "IDENTIFIER":
-			match("IDENTIFIER");
-			varOrFunc();
-			break;
-		case "STRING_IDENTIFIER":
-			match("STRING_IDENTIFIER");
-			exprRest();
-			break;
-		case "INT_IDENTIFIER":
-			match("INT_IDENTIFIER");
-			exprRest();
-			break;
-		case "FLOAT_IDENTIFIER":
-			match("FLOAT_IDENTIFIER");
-			exprRest();
-			break;
-		default:
-			break; 
-	}
-}
-
-//Not sure about the logic of this one
-public void varOrFunc() {
-	if(currentTok.getTokenType().equals("SUBSCRIPT")) {
-		//variable();
-	} else if(currentTok.getTokenType().equals("LEFT_PARENTHESIS")) {
-		match("LEFT_PARENTHESIS");
-		if(currentTok.getTokenType().equals("PERIOD")) {
-			//variable();
-		} else {
-			//funcCall();
+	public void expressions() {
+		switch(currentTok.getTokenType()) {
+			case "OPEN_PARENTHESIS":
+				exprRest();
+				break;
+			case "EXCLAMATION_POINT":
+				exprRest();
+				break;
+			case "MINUS":
+				exprRest();
+				break;
+			case "TILDE":
+				exprRest();
+				break;
+			case "KEYWORD_INT32":
+				match("KEYWORD_INT32");
+				typeCast();
+				break;
+			case "KEYWORD_FLOAT64":
+				match("KEYWORD_FLOAT64");
+				typeCast();
+				break;
+			case "KEYWORD_BYTE":
+				match("KEYWORD_BYTE");
+				typeCast();
+				break;
+			case "IDENTIFIER":
+				match("IDENTIFIER");
+				varOrFunc();
+				break;
+			case "STRING_IDENTIFIER":
+				match("STRING_IDENTIFIER");
+				exprRest();
+				break;
+			case "INT_IDENTIFIER":
+				match("INT_IDENTIFIER");
+				exprRest();
+				break;
+			case "FLOAT_IDENTIFIER":
+				match("FLOAT_IDENTIFIER");
+				exprRest();
+				break;
+			default:
+				break; 
 		}
 	}
-}
 
-public void typeCast() {
-	match("LEFT_PARENTHESIS");
-	expression();
-	match("RIGHT_PARANTHESIS");
-}
+	//Not sure about the logic of this one
+	public void varOrFunc() {
+		if(currentTok.getTokenType().equals("SUBSCRIPT")) {
+			//variable();
+		} else if(currentTok.getTokenType().equals("LEFT_PARENTHESIS")) {
+			match("LEFT_PARENTHESIS");
+			if(currentTok.getTokenType().equals("PERIOD")) {
+				//variable();
+			} else {
+				//funcCall();
+			}
+		}
+	}
 
-public void expression() {
-	switch(currentTok.getTokenType()) {
-		case "OPEN_PARENTHESIS":					//sub-expression
+	public void typeCast() {
+		match("LEFT_PARENTHESIS");
+		expression();
+		match("RIGHT_PARANTHESIS");
+	}
+
+	public void expression() {
+		switch(currentTok.getTokenType()) {
+			case "OPEN_PARENTHESIS":					//sub-expression
+				match("OPEN_PARENTHESIS");
+				expression();
+				break;
+			case "INT_IDENTIFIER":	//integer, ready for operator
+				match("INT_IDENTIFIER");
+				exprRest();
+				break;
+			case "FLOAT_IDENTIFIER":	//float, ready for operator
+				//readNextToken();
+				exprRest();
+				break;
+			case "BYTE_IDENTIFIER":	//byte, math expressions not allowed
+				//readNextToken();
+				//byteExpr();
+				break;
+			//special case, could be a function call or variable
+			/*case ("IDENTIFIER"):
+				funcCall();
+				break;
+			case ("KEYWORD_BYTE"):		//byte keyword, must be typecast
+				typeCast();
+				break;
+			case ("KEYWORD_INT32"):		//int32 keyword, must be typecast
+				typeCast();
+				break;
+			case ("KEYWORD_FLOAT64"):	//float64 keyword, must be typecast
+				typeCast();
+				break;
+			case ("VAR_IDENTIFIER"):		//expression references declared variable
+				varExpr();
+				break;
+			case ("STRING_IDENTIFIER"):	//lhs is string
+				string();
+				break;
+				*/
+			default:
+				exprRest();
+				break;
+		}
+
+	}
+	//NEEDS TO HAVE SOMETHING IN THE CASE THAT A SUB-EXPRESSION IS ENCOUNTERED
+	public boolean matchOperand() {
+		//isMatch = false;
+		if(currentTok.getTokenType().equals("INT_IDENTIFIER")) {
+			match("INT_IDENTIFIER");
+		} else if (currentTok.getTokenType().equals("FLOAT_IDENTIFIER")) {
+			match("FLOAT_IDENTIFIER");
+		} else if(currentTok.getTokenType().equals("IDENTIFIER")) {
+			match("IDENTIFIER");
+		} else if (currentTok.getTokenType().equals("STRING_IDENTIFIER")) {
+				match("STRING_IDENTIFIER");
+		} else if(currentTok.getTokenType().equals("OPEN_PARENTHESIS")){
 			match("OPEN_PARENTHESIS");
 			expression();
-			break;
-		case "INT_IDENTIFIER":	//integer, ready for operator
-			match("INT_IDENTIFIER");
-			exprRest();
-			break;
-		case "FLOAT_IDENTIFIER":	//float, ready for operator
-			//readNextToken();
-			exprRest();
-			break;
-		case "BYTE_IDENTIFIER":	//byte, math expressions not allowed
-			//readNextToken();
-			//byteExpr();
-			break;
-		//special case, could be a function call or variable
-		/*case ("IDENTIFIER"):
-			funcCall();
-			break;
-		case ("KEYWORD_BYTE"):		//byte keyword, must be typecast
-			typeCast();
-			break;
-		case ("KEYWORD_INT32"):		//int32 keyword, must be typecast
-			typeCast();
-			break;
-		case ("KEYWORD_FLOAT64"):	//float64 keyword, must be typecast
-			typeCast();
-			break;
-		case ("VAR_IDENTIFIER"):		//expression references declared variable
-			varExpr();
-			break;
-		case ("STRING_IDENTIFIER"):	//lhs is string
-			string();
-			break;
-			*/
-		default:
-			exprRest();
-			break;
+		} else {
+			//error();
+		}
+		return true;
 	}
 
-}
-//NEEDS TO HAVE SOMETHING IN THE CASE THAT A SUB-EXPRESSION IS ENCOUNTERED
-public boolean matchOperand() {
-	//isMatch = false;
-	if(currentTok.getTokenType().equals("INT_IDENTIFIER")) {
-		match("INT_IDENTIFIER");
-	} else if (currentTok.getTokenType().equals("FLOAT_IDENTIFIER")) {
-		match("FLOAT_IDENTIFIER");
-	} else if(currentTok.getTokenType().equals("IDENTIFIER")) {
-		match("IDENTIFIER");
-	} else if (currentTok.getTokenType().equals("STRING_IDENTIFIER")) {
-			match("STRING_IDENTIFIER");
-	} else if(currentTok.getTokenType().equals("OPEN_PARENTHESIS")){
-		match("OPEN_PARENTHESIS");
-		expression();
-	} else {
-		//error();
-	}
-	return true;
-}
+	public void exprRest() {
+		//NEED SOME SORT OF STOPPING POINT OR BASE CASE
 
-public void exprRest() {
-	//NEED SOME SORT OF STOPPING POINT OR BASE CASE
-
-	//match to a math expression
-	//read in the next part of the expression
-	switch(currentTok.getTokenType()) {
-		case "COMMA":
-			match("COMMA");
-			expression();
-			break;
-		case "SEMICOLON":
-			match("SEMICOLON");
-			break;
-		case "CLOSE_PARENTHESIS":
-			match("CLOSE_PARENTHESIS");
-			break;
-		case "EXCLAMATION_POINT":
-			match("EXCLAMATION_POINT");
-			matchOperand();
-			exprRest();
-			break;
-		case "TILDE":
-			match("TILDE");
-			matchOperand();
-			exprRest();
-			break;
-		case "MINUS":
-			match("MINUS");
-			matchOperand();
-			exprRest();
-			break;
-		case "CLOSE_BRACKET":
-			match("CLOSE_BRACKET");
-			break;
-		case "OPEN_BRACKET":
-			match("OPEN_BRACKET");
-			expression();
-			break;
-		case "ASSIGNMENT_OPERATOR":
-			match("ASSIGNMENT_OPERATOR");
-			expression();
-			break;
-		case "PLUS":
-			match("PLUS");
-			matchOperand();
-			exprRest();
-			break;
-		case "ASTERISK":
-			match("ASTERISK");
-			matchOperand();
-			exprRest();
-			break;
-		case "BACKSLASH":
-			match("BACKSLASH");
-			matchOperand();
-			exprRest();
-			break;
-		case "BITWISE_OR":
-			match("BITWISE_OR");
-			//something special here
-			break;
-		case "BITWISE_AND":
-			match("BITWISE_AND");
-			//something special here
-			break;
-		case "LOGICAL_OR":
-			match("LOGICAL_OR");
-			//something special here
-			break;
-		case "LOGICAL_AND":
-			match("LOGICAL_AND");
-			//something special here
-			break;
-		default:
-			break;
+		//match to a math expression
+		//read in the next part of the expression
+		switch(currentTok.getTokenType()) {
+			case "COMMA":
+				match("COMMA");
+				expression();
+				break;
+			case "SEMICOLON":
+				match("SEMICOLON");
+				break;
+			case "CLOSE_PARENTHESIS":
+				match("CLOSE_PARENTHESIS");
+				break;
+			case "EXCLAMATION_POINT":
+				match("EXCLAMATION_POINT");
+				matchOperand();
+				exprRest();
+				break;
+			case "TILDE":
+				match("TILDE");
+				matchOperand();
+				exprRest();
+				break;
+			case "MINUS":
+				match("MINUS");
+				matchOperand();
+				exprRest();
+				break;
+			case "CLOSE_BRACKET":
+				match("CLOSE_BRACKET");
+				break;
+			case "OPEN_BRACKET":
+				match("OPEN_BRACKET");
+				expression();
+				break;
+			case "ASSIGNMENT_OPERATOR":
+				match("ASSIGNMENT_OPERATOR");
+				expression();
+				break;
+			case "PLUS":
+				match("PLUS");
+				matchOperand();
+				exprRest();
+				break;
+			case "ASTERISK":
+				match("ASTERISK");
+				matchOperand();
+				exprRest();
+				break;
+			case "BACKSLASH":
+				match("BACKSLASH");
+				matchOperand();
+				exprRest();
+				break;
+			case "BITWISE_OR":
+				match("BITWISE_OR");
+				//something special here
+				break;
+			case "BITWISE_AND":
+				match("BITWISE_AND");
+				//something special here
+				break;
+			case "LOGICAL_OR":
+				match("LOGICAL_OR");
+				//something special here
+				break;
+			case "LOGICAL_AND":
+				match("LOGICAL_AND");
+				//something special here
+				break;
+			default:
+				break;
+		}
 	}
-}
 
 }

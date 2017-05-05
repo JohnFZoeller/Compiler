@@ -116,11 +116,15 @@ public class Subtree {
 
 	public boolean isExpresh(){ return true; }
 
-	public boolean hasWilds(){ return false; }
+	public boolean hasWilds(){
+		return token.getTokenType().equals("OPEN_BRACKET");
+		//collapse
+	}
 
-	public boolean isDimensh(){ return false; }
-
-	public boolean hasFieldDecls() { return false; }
+	public boolean isDimensh(){
+		return token.getTokenType().equals("OPEN_BRACKET");
+		//collapse
+	}
 
 	public boolean isElse(){
 		return token.getTokenType().equals("else");
@@ -408,10 +412,9 @@ class Type extends Subtree{
 		
 		System.out.println(print + "name");
 		children.get(0).printUp(print);
-		
+
 	}
 }
-
 
 
 /*********************Support Statements**********************/
@@ -536,8 +539,7 @@ class RecordDescriptor extends Subtree{
 
 		match("record");
 
-		if(hasFieldDecls())
-			addChild(new FieldDeclarations(token, it));
+		addChild(new FieldDeclarations(token, it));
 
 		match("end");
 	}
@@ -667,6 +669,37 @@ class Param extends Subtree{
 		System.out.println(print + "initializer");
 	}
 }
+
+class DimWilds extends Subtree{
+	DimWilds(Token t, Iterator<Token> i){
+		super(t, i);
+
+		addChild(new WildCard(token, it));
+		y();
+	}
+
+	public void y(){
+		if(!token.getTokenType().equals("COMMA")) return;
+
+		match("COMMA");
+		addChild(new WildCard(token, it));
+		y();
+	}
+
+	@Override 
+	public void print(){
+
+	}
+}
+
+class WildCard extends Subtree{
+	WildCard(Token t, Iterator<Token> i){
+		super(t, i);
+
+		match("ASTERISK");
+	}
+}
+
 
 /***********************Output Helpers********************/
 
