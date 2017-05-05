@@ -1,6 +1,9 @@
-StringIdentifier john
-float64 
+OPEN_PARENTHESIS 
 SEMICOLON 
+SEMICOLON 
+CLOSE_PARENTHESIS 
+OPEN_BRACE 
+CLOSE_BRACE 
 function 
 StringIdentifier fib1
 OPEN_PARENTHESIS 
