@@ -8,21 +8,17 @@ public class Subtree {
 	Token token;
 	List<Subtree> children;
 	Iterator<Token> it;
-	String print;
+	String print = "";
 
 	public Subtree(){
-		print = "";
-		//collapse
 	}
 
 	public Subtree(Token t){
 		token = t;
-		print = "";
 	}
 
 	public Subtree(Iterator<Token> i){ 
 		it = i;
-		print = "";
 	}
 
 	public Subtree(Token current, Iterator<Token> i) {
@@ -30,7 +26,6 @@ public class Subtree {
 		this.row = current.getRow();
 		this.col = current.getCol();
 		it = i;
-		print = "";
 	}
 
 	public void addChild(Subtree subtree) {
@@ -732,22 +727,82 @@ class BasicType extends Subtree{
 	}
 }
 
-/*********************Expressions*************************/
+/*********************Expressions************************/
 
-class Expressions extends Subtree{
+
+class Expressions extends Subtree {
 	Expressions(Token t, Iterator<Token> i){
 		super(t, i);
+
+		addChild(new Expression(token, it));
+
+		addAllChildren();
+	}
+
+	/*
+		Recursively adds all expression children to the Expressions
+		Node's array list.
+	*/
+
+	private void addAllChildren() {
+		if(token.getTokenType().equals("COMMA")) {
+			match("COMMA");
+			addChild(new Expression(token, it));
+			addAllChildren();
+		} else {
+			return;
+		}
+	}
+
+	@Override
+	public void print(){
+		printUp("+---");
+
+		System.out.println(print + "(" + row + ", " + col + ") " 
+			+ System.identityHashCode(this) 
+			+ " Expressions");
+
+		for(int i = 0; i < children.size(); i++){
+			children.get(i).printUp(print);
+			children.get(i).print();
+		}
 	}
 }
 
-class Expression extends Subtree{
+class Expression extends Subtree {
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
+		addAllChildren();
 	}
-	//collapse
 
-	@Override 
-	public void print(){
+	private boolean isTypeCast() {
+		boolean isTypeCast = false;
+		if(token.getTokenType().equals("KEYWORD_INT32") ||
+			token.getTokenType().equals("KEYWORD_BYTE") ||
+			token.getTokenType().equals("KEYWORD_FLOAT")) {
+				isTypeCast = true;
+			}
+		return isTypeCast;
+	}
 
+	private boolean isUnary() {
+		boolean isUnary = false;
+		if(token.getTokenType().equals("MINUS") ||
+			token.getTokenType().equals("EXCLAMATION_POINT") ||
+			token.getTokenType().equals("TILDE")) {
+			isUnary = true;
+		}
+		return isUnary;
+	}
+
+	private void addAllChildren() {
+		if(isUnary()) {
+			match(token.getTokenType());
+			//addChild(new ExprRest(token, it));
+		} else if(isTypeCast()) {
+			match(token.getTokenType());
+			match("OPEN_PARANTHESIS");
+			addChild(new Expression(token, it));
+		}
 	}
 }

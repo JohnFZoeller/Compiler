@@ -306,20 +306,4 @@ public class SyntaxParser {
 		}
 	}
 
-	public void printTree() {
-		if(root == null) {
-			return;
-		} else {
-			inOrderWalk(root);
-		}
-	}
-
-	private void inOrderWalk(Subtree current) {
-		if(current != null) {
-			inOrderWalk(current.left);
-			current.print();
-			inOrderWalk(current.right);
-		}
-	}
-
 }
