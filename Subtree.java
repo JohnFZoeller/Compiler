@@ -274,13 +274,11 @@ class Var extends Subtree{
 
 		addChild(new Symbol(token));
 		match("StringIdentifier");
-
 		//assignment case ELSE declaration case
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
 			match("ASSIGNMENT_OPERATOR");
 			addChild(new Expression(token, it));
-		} 
-		else {
+		} else {
 			addChild(new TypeDescriptor(token, it));
 		}
 
@@ -749,8 +747,6 @@ class Expressions extends Subtree {
 			match("COMMA");
 			addChild(new Expression(token, it));
 			addAllChildren();
-		} else {
-			return;
 		}
 	}
 
@@ -775,16 +771,6 @@ class Expression extends Subtree {
 		addAllChildren();
 	}
 
-	private boolean isTypeCast() {
-		boolean isTypeCast = false;
-		if(token.getTokenType().equals("KEYWORD_INT32") ||
-			token.getTokenType().equals("KEYWORD_BYTE") ||
-			token.getTokenType().equals("KEYWORD_FLOAT")) {
-				isTypeCast = true;
-			}
-		return isTypeCast;
-	}
-
 	private boolean isUnary() {
 		boolean isUnary = false;
 		if(token.getTokenType().equals("MINUS") ||
@@ -797,12 +783,219 @@ class Expression extends Subtree {
 
 	private void addAllChildren() {
 		if(isUnary()) {
-			match(token.getTokenType());
-			//addChild(new ExprRest(token, it));
-		} else if(isTypeCast()) {
-			match(token.getTokenType());
-			match("OPEN_PARANTHESIS");
-			addChild(new Expression(token, it));
+			addChild(new ExprRest(token, it));
+		} else {
+			matchOperand();
+			addChild(new ExprRest(token, it));
+		}
+
+		if(token.getTokenType().equals("COMMA")) {
+			addAllChildren();
 		}
 	}
+
+	@Override
+	public void print(){
+		printUp("+---");
+
+		System.out.println(print + "(" + row + ", " + col + ") " 
+			+ System.identityHashCode(this) 
+			+ token.getTokenType());
+
+		for(int i = 0; i < children.size(); i++){
+		 	children.get(i).printUp(print);
+		 	children.get(i).print();
+		}
+	}
+
+	private void matchOperand() {
+		switch(token.getTokenType()) {
+			case "INT_IDENTIFIER":
+				match("INT_IDENTIFIER");
+				break;
+			case "FLOAT_IDENTIFIER":
+				match("FLOAT_IDENTIFIER");
+				break;
+			case "BYTE_IDENTIFIER":
+				match("BYTE_IDENTIFIER");
+				break;
+			case "StringIdentifier":
+				match("StringIdentifier");
+				break;
+			case "KEYWORD_INT32":
+				match("KEYWORD_INT32");
+				match("OPEN_PARENTHESIS");
+				addChild(new Expression(token, it));
+				break;
+			case "KEYWORD_FLOAT":
+				match("KEYWORD_FLOAT");
+				match("OPEN_PARENTHESIS");
+				addChild(new Expression(token, it));
+				break;
+			case "KEYWORD_BYTE":
+				match("KEYWORD_BYTE");
+				match("OPEN_PARENTHESIS");
+				addChild(new Expression(token, it));
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+class ExprRest extends Subtree {
+	Token operator = null;
+	Token operand = null;
+
+	ExprRest(Token t, Iterator<Token> i){
+		super(t, i);
+		addChildren();
+	}
+
+	private void addChildren() {
+		matchOperator();
+		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
+			addChild(new ExprRest(token, it));
+		} else {
+			matchOperand();
+		}
+	}
+
+	private void matchOperator() {
+		switch(token.getTokenType()) {
+			case "PLUS":
+				operator = token;
+				match("PLUS");
+				break;
+			case "MINUS":
+				operator = token;
+				match("MINUS");
+				break;
+			case "ASTERISK":
+				operator = token;
+				match("ASTERISK");
+				break;
+			case "BACKSLASH":
+				operator = token;
+				match("BACKSLASH");
+				break;
+			case "TILDE":
+				operator = token;
+				match("TILDE");
+				break;
+			case "ASSIGNMENT_OPERATOR":
+				operator = token;
+				match("ASSIGNMENT_OPERATOR");
+				break;
+			case "RELATIONAL_GREATER_THAN":
+				operator = token;
+				match("RELATIONAL_GREATER_THAN");
+				break;
+			case "RELATIONAL_GREATER_EQUALTO":
+				operator = token;
+				match("RELATIONAL_GREATER_EQUALTO");
+				break;
+			case "RELATIONAL_LESS_THAN":
+				operator = token;
+				match("RELATIONAL_LESS_THAN");
+				break;
+			case "RELATIONAL_LESS_EQUALTO":
+				operator = token;
+				match("RELATIONAL_LESS_EQUALTO");
+				break;
+			case "BITWISE_AND":
+				operator = token;
+				match("BITWISE_AND");
+				break;
+			case "LOGICAL_AND":
+				operator = token;
+				match("LOGICAL_AND");
+				break;
+			case "BITWISE_OR":
+				operator = token;
+				match("BITWISE_OR");
+				break;
+			case "LOGICAL_OR":
+				operator = token;
+				match("LOGICAL_OR");
+				break;
+			case "EXCLAMATION_POINT":
+				operator = token;
+				match("EXCLAMATION_POINT");
+				break;
+			case "BITWISE_XOR":
+				operator = token;
+				match("BITWISE_XOR");
+				break;
+			case "LOGICAL_NOT":
+				operator = token;
+				match("LOGICAL_NOT");
+				break;
+			case "OUTPUT":
+				operator = token;
+				match("OUTPUT");
+				break;
+			case "INPUT":
+				operator = token;
+				match("INPUT");
+				break;
+			case "EQUALITY":
+				operator = token;
+				match("EQUALITY");
+				break;
+			default:
+				break;
+		}
+	}
+
+	private void matchOperand() {
+		switch(token.getTokenType()) {
+			case "INT_IDENTIFIER":
+				operand = token;
+				match("INT_IDENTIFIER");
+				break;
+			case "FLOAT_IDENTIFIER":
+				operand = token;
+				match("FLOAT_IDENTIFIER");
+				break;
+			case "BYTE_IDENTIFIER":
+				operand = token;
+				match("BYTE_IDENTIFIER");
+				break;
+			case "StringIdentifier":
+				operand = token;
+				match("StringIdentifier");
+				break;
+			case "KEYWORD_INT32":
+				operand = token;
+				match("KEYWORD_INT32");
+				break;
+			case "KEYWORD_FLOAT":
+				operand = token;
+				match("KEYWORD_FLOAT");
+				break;
+			case "KEYWORD_BYTE":
+				operand = token;
+				match("KEYWORD_BYTE");
+				break;
+			default:
+				break;
+		}
+	}
+
+	@Override
+	public void print(){
+		printUp("+---");
+
+		System.out.println(print + "(" + row + ", " + col + ") " 
+			+ System.identityHashCode(this) 
+			+ "Operator: " + operator.getTokenType() + " , Operand: "
+			+ operator.getTokenType());
+
+		for(int i = 0; i < children.size(); i++){
+			children.get(i).printUp(print);
+			children.get(i).print();
+		}
+	}
+		
 }
