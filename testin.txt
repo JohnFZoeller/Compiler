@@ -1,11 +1,14 @@
-var john float64;
+for(;;){}
 
 function fib1(n byte, a int32, x float64) byte {
 	var zoell byte;
+<<<<<<< HEAD
 	var john float64;
 	var n int32;
 	if(x == y) {
 	x = 6 + 9;
 }
+=======
+>>>>>>> cecab5c7914986220eff8c3fa3dfbc49dce1dae7
 }
 return;
