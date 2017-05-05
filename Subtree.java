@@ -15,10 +15,12 @@ public class Subtree {
 
 	public Subtree(Token t){
 		token = t;
+		//collapse
 	}
 
 	public Subtree(Iterator<Token> i){ 
 		it = i;
+		//collapse;
 	}
 
 	public Subtree(Token current, Iterator<Token> i) {
@@ -160,6 +162,29 @@ class For extends Subtree{
 
 	@Override
 	public void print(){
+		System.out.println(print + "(,) " 
+			+ System.identityHashCode(this) 
+			+ " " + this.getClass());
+
+		printUp("+---");
+
+		if(hasChildren()) return; //just for debugging
+
+		System.out.println(print + " init");
+		children.get(0).printUp(print);
+		children.get(0).print();
+
+		System.out.println(print + " test");
+		children.get(1).printUp(print);
+		children.get(1).print();
+
+		System.out.println(print + " incr");
+		children.get(2).printUp(print);
+		children.get(2).print();
+
+		System.out.println(print + " body");
+		children.get(3).printUp(print);
+		children.get(3).print();
 	}
 }
 
@@ -175,6 +200,25 @@ class While extends Subtree{
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
+	}
+
+	@Override
+	public void print(){
+		System.out.println(print + "(,) " 
+			+ System.identityHashCode(this) 
+			+ " " + this.getClass());
+
+		printUp("+---");
+
+		if(hasChildren()) return; //just for debugging
+
+		System.out.println(print + " test");
+		children.get(0).printUp(print);
+		children.get(0).print();
+
+		System.out.println(print + " body");
+		children.get(1).printUp(print);
+		children.get(1).print();
 	}
 }
 
@@ -194,6 +238,32 @@ class If extends Subtree{
 		if(isElse())
 			addChild(new Else(token, it));
 	}
+
+	@Override
+	public void print(){
+		System.out.println(print + "(,) " 
+			+ System.identityHashCode(this) 
+			+ " " + this.getClass());
+
+		printUp("+---");
+
+		if(hasChildren()) return; //just for debugging
+
+		System.out.println(print + " test");
+		children.get(0).printUp(print);
+		children.get(0).print();
+
+		System.out.println(print + " body");
+		children.get(1).printUp(print);
+		children.get(1).print();
+
+		if(children.size() == 3){
+			System.out.println(print + " else");
+			children.get(2).printUp(print);
+			children.get(2).print();
+		}
+
+	}
 }
 
 class Else extends Subtree{
@@ -201,6 +271,19 @@ class Else extends Subtree{
 		super(t, i);
 		match("else");
 		addChild(new Block(token, it));
+	}
+
+	@Override
+	public void print(){
+		System.out.println(print + "(,) " 
+			+ System.identityHashCode(this) 
+			+ " " + this.getClass());
+
+		printUp("+---");
+
+		System.out.println(print + " body");
+		children.get(0).printUp(print);
+		children.get(0).print();
 	}
 }
 
