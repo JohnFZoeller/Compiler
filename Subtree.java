@@ -517,6 +517,7 @@ class Block extends Subtree{
 
 		for(int j = 0; !token.getTokenType().equals("CLOSE_BRACE"); j++){
 			match();
+
 		}
 
 		match("CLOSE_BRACE");

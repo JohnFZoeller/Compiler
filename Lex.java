@@ -94,7 +94,6 @@ class Lex implements Iterable<Token> {
 		      	//if returnToken == null, the comment has been read... safe to continue
 	      	}
 
-
 	      	if(opMap.operators.containsKey(String.valueOf(currentChar))) {	//cur in opMap?
 	      		tempCol = col;
 
@@ -112,6 +111,9 @@ class Lex implements Iterable<Token> {
 	      	} else if(Character.isLetter(currentChar)) {		//checks if currentChar isLetter
 	      		returnToken = createStringIdentifier();			//either stringIdentifier or keyword
 			}
+			else if(currentChar == '"')		
+				returnToken = createStringIdentifier();
+
 		}
 
 		//EXTREMELY SPECIAL CASE
@@ -406,7 +408,19 @@ class Lex implements Iterable<Token> {
 		if(col == 0)
 			tempCol++;
 
+		if(currentChar == '"'){
+			do{
+				readNextChar();
+				result += currentChar;
+			}while(currentChar != '"');
+
+			return new StringIdentifier(result, row, tempCol);
+		}
+
+
 		readNextChar();
+
+
 		// if(currentChar == '"') {
 		// 	result += currentChar;
 		// 	readNextChar();
