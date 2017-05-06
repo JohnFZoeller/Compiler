@@ -427,10 +427,8 @@ class Print extends Subtree{
 	public Print(Token t, Iterator<Token> i){
 		super(t, i);
 		match("print");
-		match("print");
-		System.out.println("Print " + t.getTokenType());
+
 		addChild(new Expression(token, it));
-		//match("StringIdentifier");
 
 		match("SEMICOLON");
 	}
@@ -442,7 +440,7 @@ class Print extends Subtree{
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
-		children.get(0).printUp(print + "+---");
+		children.get(0).printUp(print);
 		children.get(0).print();
 	}
 }
