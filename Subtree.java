@@ -576,6 +576,7 @@ class TypeDescriptor extends Subtree{
 	public void print(){
 		printUp("+---");
 
+		
 		System.out.println(print + "(,) " 
 			+ System.identityHashCode(token)
 			+ " type: " 
@@ -627,6 +628,15 @@ class RecordDescriptor extends Subtree{
 
 		match("end");
 	}
+
+	@Override 
+	public void print(){
+		System.out.println(print + "(,) " 
+			+ System.identityHashCode(this) 
+			+ " " + this.getClass());
+
+		printUp("+---");
+	}
 }
 
 class FieldDeclarations extends Subtree{
@@ -645,6 +655,20 @@ class FieldDeclarations extends Subtree{
 		addChild(new FieldDeclaration(token, it));
 		y();
 	}
+
+	@Override
+	public void print(){
+		printUp("+---");
+
+		System.out.println(print + "(,) " 
+			+ System.identityHashCode(this) 
+			+ " list");
+
+		for(int i = 0; i < children.size(); i++){
+			children.get(i).printUp(print);
+			children.get(i).print();
+		}
+	}
 }
 
 class FieldDeclaration extends Subtree{
@@ -655,6 +679,25 @@ class FieldDeclaration extends Subtree{
 		match("StringIdentifier");
 
 		addChild(new TypeDescriptor(token, it));
+	}
+
+	@Override
+	public void print(){
+		printUp("+---");
+
+		System.out.println(print + "(,) " 
+			+ System.identityHashCode(this) 
+			+ " Field Declaration");
+
+		printUp("+---");
+
+		System.out.println(print + "name");
+		children.get(0).printUp(print);
+		children.get(0).print(System.identityHashCode(this));
+
+		System.out.println(print + "type");
+		children.get(1).printUp(print);
+		children.get(1).print();
 	}
 }
 
@@ -723,7 +766,7 @@ class Param extends Subtree{
 
 			if(hasWilds()){
 				match("OPEN_BRACKET");
-				//dimWilds();
+				addChild(new DimWilds(token, it));
 				match("CLOSE_BRACKET");
 			}
 		}
@@ -856,8 +899,6 @@ class Expressions extends Subtree {
 	}
 }
 
-
-
 class Expression extends Subtree {
 	String tokenType = "";
 	Expression(Token t, Iterator<Token> i){
@@ -908,8 +949,9 @@ class Expression extends Subtree {
 
 	private void matchOperand() {
 		switch(token.getTokenType()) {
-			case "INT_IDENTIFIER":
-				match("INT_IDENTIFIER");
+			case "IntIdentifier":
+				match("IntIdentifier");
+				addChild(new Expression(token, it));
 				break;
 			case "FLOAT_IDENTIFIER":
 				match("FLOAT_IDENTIFIER");

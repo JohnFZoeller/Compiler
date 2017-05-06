@@ -10,17 +10,17 @@ public class Main{
 	public static void run(String in){
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
-		//SyntaxParser par = new SyntaxParser(lexer);
+		SyntaxParser par = new SyntaxParser(lexer);
 		Token temp;
 
-		//par.parse();
+		par.parse();
 		//Token temp;
-		while(iter.hasNext()){
-		 	temp = iter.next();
+		// while(iter.hasNext()){
+		//  	temp = iter.next();
 
-		 	if(temp != null)
-		 		System.out.println(temp.getTokenType());
-		 }
+		//  	if(temp != null)
+		//  		System.out.println(temp.getTokenType());
+		//  }
 
 	}
 }
