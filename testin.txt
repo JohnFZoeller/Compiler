@@ -1,1 +1,4 @@
-type zoeller record fred float64 end;
+function fib1(n int32) int32 {
+  var curr = 1;
+  var prev = 0;
+  while ((n = n - 1) > 0) {}

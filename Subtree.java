@@ -1018,6 +1018,7 @@ class ExprRest extends Subtree {
 	private void addChildren() {
 		matchOperator();
 		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
+			match("OPEN_PARENTHESIS");
 			addChild(new ExprRest(token, it));
 		} else {
 			matchOperand();
