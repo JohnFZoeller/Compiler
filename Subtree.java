@@ -162,13 +162,12 @@ class For extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
 		printUp("+---");
-
-		if(hasChildren()) return; //just for debugging
 
 		System.out.println(print + " init");
 		children.get(0).printUp(print);
@@ -204,13 +203,12 @@ class While extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
 		printUp("+---");
-
-		if(hasChildren()) return; //just for debugging
 
 		System.out.println(print + " test");
 		children.get(0).printUp(print);
@@ -241,13 +239,12 @@ class If extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
 		printUp("+---");
-
-		if(hasChildren()) return; //just for debugging
 
 		System.out.println(print + " test");
 		children.get(0).printUp(print);
@@ -275,7 +272,8 @@ class Else extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -312,7 +310,8 @@ class Func extends Subtree{
 	public void print(){
 		int i = 0;
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -357,7 +356,7 @@ class Var extends Subtree{
 
 		addChild(new Symbol(token));
 		match("StringIdentifier");
-		//assignment case ELSE declaration case
+
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
 			match("ASSIGNMENT_OPERATOR");
 			addChild(new Expression(token, it));
@@ -370,7 +369,8 @@ class Var extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -407,7 +407,8 @@ class Retur extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") "
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -431,7 +432,8 @@ class Print extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -453,7 +455,8 @@ class Exit extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -480,7 +483,8 @@ class Type extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") "  
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -551,7 +555,8 @@ class Block extends Subtree{
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " list");
 
@@ -574,12 +579,13 @@ class TypeDescriptor extends Subtree{
 
 	@Override 
 	public void print(){
-		printUp("+---");
+		children.get(0).printUp(print);
+		children.get(0).print();
 
-		System.out.println(print + "(,) " 
-			+ System.identityHashCode(token)
-			+ " type: " 
-			+ children.get(0).children.get(0).token.getTokenType());
+		if(children.size() == 2){
+			children.get(1).printUp(print);
+			children.get(1).print();
+		}
 	}
 }
 
@@ -602,18 +608,14 @@ class NaTypeDescriptor extends Subtree{
 				case "float64": match("float64"); break;
 				default : break;
 			}
-
 		}
 	}
 
 	@Override 
 	public void print(){
 		printUp("+---");
-
-		System.out.println(print + "(,) "
-			+ System.identityHashCode(token)
-			+ " type: " 
-			+ children.get(0).token.getTokenType());
+		children.get(0).printUp(print);
+		children.get(0).print();
 	}
 }
 
@@ -626,6 +628,17 @@ class RecordDescriptor extends Subtree{
 		addChild(new FieldDeclarations(token, it));
 
 		match("end");
+	}
+
+	@Override 
+	public void print(){
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
+			+ System.identityHashCode(this) 
+			+ " " + this.getClass());
+
+		children.get(0).printUp(print);
+		children.get(0).print();
 	}
 }
 
@@ -645,6 +658,21 @@ class FieldDeclarations extends Subtree{
 		addChild(new FieldDeclaration(token, it));
 		y();
 	}
+
+	@Override
+	public void print(){
+		printUp("+---");
+
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
+			+ System.identityHashCode(this) 
+			+ " list");
+
+		for(int i = 0; i < children.size(); i++){
+			children.get(i).printUp(print);
+			children.get(i).print();
+		}
+	}
 }
 
 class FieldDeclaration extends Subtree{
@@ -656,6 +684,26 @@ class FieldDeclaration extends Subtree{
 
 		addChild(new TypeDescriptor(token, it));
 	}
+
+	@Override
+	public void print(){
+		printUp("+---");
+
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
+			+ System.identityHashCode(this) 
+			+ " Field Declaration");
+
+		printUp("+---");
+
+		System.out.println(print + "name");
+		children.get(0).printUp(print);
+		children.get(0).print(System.identityHashCode(this));
+
+		System.out.println(print + "type");
+		children.get(1).printUp(print);
+		children.get(1).print();
+	}
 }
 
 class Dimension extends Subtree{
@@ -665,6 +713,12 @@ class Dimension extends Subtree{
 		match("OPEN_BRACKET");
 		addChild(new Expressions(token, it));
 		match("CLOSE_BRACKET");
+	}
+
+	@Override
+	public void print(){
+		children.get(0).printUp(print);
+		children.get(0).print();
 	}
 }
 
@@ -690,7 +744,8 @@ class Params extends Subtree{
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " list");
 
@@ -723,7 +778,7 @@ class Param extends Subtree{
 
 			if(hasWilds()){
 				match("OPEN_BRACKET");
-				//dimWilds();
+				addChild(new DimWilds(token, it));
 				match("CLOSE_BRACKET");
 			}
 		}
@@ -734,7 +789,8 @@ class Param extends Subtree{
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " Parameter");
 
@@ -748,9 +804,15 @@ class Param extends Subtree{
 		if(children.get(1) instanceof NaTypeDescriptor){
 			children.get(1).printUp(print);
 			children.get(1).print();
+
+			//skipping wilds for now
 		}
 
 		System.out.println(print + "initializer");
+		if(children.get(1) instanceof Expression){
+			children.get(1).printUp(print);
+			children.get(1).print();
+		}
 	}
 }
 
@@ -796,7 +858,8 @@ class Symbol extends Subtree{
 	public void print(int a){
 		printUp("+---");
 
-		System.out.println(print + "(,) "
+		System.out.println(print + "(" + row + ", "
+			+ col + ") "
 			+ System.identityHashCode(token) + " "
 			+ this.getClass() + ": " + token.getName() +
 			" (" + token.getTokenType() + ") defined at: " + a);
@@ -810,9 +873,12 @@ class BasicType extends Subtree{
 
 	@Override
 	public void print(){
-		printUp("+---");
 
-		System.out.println();
+		System.out.println(print + "(" + row + ", "
+			+ col + ") "
+			+ System.identityHashCode(token)
+			+ " " + this.getClass() + ": "
+			+ token.getTokenType());
 	}
 }
 
@@ -855,8 +921,6 @@ class Expressions extends Subtree {
 		// }
 	}
 }
-
-
 
 class Expression extends Subtree {
 	String tokenType = "";
@@ -910,6 +974,10 @@ class Expression extends Subtree {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
 				match("IntIdentifier");
+<<<<<<< HEAD
+=======
+				addChild(new Expression(token, it));
+>>>>>>> 3043d57994be9213351099be1f5d1b197e2db37c
 				break;
 			case "FLOAT_IDENTIFIER":
 				match("FLOAT_IDENTIFIER");
@@ -953,6 +1021,7 @@ class ExprRest extends Subtree {
 	private void addChildren() {
 		matchOperator();
 		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
+			match("OPEN_PARENTHESIS");
 			addChild(new ExprRest(token, it));
 		} else {
 			matchOperand();

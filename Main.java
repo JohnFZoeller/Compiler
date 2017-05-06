@@ -14,7 +14,11 @@ public class Main{
 		Token temp;
 
 		par.parse();
+<<<<<<< HEAD
 		// Token temp;
+=======
+		//Token temp;
+>>>>>>> 3043d57994be9213351099be1f5d1b197e2db37c
 		// while(iter.hasNext()){
 		//  	temp = iter.next();
 
