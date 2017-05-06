@@ -890,7 +890,7 @@ class Expressions extends Subtree {
 		super(t, i);
 
 		addChild(new Expression(token, it));
-
+		System.out.print(t.getTokenType());
 		addAllChildren();
 	}
 
@@ -945,6 +945,7 @@ class Expression extends Subtree {
 			addChild(new ExprRest(token, it));
 		} else {
 			matchOperand();
+			addChild(new ExprRest(token, it));
 			if(!token.getTokenType().equals("SEMICOLON")) {
 				addChild(new ExprRest(token, it));
 			}
@@ -974,10 +975,7 @@ class Expression extends Subtree {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
 				match("IntIdentifier");
-<<<<<<< HEAD
-=======
 				addChild(new Expression(token, it));
->>>>>>> 3043d57994be9213351099be1f5d1b197e2db37c
 				break;
 			case "FLOAT_IDENTIFIER":
 				match("FLOAT_IDENTIFIER");
@@ -992,17 +990,25 @@ class Expression extends Subtree {
 				match("KEYWORD_INT32");
 				match("OPEN_PARENTHESIS");
 				addChild(new Expression(token, it));
+				match("CLOSE_PARENTHESIS");
 				break;
 			case "KEYWORD_FLOAT":
 				match("KEYWORD_FLOAT");
 				match("OPEN_PARENTHESIS");
 				addChild(new Expression(token, it));
+				match("CLOSE_PARENTHESIS");
 				break;
 			case "KEYWORD_BYTE":
 				match("KEYWORD_BYTE");
 				match("OPEN_PARENTHESIS");
 				addChild(new Expression(token, it));
+				match("CLOSE_PARENTHESIS");
 				break;
+			case "OPEN_PARENTHESIS":
+				match("OPEN_PARENTHESIS");
+				matchOperand();
+				addChild(new Expression(token, it));
+				match("CLOSE_PARENTHESIS");
 			default:
 				break;
 		}
