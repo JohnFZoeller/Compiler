@@ -407,17 +407,27 @@ class Lex implements Iterable<Token> {
 			tempCol++;
 
 		readNextChar();
-
-
-		if(currentChar == 8220) {
-			while(currentChar != 8221) {
-				System.out.println(currentChar);
-				result += currentChar;
-				readNextChar();
-			}
-			result += currentChar;
-			readNextChar();
-		} else {
+		// if(currentChar == '"') {
+		// 	result += currentChar;
+		// 	readNextChar();
+		// 	while(currentChar != '"') {
+		// 		System.out.println(currentChar);
+		// 		result += currentChar;
+		// 		readNextChar();
+		// 	}
+		// 	result += currentChar;
+		// 	readNextChar();
+		// } else if(currentChar == '\'') {
+		// 	result += currentChar;
+		// 	readNextChar();
+		// 	while(currentChar != '\'') {
+		// 		System.out.println(currentChar);
+		// 		result += currentChar;
+		// 		readNextChar();
+		// 	}
+		// 	result += currentChar;
+		// 	readNextChar();
+		//} else {
 
 		//upon exiting while loop currentChar will NOT be equal to a letter
 		while(Character.isLetter(currentChar)) {	//while currentChar is a letter
@@ -467,7 +477,6 @@ class Lex implements Iterable<Token> {
 			readOk = false;
 			return new Keyword(result, KeywordMap.keywords.get(result), row, tempCol);
 		}
-	}
 		readOk = false;
 		return new StringIdentifier(result, row, tempCol);
 	}

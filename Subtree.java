@@ -368,7 +368,7 @@ class Var extends Subtree{
 		}
 
 		match("SEMICOLON");
-		System.out.println("SEMICOLON MATCHED");
+		//System.out.println("SEMICOLON MATCHED");
 	}
 
 	@Override
@@ -427,6 +427,8 @@ class Print extends Subtree{
 	public Print(Token t, Iterator<Token> i){
 		super(t, i);
 		match("print");
+		match("print");
+		System.out.println("Print " + t.getTokenType());
 		addChild(new Expression(token, it));
 		//match("StringIdentifier");
 
@@ -893,7 +895,7 @@ class BasicType extends Subtree{
 class Expressions extends Subtree {
 	Expressions(Token t, Iterator<Token> i){
 		super(t, i);
-
+		//System.out.print(t.getTokenType());
 		addChild(new Expression(token, it));
 		//System.out.print(t.getTokenType());
 		addAllChildren();
@@ -952,19 +954,19 @@ class Expression extends Subtree {
 
 	private void addAllChildren() {
 		matchOperand();		
-		// if(isUnary()) {
-		// 	addChild(new ExprRest(token, it));
-		// } else {
-		// 	matchOperand();
-		// 	addChild(new ExprRest(token, it));
-		// 	if(!token.getTokenType().equals("SEMICOLON")) {
-		// 		addChild(new ExprRest(token, it));
-		// 	}
-		// }
+		if(isUnary()) {
+			addChild(new ExprRest(token, it));
+		} else {
+			matchOperand();
+			addChild(new ExprRest(token, it));
+			if(!token.getTokenType().equals("SEMICOLON")) {
+				addChild(new ExprRest(token, it));
+			}
+		}
 
-		// if(token.getTokenType().equals("COMMA")) {
-		// 	addAllChildren();
-		// }
+		if(token.getTokenType().equals("COMMA")) {
+			addAllChildren();
+		}
 	}
 
 	@Override
@@ -976,32 +978,35 @@ class Expression extends Subtree {
 			+ " expression statement ");
 
 		printUp("+---");
-		System.out.println(print + "assign");
+		System.out.println(print + "Operand");
 		printUp("+---");
 		System.out.println(print + tokenType);
 
-		//  for(int i = 0; i < children.size(); i++){
-		//   	children.get(i).printUp(print);
-		//   	children.get(i).print();
-		// }
+		  for(int i = 0; i < children.size(); i++){
+		   	children.get(i).printUp(print);
+		   	children.get(i).print();
+		  }
 	}
 
 	private void matchOperand() {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
+				tokenType = token.getName();
 				match("IntIdentifier");
 				addChild(new Expression(token, it));
 				break;
 			case "FLOAT_IDENTIFIER":
+				tokenType = token.getName();
 				match("FLOAT_IDENTIFIER");
 				break;
 			case "BYTE_IDENTIFIER":
+				tokenType = token.getName();
 				match("BYTE_IDENTIFIER");
 				break;
 			case "StringIdentifier":
 				System.out.println(token.getVal());
-				match("StringIdentifier");
 				tokenType = token.getName();
+				match("StringIdentifier");
 				break;
 			case "KEYWORD_INT32":
 				match("KEYWORD_INT32");
@@ -1205,20 +1210,21 @@ class ExprRest extends Subtree {
 
 	@Override
 	public void print(){
-		printUp("+---");
-
-		System.out.println(print + "(,) " +
-			System.identityHashCode(this) + 
-			token.getTokenType());
-
-		printUp("+---");
-
-		System.out.println(print + "symbol");
-
-		//for(int i = 0; i < children.size(); i++){
-		//	children.get(i).printUp(print);
-		//	children.get(i).print();
-		//}
+		if(operand == null) {
+			return;
+		} else {
+			printUp("+---");
+			System.out.println(print + "(,) " +
+			System.identityHashCode(this));
+			printUp("+---");
+			System.out.println(print + " Operator: " + opType);
+			printUp("+---");
+			System.out.println(print + " Operand: " + operandType);
+			for(int i = 0; i < children.size(); i++){
+				children.get(i).printUp(print);
+				children.get(i).print();
+			}
+		}
 	}
 		
 }
