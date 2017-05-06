@@ -840,20 +840,24 @@ class Expressions extends Subtree {
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(" + row + ", " + col + ") " 
+		System.out.println(print + "(, ) " 
 			+ System.identityHashCode(this) 
 			+ " Expressions");
 
-		for(int i = 0; i < children.size(); i++){
-			children.get(i).printUp(print);
-			children.get(i).print();
-		}
+		// for(int i = 0; i < children.size(); i++){
+		// 	children.get(i).printUp(print);
+		// 	children.get(i).print();
+		// }
 	}
 }
 
+
+
 class Expression extends Subtree {
+	String tokenType = "";
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
+		tokenType = t.getTokenType();
 		addAllChildren();
 	}
 
@@ -872,7 +876,9 @@ class Expression extends Subtree {
 			addChild(new ExprRest(token, it));
 		} else {
 			matchOperand();
-			addChild(new ExprRest(token, it));
+			if(!token.getTokenType().equals("SEMICOLON")) {
+				addChild(new ExprRest(token, it));
+			}
 		}
 
 		if(token.getTokenType().equals("COMMA")) {
@@ -884,13 +890,14 @@ class Expression extends Subtree {
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(" + row + ", " + col + ") " 
+		System.out.println(print + "(,) " 
 			+ System.identityHashCode(this) 
-			+ token.getTokenType());
+			+ " class: Expression " + "(" + tokenType + ")"
+			+ " ");
 
-		for(int i = 0; i < children.size(); i++){
-		 	children.get(i).printUp(print);
-		 	children.get(i).print();
+		 for(int i = 0; i < children.size(); i++){
+		  	children.get(i).printUp(print);
+		  	children.get(i).print();
 		}
 	}
 
@@ -930,8 +937,8 @@ class Expression extends Subtree {
 }
 
 class ExprRest extends Subtree {
-	Token operator = null;
-	Token operand = null;
+	public Token operator = null;
+	public Token operand = null;
 
 	ExprRest(Token t, Iterator<Token> i){
 		super(t, i);
@@ -1073,15 +1080,15 @@ class ExprRest extends Subtree {
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(" + row + ", " + col + ") " 
+		System.out.println(print + "(,) " 
 			+ System.identityHashCode(this) 
 			+ "Operator: " + operator.getTokenType() + " , Operand: "
 			+ operator.getTokenType());
 
-		for(int i = 0; i < children.size(); i++){
-			children.get(i).printUp(print);
-			children.get(i).print();
-		}
+		//for(int i = 0; i < children.size(); i++){
+		//	children.get(i).printUp(print);
+		//	children.get(i).print();
+		//}
 	}
 		
 }

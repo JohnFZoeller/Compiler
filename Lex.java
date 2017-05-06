@@ -510,7 +510,7 @@ class Lex implements Iterable<Token> {
 			@Override
 			public Token next(){						//move to next char
 				try{
-					return getNextT();					//the next token method
+					return getNextT();			//the next token method
 				}catch(IOException e){
 					e.printStackTrace();				//address of error
 					return null;						//else return null
