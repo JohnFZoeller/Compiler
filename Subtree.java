@@ -357,7 +357,7 @@ class Var extends Subtree{
 
 		addChild(new Symbol(token));
 		match("StringIdentifier");
-		//assignment case ELSE declaration case
+
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
 			match("ASSIGNMENT_OPERATOR");
 			addChild(new Expression(token, it));
@@ -577,7 +577,10 @@ class TypeDescriptor extends Subtree{
 		children.get(0).printUp(print);
 		children.get(0).print();
 
-		//still need to check for dimensions
+		if(children.size() == 2){
+			children.get(1).printUp(print);
+			children.get(1).print();
+		}
 	}
 }
 
@@ -702,6 +705,12 @@ class Dimension extends Subtree{
 		match("OPEN_BRACKET");
 		addChild(new Expressions(token, it));
 		match("CLOSE_BRACKET");
+	}
+
+	@Override
+	public void print(){
+		children.get(0).printUp(print);
+		children.get(0).print();
 	}
 }
 
