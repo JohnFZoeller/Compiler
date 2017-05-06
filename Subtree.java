@@ -488,6 +488,11 @@ class Type extends Subtree{
 		
 		System.out.println(print + "name");
 		children.get(0).printUp(print);
+		children.get(0).print(System.identityHashCode(this));
+
+		System.out.println(print + "type");
+		children.get(1).printUp(print);
+		children.get(1).print();
 
 	}
 }
