@@ -532,8 +532,11 @@ class Block extends Subtree{
 							break;
 			case "const":	addChild(new Var(token, it));
 							break;
+			case "StringIdentifier":
+							addChild(new Expression(token, it));
+							break;
 			default:		System.out.println("Unrecognized token type "
-				+ token.getTokenType());
+							+ token.getTokenType());
 							System.exit(0);
 							break;
 		}

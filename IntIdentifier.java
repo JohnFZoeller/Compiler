@@ -2,8 +2,9 @@ public class IntIdentifier extends Token {
 	private int val;
 
 	public IntIdentifier(int v, int r, int c){
-		super(r, c);
+		super("IntIdentifier", r, c);
 		this.val = v;
+		setVal(v);
 	}
 
 	@Override

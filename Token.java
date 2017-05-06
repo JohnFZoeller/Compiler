@@ -4,6 +4,7 @@ public class Token{
 	protected int row, col;
 	protected String input;
 	protected String name;
+	protected int val;
 
 	public Token(String i, int r, int c){
 	 	this.input = i;
@@ -17,6 +18,10 @@ public class Token{
 	 	this.col = c;
 	 	name = "";
 	}
+
+	public int getVal(){ return val; }
+
+	public void setVal(int v) { val = v; }
 
 	public int getRow(){ return row; }
 

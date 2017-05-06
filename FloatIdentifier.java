@@ -2,7 +2,7 @@ public class FloatIdentifier extends Token {
 	private float value;
 
 	public FloatIdentifier(float v, int r, int c){
-		super(r, c);
+		super("FloatIdentifier", r, c);
 		this.value = v;
 	}
 
