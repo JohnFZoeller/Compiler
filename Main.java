@@ -17,12 +17,12 @@ public class Main{
 		// Token temp;
 		//Token temp;
 
-		// while(iter.hasNext()){
-		//  	temp = iter.next();
+		//while(iter.hasNext()){
+		  //	temp = iter.next();
 
-		//  	if(temp != null)
-		//  		System.out.println(temp.getTokenType());
-		//  }
+		 	//if(temp != null)
+		  	//	System.out.println(temp.getTokenType() + "    " + temp.getVarName());
+		  //}
 
 	}
 }

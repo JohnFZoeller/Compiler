@@ -18,6 +18,9 @@ public class Token{
 	 	this.col = c;
 	 	name = "";
 	}
+	public String getVarName() {
+		return "";
+	}
 
 	public int getVal(){ return val; }
 

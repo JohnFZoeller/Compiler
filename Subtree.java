@@ -365,6 +365,7 @@ class Var extends Subtree{
 		}
 
 		match("SEMICOLON");
+		System.out.println("SEMICOLON MATCHED");
 	}
 
 	@Override
@@ -425,7 +426,7 @@ class Print extends Subtree{
 		match("print");
 
 		addChild(new Expression(token, it));
-		match("StringIdentifier");
+		//match("StringIdentifier");
 
 		match("SEMICOLON");
 	}
@@ -542,7 +543,9 @@ class Block extends Subtree{
 			case "const":	addChild(new Var(token, it));
 							break;
 			case "StringIdentifier":
+							System.out.println(token.getVarName());
 							addChild(new Expression(token, it));
+							match("SEMICOLON");
 							break;
 			default:		System.out.println("Unrecognized token type "
 							+ token.getTokenType());
@@ -984,7 +987,9 @@ class Expression extends Subtree {
 				match("BYTE_IDENTIFIER");
 				break;
 			case "StringIdentifier":
+				System.out.println(token.getVal());
 				match("StringIdentifier");
+				//matchOperand();
 				break;
 			case "KEYWORD_INT32":
 				match("KEYWORD_INT32");
@@ -1029,6 +1034,7 @@ class ExprRest extends Subtree {
 		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
 			match("OPEN_PARENTHESIS");
 			addChild(new ExprRest(token, it));
+			match("CLOSE_PARENTHESIS");
 		} else {
 			matchOperand();
 		}
