@@ -574,13 +574,10 @@ class TypeDescriptor extends Subtree{
 
 	@Override 
 	public void print(){
-		printUp("+---");
+		children.get(0).printUp(print);
+		children.get(0).print();
 
-		
-		System.out.println(print + "(,) " 
-			+ System.identityHashCode(token)
-			+ " type: " 
-			+ children.get(0).children.get(0).token.getTokenType());
+		//still need to check for dimensions
 	}
 }
 
@@ -603,18 +600,14 @@ class NaTypeDescriptor extends Subtree{
 				case "float64": match("float64"); break;
 				default : break;
 			}
-
 		}
 	}
 
 	@Override 
 	public void print(){
 		printUp("+---");
-
-		System.out.println(print + "(,) "
-			+ System.identityHashCode(token)
-			+ " type: " 
-			+ children.get(0).token.getTokenType());
+		children.get(0).printUp(print);
+		children.get(0).print();
 	}
 }
 
@@ -635,7 +628,8 @@ class RecordDescriptor extends Subtree{
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
-		printUp("+---");
+		children.get(0).printUp(print);
+		children.get(0).print();
 	}
 }
 
@@ -853,9 +847,11 @@ class BasicType extends Subtree{
 
 	@Override
 	public void print(){
-		printUp("+---");
 
-		System.out.println();
+		System.out.println(print + "(,) "
+			+ System.identityHashCode(token)
+			+ " " + this.getClass() + ": "
+			+ token.getTokenType());
 	}
 }
 
