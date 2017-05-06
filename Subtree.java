@@ -168,8 +168,6 @@ class For extends Subtree{
 
 		printUp("+---");
 
-		if(hasChildren()) return; //just for debugging
-
 		System.out.println(print + " init");
 		children.get(0).printUp(print);
 		children.get(0).print();
@@ -210,8 +208,6 @@ class While extends Subtree{
 
 		printUp("+---");
 
-		if(hasChildren()) return; //just for debugging
-
 		System.out.println(print + " test");
 		children.get(0).printUp(print);
 		children.get(0).print();
@@ -246,8 +242,6 @@ class If extends Subtree{
 			+ " " + this.getClass());
 
 		printUp("+---");
-
-		if(hasChildren()) return; //just for debugging
 
 		System.out.println(print + " test");
 		children.get(0).printUp(print);
@@ -794,9 +788,15 @@ class Param extends Subtree{
 		if(children.get(1) instanceof NaTypeDescriptor){
 			children.get(1).printUp(print);
 			children.get(1).print();
+
+			//skipping wilds for now
 		}
 
 		System.out.println(print + "initializer");
+		if(children.get(1) instanceof Expression){
+			children.get(1).printUp(print);
+			children.get(1).print();
+		}
 	}
 }
 
