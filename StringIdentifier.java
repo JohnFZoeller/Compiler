@@ -5,9 +5,9 @@ public class StringIdentifier extends Token{
 
 	public StringIdentifier(String s, int r, int c){
 		super("StringIdentifier", r, c);
-		varName = s;
+		//varName = s;
 		//input = s;
-		setName(varName);
+		setName(s);
 	}
 	@Override
 	public String getVarName() {

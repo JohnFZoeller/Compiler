@@ -85,6 +85,9 @@ public class Subtree {
 	public void match(String expect){
 		if(token.getTokenType().equals(expect)){
 			readNextTok();
+			if(token == null) {
+				readNextTok();
+			}
 		}
 		else throw new 
 			Error("Expected: " + expect + " Got: " + token.getTokenType());
@@ -424,7 +427,6 @@ class Print extends Subtree{
 	public Print(Token t, Iterator<Token> i){
 		super(t, i);
 		match("print");
-
 		addChild(new Expression(token, it));
 		//match("StringIdentifier");
 
@@ -543,7 +545,7 @@ class Block extends Subtree{
 			case "const":	addChild(new Var(token, it));
 							break;
 			case "StringIdentifier":
-							System.out.println(token.getVarName());
+							//System.out.println(token.getVarName());
 							addChild(new Expression(token, it));
 							match("SEMICOLON");
 							break;
@@ -893,7 +895,7 @@ class Expressions extends Subtree {
 		super(t, i);
 
 		addChild(new Expression(token, it));
-		System.out.print(t.getTokenType());
+		//System.out.print(t.getTokenType());
 		addAllChildren();
 	}
 
@@ -914,9 +916,14 @@ class Expressions extends Subtree {
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(, ) " 
+		System.out.println(print + "(,) " 
 			+ System.identityHashCode(this) 
-			+ " Expressions");
+			+ " expression statement ");
+
+		printUp("+---");
+
+		System.out.println(print + "assign");
+		System.out.print(print);
 
 		// for(int i = 0; i < children.size(); i++){
 		// 	children.get(i).printUp(print);
@@ -944,19 +951,20 @@ class Expression extends Subtree {
 	}
 
 	private void addAllChildren() {
-		if(isUnary()) {
-			addChild(new ExprRest(token, it));
-		} else {
-			matchOperand();
-			addChild(new ExprRest(token, it));
-			if(!token.getTokenType().equals("SEMICOLON")) {
-				addChild(new ExprRest(token, it));
-			}
-		}
+		matchOperand();		
+		// if(isUnary()) {
+		// 	addChild(new ExprRest(token, it));
+		// } else {
+		// 	matchOperand();
+		// 	addChild(new ExprRest(token, it));
+		// 	if(!token.getTokenType().equals("SEMICOLON")) {
+		// 		addChild(new ExprRest(token, it));
+		// 	}
+		// }
 
-		if(token.getTokenType().equals("COMMA")) {
-			addAllChildren();
-		}
+		// if(token.getTokenType().equals("COMMA")) {
+		// 	addAllChildren();
+		// }
 	}
 
 	@Override
@@ -964,14 +972,18 @@ class Expression extends Subtree {
 		printUp("+---");
 
 		System.out.println(print + "(,) " 
-			+ System.identityHashCode(this) 
-			+ " class: Expression " + "(" + tokenType + ")"
-			+ " ");
+			//+ System.identityHashCode(this) 
+			+ " expression statement ");
 
-		 for(int i = 0; i < children.size(); i++){
-		  	children.get(i).printUp(print);
-		  	children.get(i).print();
-		}
+		printUp("+---");
+		System.out.println(print + "assign");
+		printUp("+---");
+		System.out.println(print + tokenType);
+
+		//  for(int i = 0; i < children.size(); i++){
+		//   	children.get(i).printUp(print);
+		//   	children.get(i).print();
+		// }
 	}
 
 	private void matchOperand() {
@@ -989,7 +1001,7 @@ class Expression extends Subtree {
 			case "StringIdentifier":
 				System.out.println(token.getVal());
 				match("StringIdentifier");
-				//matchOperand();
+				tokenType = token.getName();
 				break;
 			case "KEYWORD_INT32":
 				match("KEYWORD_INT32");
@@ -1023,6 +1035,8 @@ class Expression extends Subtree {
 class ExprRest extends Subtree {
 	public Token operator = null;
 	public Token operand = null;
+	public String opType = "";
+	public String operandType = "";
 
 	ExprRest(Token t, Iterator<Token> i){
 		super(t, i);
@@ -1044,82 +1058,102 @@ class ExprRest extends Subtree {
 		switch(token.getTokenType()) {
 			case "PLUS":
 				operator = token;
+				opType = operator.getName();
 				match("PLUS");
 				break;
 			case "MINUS":
 				operator = token;
+				opType = operator.getName();
 				match("MINUS");
 				break;
 			case "ASTERISK":
 				operator = token;
+				opType = operator.getName();
 				match("ASTERISK");
 				break;
 			case "BACKSLASH":
 				operator = token;
+				opType = operator.getName();
 				match("BACKSLASH");
 				break;
 			case "TILDE":
 				operator = token;
+				opType = operator.getName();
 				match("TILDE");
 				break;
 			case "ASSIGNMENT_OPERATOR":
 				operator = token;
+				opType = operator.getName();
 				match("ASSIGNMENT_OPERATOR");
 				break;
 			case "RELATIONAL_GREATER_THAN":
 				operator = token;
+				opType = operator.getName();
 				match("RELATIONAL_GREATER_THAN");
 				break;
 			case "RELATIONAL_GREATER_EQUALTO":
 				operator = token;
+				opType = operator.getName();
 				match("RELATIONAL_GREATER_EQUALTO");
 				break;
 			case "RELATIONAL_LESS_THAN":
 				operator = token;
+				opType = operator.getName();
 				match("RELATIONAL_LESS_THAN");
 				break;
 			case "RELATIONAL_LESS_EQUALTO":
 				operator = token;
+				opType = operator.getName();
 				match("RELATIONAL_LESS_EQUALTO");
 				break;
 			case "BITWISE_AND":
 				operator = token;
+				opType = operator.getName();
 				match("BITWISE_AND");
 				break;
 			case "LOGICAL_AND":
 				operator = token;
+				opType = operator.getName();
 				match("LOGICAL_AND");
 				break;
 			case "BITWISE_OR":
 				operator = token;
+				opType = operator.getName();
 				match("BITWISE_OR");
 				break;
 			case "LOGICAL_OR":
 				operator = token;
+				opType = operator.getName();
 				match("LOGICAL_OR");
 				break;
 			case "EXCLAMATION_POINT":
 				operator = token;
+				opType = operator.getName();
 				match("EXCLAMATION_POINT");
 				break;
 			case "BITWISE_XOR":
 				operator = token;
+				opType = operator.getName();
 				match("BITWISE_XOR");
 				break;
 			case "LOGICAL_NOT":
 				operator = token;
+				opType = operator.getName();
 				match("LOGICAL_NOT");
 				break;
 			case "OUTPUT":
 				operator = token;
+				opType = operator.getName();
 				match("OUTPUT");
 				break;
 			case "INPUT":
 				operator = token;
+				opType = operator.getName();
 				match("INPUT");
 				break;
 			case "EQUALITY":
 				operator = token;
+				opType = operator.getName();
 				match("EQUALITY");
 				break;
 			default:
@@ -1131,30 +1165,37 @@ class ExprRest extends Subtree {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
 				operand = token;
+				operandType = token.getName();
 				match("IntIdentifier");
 				break;
 			case "FLOAT_IDENTIFIER":
 				operand = token;
+				operandType = token.getName();
 				match("FLOAT_IDENTIFIER");
 				break;
 			case "BYTE_IDENTIFIER":
 				operand = token;
+				operandType = token.getName();
 				match("BYTE_IDENTIFIER");
 				break;
 			case "StringIdentifier":
 				operand = token;
+				operandType = token.getName();
 				match("StringIdentifier");
 				break;
 			case "KEYWORD_INT32":
 				operand = token;
+				operandType = token.getName();
 				match("KEYWORD_INT32");
 				break;
 			case "KEYWORD_FLOAT":
 				operand = token;
+				operandType = token.getName();
 				match("KEYWORD_FLOAT");
 				break;
 			case "KEYWORD_BYTE":
 				operand = token;
+				operandType = token.getName();
 				match("KEYWORD_BYTE");
 				break;
 			default:
@@ -1166,10 +1207,13 @@ class ExprRest extends Subtree {
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
-			+ System.identityHashCode(this) 
-			+ "Operator: " + operator.getTokenType() + " , Operand: "
-			+ operator.getTokenType());
+		System.out.println(print + "(,) " +
+			System.identityHashCode(this) + 
+			token.getTokenType());
+
+		printUp("+---");
+
+		System.out.println(print + "symbol");
 
 		//for(int i = 0; i < children.size(); i++){
 		//	children.get(i).printUp(print);
