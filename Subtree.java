@@ -908,8 +908,8 @@ class Expression extends Subtree {
 
 	private void matchOperand() {
 		switch(token.getTokenType()) {
-			case "INT_IDENTIFIER":
-				match("INT_IDENTIFIER");
+			case "IntIdentifier":
+				match("IntIdentifier");
 				break;
 			case "FLOAT_IDENTIFIER":
 				match("FLOAT_IDENTIFIER");
@@ -1048,9 +1048,9 @@ class ExprRest extends Subtree {
 
 	private void matchOperand() {
 		switch(token.getTokenType()) {
-			case "INT_IDENTIFIER":
+			case "IntIdentifier":
 				operand = token;
-				match("INT_IDENTIFIER");
+				match("IntIdentifier");
 				break;
 			case "FLOAT_IDENTIFIER":
 				operand = token;
