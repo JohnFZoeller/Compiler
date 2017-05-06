@@ -1,4 +1,1 @@
-function fib1(n int32) int32 {
-	var john byte;
-	type zoeller record fred float64 end;
-}
+type zoeller record fred float64 end;

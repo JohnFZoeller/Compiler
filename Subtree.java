@@ -162,7 +162,8 @@ class For extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -202,7 +203,8 @@ class While extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -237,7 +239,8 @@ class If extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -269,7 +272,8 @@ class Else extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -306,7 +310,8 @@ class Func extends Subtree{
 	public void print(){
 		int i = 0;
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -364,7 +369,8 @@ class Var extends Subtree{
 
 	@Override
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -401,7 +407,8 @@ class Retur extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") "
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -425,7 +432,8 @@ class Print extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -447,7 +455,8 @@ class Exit extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -474,7 +483,8 @@ class Type extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") "  
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -545,7 +555,8 @@ class Block extends Subtree{
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " list");
 
@@ -621,7 +632,8 @@ class RecordDescriptor extends Subtree{
 
 	@Override 
 	public void print(){
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " " + this.getClass());
 
@@ -651,7 +663,8 @@ class FieldDeclarations extends Subtree{
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " list");
 
@@ -676,7 +689,8 @@ class FieldDeclaration extends Subtree{
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " Field Declaration");
 
@@ -730,7 +744,8 @@ class Params extends Subtree{
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " list");
 
@@ -774,7 +789,8 @@ class Param extends Subtree{
 	public void print(){
 		printUp("+---");
 
-		System.out.println(print + "(,) " 
+		System.out.println(print + "(" + row + ", "
+			+ col + ") " 
 			+ System.identityHashCode(this) 
 			+ " Parameter");
 
@@ -842,7 +858,8 @@ class Symbol extends Subtree{
 	public void print(int a){
 		printUp("+---");
 
-		System.out.println(print + "(,) "
+		System.out.println(print + "(" + row + ", "
+			+ col + ") "
 			+ System.identityHashCode(token) + " "
 			+ this.getClass() + ": " + token.getName() +
 			" (" + token.getTokenType() + ") defined at: " + a);
@@ -857,7 +874,8 @@ class BasicType extends Subtree{
 	@Override
 	public void print(){
 
-		System.out.println(print + "(,) "
+		System.out.println(print + "(" + row + ", "
+			+ col + ") "
 			+ System.identityHashCode(token)
 			+ " " + this.getClass() + ": "
 			+ token.getTokenType());
