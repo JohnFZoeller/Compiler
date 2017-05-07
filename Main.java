@@ -11,18 +11,15 @@ public class Main{
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		SyntaxParser par = new SyntaxParser(lexer);
-		Token temp;
-
 		par.parse();
-		// Token temp;
-		//Token temp;
 
+		// Token temp;
 		// while(iter.hasNext()){
 		//   	temp = iter.next();
 
 		//  	if(temp != null)
 		//   		System.out.println(temp.getTokenType() + "    " + temp.getName());
-		//   }
+		// }
 
 	}
 }
