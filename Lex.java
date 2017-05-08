@@ -417,7 +417,17 @@ class Lex implements Iterable<Token> {
 			return new StringLiteral(result, row, tempCol);
 		}
 
+		if(currentChar == '\'') {
+			char cResult = currentChar;
+			readNextChar();
+			while (currentChar != '\'') {
+				readNextChar();
+				cResult += currentChar;
+			}
 
+			return new CharLiteral(cResult, row, tempCol);
+		}
+		
 		readNextChar();
 
 

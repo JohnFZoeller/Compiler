@@ -1029,8 +1029,9 @@ class Expression extends Subtree {
 				matchOperand();
 				addChild(new Expression(token, it));
 				match("CLOSE_PARENTHESIS");
-			case "StringLiteral":
-				match("StringLiteral");
+			case "String_Literal":
+				tokenType = token.getName();
+				match("String_Literal");
 				break;
 			case "Char_Literal":
 				match("Char_Literal");
