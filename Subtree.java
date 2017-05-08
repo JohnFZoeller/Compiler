@@ -515,7 +515,6 @@ class Block extends Subtree{
 
 		for(int j = 0; !token.getTokenType().equals("CLOSE_BRACE"); j++){
 			match();
-
 		}
 
 		match("CLOSE_BRACE");
@@ -567,7 +566,7 @@ class Block extends Subtree{
 			+ " list");
 
 		for(int i = 0; i < children.size(); i++){
-			children.get(i).printUp(print + "+---");
+			children.get(i).printUp(print);
 			children.get(i).print();
 		}
 	}
@@ -935,6 +934,7 @@ class Expressions extends Subtree {
 
 class Expression extends Subtree {
 	String tokenType = "";
+
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
 		tokenType = t.getTokenType();
@@ -1003,7 +1003,6 @@ class Expression extends Subtree {
 				match("BYTE_IDENTIFIER");
 				break;
 			case "StringIdentifier":
-				System.out.println(token.getVal());
 				tokenType = token.getName();
 				match("StringIdentifier");
 				break;
