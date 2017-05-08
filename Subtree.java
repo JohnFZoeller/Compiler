@@ -1029,6 +1029,12 @@ class Expression extends Subtree {
 				matchOperand();
 				addChild(new Expression(token, it));
 				match("CLOSE_PARENTHESIS");
+			case "StringLiteral":
+				match("StringLiteral");
+				break;
+			case "Char_Literal":
+				match("Char_Literal");
+				break;
 			default:
 				break;
 		}

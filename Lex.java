@@ -414,34 +414,12 @@ class Lex implements Iterable<Token> {
 				result += currentChar;
 			}while(currentChar != '"');
 
-			return new StringIdentifier(result, row, tempCol);
+			return new StringLiteral(result, row, tempCol);
 		}
 
 
 		readNextChar();
 
-
-		// if(currentChar == '"') {
-		// 	result += currentChar;
-		// 	readNextChar();
-		// 	while(currentChar != '"') {
-		// 		System.out.println(currentChar);
-		// 		result += currentChar;
-		// 		readNextChar();
-		// 	}
-		// 	result += currentChar;
-		// 	readNextChar();
-		// } else if(currentChar == '\'') {
-		// 	result += currentChar;
-		// 	readNextChar();
-		// 	while(currentChar != '\'') {
-		// 		System.out.println(currentChar);
-		// 		result += currentChar;
-		// 		readNextChar();
-		// 	}
-		// 	result += currentChar;
-		// 	readNextChar();
-		//} else {
 
 		//upon exiting while loop currentChar will NOT be equal to a letter
 		while(Character.isLetter(currentChar)) {	//while currentChar is a letter

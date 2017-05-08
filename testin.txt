@@ -4,4 +4,4 @@ function fib1(n int32) int32 {
   return curr;
 }
 
-print "n\tfib(n)\n";
+print 'n\tfib(n)\n';
