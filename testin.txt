@@ -1,27 +1,7 @@
 function fib1(n int32) int32 {
   var curr = 1;
   var prev = 0;
-<<<<<<< HEAD
-  while ((n = n - 1) > 0) {
-    var swap = curr;
-    prev = curr;
-    curr = prev + swap;
-  }
   return curr;
 }
 
 print "n\tfib(n)\n";
-var x int32;
-for (x = 0; x < 10; x = x + 1) {
-  print x;
-  print "\t";
-  var result = fib1(x);
-  print result;
-  print "\n";
-}
-=======
-  return curr;
-}
-
-print "n\tfib(n)\n";
->>>>>>> 3e728fddbab4a95f0a5a91caa1110f8d6dc0086c
