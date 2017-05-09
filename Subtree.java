@@ -57,14 +57,6 @@ public class Subtree {
 
 			printHelp();
 		}
-
-		// int count = 0;
-		// while(count < level) {
-		// 	toPrint += toPrint;
-		// 	count++;
-		// }
-		// toPrint += "(" + row + ", " + col + ") ";
-		// System.out.println(toPrint);
 	}
 
 	public void printHelp(){
@@ -893,7 +885,6 @@ class BasicType extends Subtree{
 class Expressions extends Subtree {
 	Expressions(Token t, Iterator<Token> i){
 		super(t, i);
-		//System.out.print(t.getTokenType());
 		addChild(new Expression(token, it));
 		//System.out.print(t.getTokenType());
 		addAllChildren();
@@ -934,6 +925,7 @@ class Expressions extends Subtree {
 
 class Expression extends Subtree {
 	String tokenType = "";
+	String tokenDescrip = "";
 
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
@@ -973,11 +965,11 @@ class Expression extends Subtree {
 		printUp("+---");
 
 		System.out.println(print + "(,) " 
-			//+ System.identityHashCode(this) 
 			+ " expression statement ");
 
 		printUp("+---");
-		System.out.println(print + "Operand");
+
+		System.out.println(print + tokenDescrip);
 		printUp("+---");
 		System.out.println(print + tokenType);
 
@@ -991,35 +983,42 @@ class Expression extends Subtree {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
 				tokenType = token.getName();
+				tokenDescrip = "Integer";
 				match("IntIdentifier");
 				addChild(new Expression(token, it));
 				break;
 			case "FLOAT_IDENTIFIER":
 				tokenType = token.getName();
+				tokenDescrip = "Float";
 				match("FLOAT_IDENTIFIER");
 				break;
 			case "BYTE_IDENTIFIER":
 				tokenType = token.getName();
+				tokenDescrip = "Byte";
 				match("BYTE_IDENTIFIER");
 				break;
 			case "StringIdentifier":
 				tokenType = token.getName();
+				tokenDescrip = "Identifier";
 				match("StringIdentifier");
 				break;
 			case "KEYWORD_INT32":
 				match("KEYWORD_INT32");
 				match("OPEN_PARENTHESIS");
+				tokenDescrip = "Keyword";
 				addChild(new Expression(token, it));
 				match("CLOSE_PARENTHESIS");
 				break;
 			case "KEYWORD_FLOAT":
 				match("KEYWORD_FLOAT");
 				match("OPEN_PARENTHESIS");
+				tokenDescrip = "Keyword";
 				addChild(new Expression(token, it));
 				match("CLOSE_PARENTHESIS");
 				break;
 			case "KEYWORD_BYTE":
 				match("KEYWORD_BYTE");
+				tokenDescrip = "Keyword";
 				match("OPEN_PARENTHESIS");
 				addChild(new Expression(token, it));
 				match("CLOSE_PARENTHESIS");
@@ -1031,10 +1030,12 @@ class Expression extends Subtree {
 				match("CLOSE_PARENTHESIS");
 			case "String_Literal":
 				tokenType = token.getName();
+				tokenDescrip = "String Literal";
 				match("String_Literal");
 				break;
 			case "Char_Literal":
 				match("Char_Literal");
+				tokenDescrip = "Char Literal";
 				break;
 			default:
 				break;
