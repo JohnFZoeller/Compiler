@@ -20,8 +20,10 @@ public class SyntaxParser {
 	/*
 		Main match function for the program. Logic is based off of the fact that the only
 		time this match function will be called is in the case of a new statement in the program.
-		Function matches currentTok's token type
 	*/
+	public void decorate(SymbolTable s){
+		
+	}
 
 	public void match(){
 		switch(currentTok.getTokenType()) {
@@ -53,8 +55,6 @@ public class SyntaxParser {
 							break;
 		}
 	}
-
-	/******************MAIN FUNCTIONAILITY*********************/
 	
 	public void parse(){
 		root = new Subtree(i); 				//default constructor makes root
@@ -69,6 +69,9 @@ public class SyntaxParser {
 
 			currentTok = root.children.get(j).token;
 		}	
+
+
+		//this just becomes a debugging tool
 
 		root.printTree();
 	}

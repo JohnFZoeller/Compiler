@@ -11,7 +11,12 @@ public class Main{
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		SyntaxParser par = new SyntaxParser(lexer);
-		par.parse();
+		SymbolTable symTable = new SymbolTable();
+
+		par.parse();			//create the tree structure
+		par.decorate(symTable);	//walk it
+
+
 
 		// Token temp;
 		// while(iter.hasNext()){

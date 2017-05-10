@@ -294,7 +294,7 @@ class Func extends Subtree{
 
 		match("function");
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 		match("OPEN_PARENTHESIS");
 
@@ -357,7 +357,7 @@ class Var extends Subtree{
 
 		match("var");
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
@@ -476,7 +476,7 @@ class Type extends Subtree{
 
 		match("type");
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 
 		addChild(new TypeDescriptor(token, it));
@@ -602,7 +602,7 @@ class NaTypeDescriptor extends Subtree{
 			addChild(new RecordDescriptor(token, it));
 		}
 		else if(token.getTokenType().equals("StringIdentifier")){
-			addChild(new Symbol(token));
+			addChild(new Symbo(token));
 			match("StringIdentifier");
 		}
 		else{
@@ -684,7 +684,7 @@ class FieldDeclaration extends Subtree{
 	FieldDeclaration(Token t, Iterator<Token> i){
 		super(t, i);
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 
 		addChild(new TypeDescriptor(token, it));
@@ -771,7 +771,7 @@ class Param extends Subtree{
 		if(token.getTokenType().equals("const"))
 			match("const");
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
@@ -854,8 +854,8 @@ class WildCard extends Subtree{
 
 /***********************Output Helpers********************/
 
-class Symbol extends Subtree{
-	Symbol(Token t){
+class Symbo extends Subtree{
+	Symbo(Token t){
 		token = t;
 	}
 
