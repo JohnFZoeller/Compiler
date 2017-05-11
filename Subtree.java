@@ -10,13 +10,7 @@ public class Subtree {
 	Iterator<Token> it;
 	String print = "";
 
-	public Subtree(){
-	}
-
-	public Subtree(Token t){
-		token = t;
-		//collapse
-	}
+	public Subtree(){}
 
 	public Subtree(Iterator<Token> i){ 
 		it = i;
@@ -31,9 +25,9 @@ public class Subtree {
 	}
 
 	public void addChild(Subtree subtree) {
-		if(children == null) {
+		if(children == null)
 			children = new ArrayList<Subtree>();
-		}
+
 		children.add(subtree);
 		token = children.get(children.size() - 1).token;
 	}
@@ -42,6 +36,17 @@ public class Subtree {
 		//collapse
 		return (children != null);
 	}
+
+	public void decorateFirst(ScopeTree rootScope){
+		if(hasChildren())
+			for(int i = 0; i < children.size(); i++){
+				children.get(i).decor1(rootScope);
+			}		
+	}
+
+	public void decor1(ScopeTree cur){;}
+
+	public void decorateSecond(){}
 
 	public void print(){;}
 
@@ -55,16 +60,12 @@ public class Subtree {
 				+ System.identityHashCode(children)
 				+ " list");
 
-			printHelp();
-		}
-	}
+			print += "+---";
 
-	public void printHelp(){
-		print += "+---";
-
-		for(int i = 0; i < children.size(); i++){
-			children.get(i).printUp(print);
-			children.get(i).print();
+			for(int i = 0; i < children.size(); i++){
+				children.get(i).printUp(print);
+				children.get(i).print();
+			}		
 		}
 	}
 
@@ -72,7 +73,6 @@ public class Subtree {
 		print += p;
 		//collapse
 	}
-
 
 	public void match(String expect){
 		if(token.getTokenType().equals(expect)){
@@ -360,7 +360,20 @@ class Var extends Subtree{
 		}
 
 		match("SEMICOLON");
-		//System.out.println("SEMICOLON MATCHED");
+	}
+
+	@Override
+	public void decor1(ScopeTree cur){
+		if(children.get(1) instanceof TypeDescriptor){
+			//line 369 temporary
+			TypeInterface i = new BuiltInTypeSymbol("byte");
+
+			//line 371 permanent
+			VarSymbol v = new VarSymbol(children.get(0).token.getName(), i);
+			cur.table.define(v);
+		}
+
+		System.out.println(children.get(0).token.getName());
 	}
 
 	@Override
