@@ -39,6 +39,7 @@ public class Subtree {
 	}
 
 	public void decorateFirst(ScopeTree rootScope){
+		astScope = rootScope;
 		if(hasChildren())
 			for(int i = 0; i < children.size(); i++){
 				children.get(i).decor1(rootScope);

@@ -22,9 +22,12 @@ public class SyntaxParser {
 		time this match function will be called is in the case of a new statement in the program.
 	*/
 	public void decorate(ScopeTree rootScope){
+
+		//Bernsteins recommendation for how to decorate
 		//0th pass = lexing and parsing							-> already done
 		//1st pass = type/var/func declaration statements		
 		//2nd pass = initializers, statements, function bodies
+
 
 		root.decorateFirst(rootScope);
 		root.decorateSecond();
