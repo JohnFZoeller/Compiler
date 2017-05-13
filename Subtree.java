@@ -9,14 +9,9 @@ public class Subtree {
 	List<Subtree> children;
 	Iterator<Token> it;
 	String print = "";
+	ScopeTree astScope;
 
-	public Subtree(){
-	}
-
-	public Subtree(Token t){
-		token = t;
-		//collapse
-	}
+	public Subtree(){}
 
 	public Subtree(Iterator<Token> i){ 
 		it = i;
@@ -31,9 +26,9 @@ public class Subtree {
 	}
 
 	public void addChild(Subtree subtree) {
-		if(children == null) {
+		if(children == null)
 			children = new ArrayList<Subtree>();
-		}
+
 		children.add(subtree);
 		token = children.get(children.size() - 1).token;
 	}
@@ -42,6 +37,18 @@ public class Subtree {
 		//collapse
 		return (children != null);
 	}
+
+	public void decorateFirst(ScopeTree rootScope){
+		astScope = rootScope;
+		if(hasChildren())
+			for(int i = 0; i < children.size(); i++){
+				children.get(i).decor1(rootScope);
+			}		
+	}
+
+	public void decor1(ScopeTree cur){;}
+
+	public void decorateSecond(){}
 
 	public void print(){;}
 
@@ -55,16 +62,12 @@ public class Subtree {
 				+ System.identityHashCode(children)
 				+ " list");
 
-			printHelp();
-		}
-	}
+			print += "+---";
 
-	public void printHelp(){
-		print += "+---";
-
-		for(int i = 0; i < children.size(); i++){
-			children.get(i).printUp(print);
-			children.get(i).print();
+			for(int i = 0; i < children.size(); i++){
+				children.get(i).printUp(print);
+				children.get(i).print();
+			}		
 		}
 	}
 
@@ -72,7 +75,6 @@ public class Subtree {
 		print += p;
 		//collapse
 	}
-
 
 	public void match(String expect){
 		if(token.getTokenType().equals(expect)){
@@ -286,7 +288,7 @@ class Func extends Subtree{
 
 		match("function");
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 		match("OPEN_PARENTHESIS");
 
@@ -349,7 +351,7 @@ class Var extends Subtree{
 
 		match("var");
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
@@ -360,7 +362,22 @@ class Var extends Subtree{
 		}
 
 		match("SEMICOLON");
-		//System.out.println("SEMICOLON MATCHED");
+	}
+
+	@Override
+	public void decor1(ScopeTree cur){
+		astScope = cur;
+
+		if(children.get(1) instanceof TypeDescriptor){
+			//line 369 temporary
+			TypeInterface i = new BuiltInTypeSymbol("byte");
+
+			//line 371 permanent
+			VarSymbol v = new VarSymbol(children.get(0).token.getName(), i);
+			astScope.define(v);
+		}
+
+		System.out.println(astScope.resolve(children.get(0).token.getName()) + " hehre");
 	}
 
 	@Override
@@ -468,7 +485,7 @@ class Type extends Subtree{
 
 		match("type");
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 
 		addChild(new TypeDescriptor(token, it));
@@ -594,7 +611,7 @@ class NaTypeDescriptor extends Subtree{
 			addChild(new RecordDescriptor(token, it));
 		}
 		else if(token.getTokenType().equals("StringIdentifier")){
-			addChild(new Symbol(token));
+			addChild(new Symbo(token));
 			match("StringIdentifier");
 		}
 		else{
@@ -676,7 +693,7 @@ class FieldDeclaration extends Subtree{
 	FieldDeclaration(Token t, Iterator<Token> i){
 		super(t, i);
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 
 		addChild(new TypeDescriptor(token, it));
@@ -763,7 +780,7 @@ class Param extends Subtree{
 		if(token.getTokenType().equals("const"))
 			match("const");
 
-		addChild(new Symbol(token));
+		addChild(new Symbo(token));
 		match("StringIdentifier");
 
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
@@ -846,8 +863,8 @@ class WildCard extends Subtree{
 
 /***********************Output Helpers********************/
 
-class Symbol extends Subtree{
-	Symbol(Token t){
+class Symbo extends Subtree{
+	Symbo(Token t){
 		token = t;
 	}
 

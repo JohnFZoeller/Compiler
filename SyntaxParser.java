@@ -20,8 +20,18 @@ public class SyntaxParser {
 	/*
 		Main match function for the program. Logic is based off of the fact that the only
 		time this match function will be called is in the case of a new statement in the program.
-		Function matches currentTok's token type
 	*/
+	public void decorate(ScopeTree rootScope){
+
+		//Bernsteins recommendation for how to decorate
+		//0th pass = lexing and parsing							-> already done
+		//1st pass = type/var/func declaration statements		
+		//2nd pass = initializers, statements, function bodies
+
+
+		root.decorateFirst(rootScope);
+		root.decorateSecond();
+	}
 
 	public void match(){
 		switch(currentTok.getTokenType()) {
@@ -53,11 +63,9 @@ public class SyntaxParser {
 							break;
 		}
 	}
-
-	/******************MAIN FUNCTIONAILITY*********************/
 	
 	public void parse(){
-		root = new Subtree(i); 				//default constructor makes root
+		root = new Subtree(i);
 
 		if(i.hasNext())
 			readNextTok();
@@ -70,7 +78,9 @@ public class SyntaxParser {
 			currentTok = root.children.get(j).token;
 		}	
 
+		//this just becomes a debugging tool
 		root.printTree();
+		System.out.println('\n');
 	}
 
 	public void match(String expect){
@@ -85,14 +95,12 @@ public class SyntaxParser {
 		if(i.hasNext()){
 			currentTok = i.next();
 
-			if(currentTok != null){
-
+			// if(currentTok != null)
 				// System.err.println(currentTok.getTokenType() + " " 
 				// 	+ currentTok.getName());
-			}
 		}
 		else 
-			System.exit(0);
+			throw new Error("Parsers readNextTok failed ");
 	}
 
 }
