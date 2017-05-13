@@ -15,12 +15,20 @@ public class ScopeTree{
 	//children constructor
 	public ScopeTree(ScopeTree parentNode){
 		parent = parentNode;
-		table = new SymbolTable(parentNode.table);
+		table = (parent != null) ? new SymbolTable(parent.table) : new SymbolTable();
 	}
 
 	public void addChild(ScopeTree s){
 		if(childs == null) childs = new ArrayList<ScopeTree>();
 
 		childs.add(s);
+	}
+
+	public void define(Symbol s){
+		table.define(s);
+	}
+
+	public Symbol resolve(String s){
+		return table.resolve(s);
 	}
 }

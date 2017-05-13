@@ -77,6 +77,7 @@ public class SyntaxParser {
 
 		//this just becomes a debugging tool
 		root.printTree();
+		System.out.println('\n');
 	}
 
 	public void match(String expect){

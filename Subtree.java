@@ -9,6 +9,7 @@ public class Subtree {
 	List<Subtree> children;
 	Iterator<Token> it;
 	String print = "";
+	ScopeTree astScope;
 
 	public Subtree(){}
 
@@ -364,16 +365,18 @@ class Var extends Subtree{
 
 	@Override
 	public void decor1(ScopeTree cur){
+		astScope = new ScopeTree(cur.parent);
+
 		if(children.get(1) instanceof TypeDescriptor){
 			//line 369 temporary
 			TypeInterface i = new BuiltInTypeSymbol("byte");
 
 			//line 371 permanent
 			VarSymbol v = new VarSymbol(children.get(0).token.getName(), i);
-			cur.table.define(v);
+			astScope.define(v);
 		}
 
-		System.out.println(children.get(0).token.getName());
+		System.out.println(astScope.resolve(children.get(0).token.getName()) + " hehre");
 	}
 
 	@Override

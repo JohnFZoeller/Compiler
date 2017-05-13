@@ -42,3 +42,5 @@ public class SymbolTable implements Scope{
 		return null;
 	}
 }
+
+
