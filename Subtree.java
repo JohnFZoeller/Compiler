@@ -926,6 +926,7 @@ class Expressions extends Subtree {
 class Expression extends Subtree {
 	String tokenType = "";
 	String tokenDescrip = "";
+	double tokenNum;
 
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
@@ -971,7 +972,12 @@ class Expression extends Subtree {
 
 		System.out.println(print + tokenDescrip);
 		printUp("+---");
-		System.out.println(print + tokenType);
+
+		if(tokenType.equals("")) {
+			System.out.println(print + tokenNum);
+		} else {
+			System.out.println(print + tokenType);
+		}
 
 		  for(int i = 0; i < children.size(); i++){
 		   	children.get(i).printUp(print);
@@ -982,7 +988,7 @@ class Expression extends Subtree {
 	private void matchOperand() {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
-				tokenType = token.getName();
+				tokenNum = token.getVal();
 				tokenDescrip = "Integer";
 				match("IntIdentifier");
 				addChild(new Expression(token, it));
@@ -1048,6 +1054,7 @@ class ExprRest extends Subtree {
 	public Token operand = null;
 	public String opType = "";
 	public String operandType = "";
+	public String operandIt = "";
 
 	ExprRest(Token t, Iterator<Token> i){
 		super(t, i);
@@ -1172,41 +1179,55 @@ class ExprRest extends Subtree {
 		}
 	}
 
+	/*
+	 *	Matches the operand in the expression statement. matchOperator() must be called
+	 *	before matchOperand is called. Function sets the operand to the current token
+	 *	and operandType to the name of the token for later printing.
+	 *
+	 */
+
 	private void matchOperand() {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
 				operand = token;
-				operandType = token.getName();
+				operandType = "Integer";
+				operandIt = Integer.toString(token.getVal());
 				match("IntIdentifier");
 				break;
 			case "FLOAT_IDENTIFIER":
 				operand = token;
-				operandType = token.getName();
+				operandType = "Identifier";
+				operandIt = Float.toString(token.getVal());
 				match("FLOAT_IDENTIFIER");
 				break;
 			case "BYTE_IDENTIFIER":
 				operand = token;
-				operandType = token.getName();
+				operandType = "Identifier";
+				operandIt = Integer.toString(token.getVal());
 				match("BYTE_IDENTIFIER");
 				break;
 			case "StringIdentifier":
 				operand = token;
-				operandType = token.getName();
+				operandType = "Identifier";
+				operandIt = token.getName();
 				match("StringIdentifier");
 				break;
 			case "KEYWORD_INT32":
 				operand = token;
-				operandType = token.getName();
+				operandType = "Keyword";
+				operandIt = "INT32";
 				match("KEYWORD_INT32");
 				break;
 			case "KEYWORD_FLOAT":
 				operand = token;
-				operandType = token.getName();
+				operandType = "Keyword";
+				operandIt = "FLOAT";
 				match("KEYWORD_FLOAT");
 				break;
 			case "KEYWORD_BYTE":
 				operand = token;
-				operandType = token.getName();
+				operandType = "Keyword";
+				operandIt = "BYTE";
 				match("KEYWORD_BYTE");
 				break;
 			default:
@@ -1223,9 +1244,13 @@ class ExprRest extends Subtree {
 			System.out.println(print + "(,) " +
 			System.identityHashCode(this));
 			printUp("+---");
-			System.out.println(print + " Operator: " + opType);
-			printUp("+---");
-			System.out.println(print + " Operand: " + operandType);
+			printOne = print;
+			printNext = print + "+---";
+			System.out.println(printOne + " Operator");
+			System.out.println(printNext + opType);
+			System.out.println(print + "Operand");
+			System.out.println(print + "type: " + operandType);
+			System.out.println(print + "value " +operandIt);
 			for(int i = 0; i < children.size(); i++){
 				children.get(i).printUp(print);
 				children.get(i).print();
