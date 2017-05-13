@@ -365,7 +365,7 @@ class Var extends Subtree{
 
 	@Override
 	public void decor1(ScopeTree cur){
-		astScope = new ScopeTree(cur.parent);
+		astScope = cur;
 
 		if(children.get(1) instanceof TypeDescriptor){
 			//line 369 temporary
