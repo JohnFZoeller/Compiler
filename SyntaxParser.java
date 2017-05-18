@@ -25,7 +25,7 @@ public class SyntaxParser {
 
 		//Bernsteins recommendation for how to decorate
 		//0th pass = lexing and parsing							-> already done
-		//1st pass = type/var/func declaration statements		
+		//1st pass = type/var/func declaration statements (all declarations)		
 		//2nd pass = initializers, statements, function bodies
 
 

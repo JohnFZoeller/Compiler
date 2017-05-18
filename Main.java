@@ -11,10 +11,10 @@ public class Main{
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		SyntaxParser par = new SyntaxParser(lexer);
-		ScopeTree rootScope = new ScopeTree();
+		//ScopeTree rootScope = new ScopeTree();
 
 		par.parse();			//create the tree structure
-		par.decorate(rootScope);	//walk it
+	//	par.decorate(rootScope);	//walk it
 
 
 
