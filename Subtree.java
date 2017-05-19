@@ -1,6 +1,18 @@
 import java.io.*;
 import java.util.*;
 
+/*
+ *	Look at typeCheck function defined in Subtree and Block class.
+ *	Also, should we think about having the Node class's keep track of their
+ *	Type? Is resolve the same as lookUp? I am assuming so. I think we will
+ *	need a symbol type for any definition type nodes, such as function
+ *	definitions (declarations), variable declarations etc. The first pass
+ *	will define the different scopes encountered and create Symbol Tables
+ *	for each scope, the second pass will be populating the declared scope's
+ *	symbol tables with the identifiers found in that scope.
+ *
+ */
+
 public class Subtree {
 	protected int row = 0;
 	protected int col = 0;
@@ -23,6 +35,21 @@ public class Subtree {
 		this.row = current.getRow();
 		this.col = current.getCol();
 		it = i;
+	}
+
+	/*
+	 *	Possible prototype for funtion to check types that we should have in all
+	 *	nodes? Or really just in the identifier nodes. But tell me what you think
+	 *	Also take a look at what I put in the block class.
+	 *
+	 */
+
+	public Type typeCheck(SymbolTable symtab) {
+		try {
+			return symtab.resolve(token.getVal());
+		} catch (NotFound exc) {
+			throw new UndefinedIdentifier(this);
+		}
 	}
 
 	public void addChild(Subtree subtree) {
@@ -529,6 +556,22 @@ class Block extends Subtree{
 		}
 
 		match("CLOSE_BRACE");
+	}
+
+	@Override
+	public Type typeCheck(SymbolTable symtab) {
+		Type type;
+		for(int i = 0; i < children.size(); i++) {
+			sym = children.get(i).typeCheck(symtab);
+			//if the child that we are handling is an instanceof
+			//a initializer, function body, or statement, we should define() it
+			//in the symbol table.
+			if(children.get(i) instanceof Func) {
+				Func toAdd = (Func) children.get(i);
+				symtab.define(toAdd);
+			}
+		}
+		return type;
 	}
 
 	public void match(){
