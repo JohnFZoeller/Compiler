@@ -412,7 +412,7 @@ class Lex implements Iterable<Token> {
 			do{
 				readNextChar();
 				result += currentChar;
-			}while(currentChar != '"');
+			} while(currentChar != '"');
 
 			return new StringLiteral(result, row, tempCol);
 		}
