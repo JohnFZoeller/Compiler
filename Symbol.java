@@ -30,6 +30,12 @@ class VarSymbol extends Symbol{
 	}
 }
 
+class TypeSymbol extends Symbol{
+	TypeSymbol(String n, TypeInterface t){
+		super(n, t);
+	}
+}
+
 class FuncSymbol extends Symbol implements Scope {
 	FuncSymbol(String n, TypeInterface t){
 		super(n, t);
