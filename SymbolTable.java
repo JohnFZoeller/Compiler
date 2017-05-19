@@ -1,46 +1,25 @@
 import java.util.*;
 import java.io.*;
 
-public class SymbolTable implements Scope{
-	Map<String, Symbol> syms = new HashMap<String, Symbol>();
-	SymbolTable enclosingScope;
+public class SymbolTable implements Scope {
 
-	public SymbolTable(){ 
-		enclosingScope = null;
+	GlobalScope globals = new GlobalScope();
+
+	public SymbolTable() {
+		initialize();
 	}
 
-	public SymbolTable(SymbolTable parent){
-		enclosingScope = parent;
+	public void initialize() {
+		//define base types and add them to global
+		globals.define(new BuiltInType("float64"));
+		globals.define(new BuiltInType("byte"));
+		globals.define(new BuiltInType("int32"));
 	}
 
-	protected void initTypeSystem(){
-		//not sure if we'll actually need these
-		define(new BuiltInTypeSymbol("float64"));
-		define(new BuiltInTypeSymbol("byte"));
+	public String toString() {
+		//still need to implement
 	}
 
-	public String toString() { return getScopeName() + ": " + syms; }
-
-	/***************************Scope Interface*************************/
-
-	public String getScopeName(){ return ""; }
-
-	public SymbolTable getEnclosingScope(){ return enclosingScope; }
-
-	public void define(Symbol sym){ 
-		syms.put(sym.name, sym); 
-	}
-
-	public Symbol resolve(String name){
-		Symbol temp = syms.get(name);
-
-		if(temp != null) return temp;
-
-		if(enclosingScope != null)
-			return enclosingScope.resolve(name);
-
-		return null;
-	}
 }
 
 

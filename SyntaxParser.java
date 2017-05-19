@@ -25,8 +25,10 @@ public class SyntaxParser {
 
 		//Bernsteins recommendation for how to decorate
 		//0th pass = lexing and parsing							-> already done
-		//1st pass = type/var/func declaration statements (all declarations)		
+		//1st pass = type/var/func declaration statements (all declarations)
+			//Think these would be identifiers	-> ie. use resolve()
 		//2nd pass = initializers, statements, function bodies
+			//these would by symbols -> ie. use define()
 
 
 		root.decorateFirst(rootScope);
