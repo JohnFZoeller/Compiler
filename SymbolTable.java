@@ -4,7 +4,7 @@ import java.io.*;
 //symbol table should no longer implement Scope
 //page 141 infers this was only in the case of a monolithic scope
 
-public class SymbolTable{ //implements Scope
+public class SymbolTable { //implements Scope
 
 	GlobalScope globals = new GlobalScope();
 
