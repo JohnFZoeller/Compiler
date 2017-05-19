@@ -12,6 +12,7 @@ public class Symbol{
 
 	Symbol(String n){
 		name = n;
+
 	}
 
 	public String getName(){ return name; }

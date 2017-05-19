@@ -1,6 +1,6 @@
 public class GlobalScope extends BaseScope {
 	public GlobalScope() {
-		super(null);
+		super();
 	}
 
 	public String getScopeName() {

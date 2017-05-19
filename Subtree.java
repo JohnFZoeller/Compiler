@@ -21,8 +21,8 @@ public class Subtree {
 	List<Subtree> children;
 	Iterator<Token> it;
 	String print = "";
-	ScopeTree astScope;
-	Type type;				//track the type this is
+	Scope currentScope;
+	TypeInterface type;				//track the type this is
 
 	public Subtree(){}
 
@@ -45,8 +45,10 @@ public class Subtree {
 	 *
 	 */
 
+	//commented out implementation just for compilation purposes.
 	public TypeInterface typeCheck(SymbolTable symtab) {
 		return new BuiltInTypeSymbol("");
+
 		// try {
 		// 	return symtab.resolve(token.getTokenType());
 		// } catch (NotFound exc) {
@@ -66,15 +68,16 @@ public class Subtree {
 		return (children != null);
 	}
 
-	public void decorateFirst(ScopeTree rootScope){
-		astScope = rootScope;
+	public void decorateFirst(SymbolTable mainTable){
+		currentScope = mainTable.globals;
+
 		if(hasChildren())
 			for(int i = 0; i < children.size(); i++){
-				children.get(i).decor1(rootScope);
+				children.get(i).decor1(currentScope);
 			}		
 	}
 
-	public void decor1(ScopeTree cur){;}
+	public void decor1(Scope cur){;}
 
 	public void decorateSecond(){}
 
@@ -396,19 +399,17 @@ class Var extends Subtree{
 	}
 
 	@Override
-	public void decor1(ScopeTree cur){
-		astScope = cur;
+	public void decor1(Scope cur){
+		currentScope = cur;
 
 		if(children.get(1) instanceof TypeDescriptor){
-			//line 369 temporary
-			TypeInterface i = new BuiltInTypeSymbol("byte");
 
-			//line 371 permanent
-			VarSymbol v = new VarSymbol(children.get(0).token.getName(), i);
-			astScope.define(v);
+			//VarSymbol v = new VarSymbol(children.get(0).token.getName(), );
+			//currentScope.define(v);
+
 		}
 
-		System.out.println(astScope.resolve(children.get(0).token.getName()) + " hehre");
+		//System.out.println(astScope.resolve(children.get(0).token.getName()) + " hehre");
 	}
 
 	@Override
@@ -564,9 +565,9 @@ class Block extends Subtree {
 		match("CLOSE_BRACE");
 	}
 
-	public void createScopes(SymbolTable parent) throws SemanticTypeCheckException {
+	public void createScopes(BaseScope parent) throws SemanticTypeCheckException {
 		//create a new symbol table with the parent as the enclosing scope
-		SymbolTable nested = new SymbolTable(parent);
+		BaseScope nested = new BaseScope();
 		//iterate over the children in the block statement, if it is a type
 		//that requires a new scope we want to create a new scope.
 		//otherwise it is a declaration and we need to add it to the table,

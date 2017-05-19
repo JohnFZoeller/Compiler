@@ -7,6 +7,8 @@ public class BuiltInTypeSymbol extends Symbol implements TypeInterface{
 	}
 
 	@Override
-	public String getName(){ return ""; }
+	public String getName(){ return "BuiltInTypeSymbol"; }
+
+	public String getTypeName(){ return "BuiltInTypeSymbol"; }
 	
 }

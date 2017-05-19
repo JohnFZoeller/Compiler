@@ -11,10 +11,14 @@ public class Main{
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		SyntaxParser par = new SyntaxParser(lexer);
-		//ScopeTree rootScope = new ScopeTree();
 
-		par.parse();			//create the tree structure
-	//	par.decorate(rootScope);	//walk it
+		//from page 134, 146
+		//mainTable contains the root GlobalScope, which is the bottom of the stack
+		//of each of its childrens scope stacks
+		SymbolTable mainTable = new SymbolTable();
+
+		par.parse();				//create the tree structure
+		par.decorate(mainTable);	//walk it
 
 
 

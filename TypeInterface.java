@@ -1,3 +1,3 @@
 public interface TypeInterface{
-	public String getName();
+	public String getTypeName();
 }

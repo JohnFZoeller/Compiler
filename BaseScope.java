@@ -3,31 +3,40 @@ import java.io.*;
 
 public class BaseScope implements Scope {
 	Map<String, Symbol> syms = new HashMap<String, Symbol>();
-	SymbolTable enclosingScope;
+	Scope enclosingScope;
 
 	public BaseScope(){ 
 		enclosingScope = null;
+		//collapse
 	}
 
 	public BaseScope(Scope enclosing){
 		enclosingScope = enclosing;
+		//collapse
 	}
 
+	public String toString(){
+		return getScopeName() + ": ";
+		//collapse
+	}
 
 	//public void add(String id, Type binding) {}
 
-	//think this will likely need to be redone
-	public String toString() { return getScopeName() + ": " + syms; }
-
 	/***************************Scope Interface*************************/
 
-	public String getScopeName(){ return ""; }
+	public String getScopeName(){
+		return ""; 
+		//collapse
+	}
 
-	public SymbolTable getEnclosingScope(){ return enclosingScope; }
+	public Scope getEnclosingScope(){
+		return enclosingScope;
+		//collapse
+	}
 
 	public void define(Symbol sym){ 
 		syms.put(sym.name, sym); 
-		sym.scope = this;			//ensure that the scope is
+		//sym.scope = this;			//ensure that the scope is
 	}
 
 	public Symbol resolve(String name){
@@ -42,5 +51,4 @@ public class BaseScope implements Scope {
 	}
 
 }
-
 
