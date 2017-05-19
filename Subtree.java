@@ -348,7 +348,7 @@ class Func extends Subtree{
 	 *
 	 */
 
-	public void decorateSecond(scope enclosing) {
+	public void decorateFirst(scope enclosing) {
 		SymbolType symT;
 		//creates scope local to the function
 		LocalScope functionScope = new LocalScope(enclosing);
@@ -356,12 +356,37 @@ class Func extends Subtree{
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
-			if(symT instanceof Params) {
-				functionScope.define(symT);		//adds the parameter to the scope
+			if(symT instanceof Block) {
+				symT.decorateFirst(functionScope);	//once we encounter a block, call
+													//decorateFirst() on the block
+													//passing in the functionScope that will
+													//be the parent scope for the block
 
 			}
 		}
 
+	}
+
+	/*
+	 *	Second decorate function which populates already created scopes with
+	 *	variable, statements etc.
+	 *
+	 */
+
+	public void decorateSecond() {
+		SymbolType symT;		//SymbolType for casting
+		//iterate over children adding parameters to the symbol table
+		//and then creating a new scope when we reach the block statement
+		for(int index = 0; index < children.size(); index++) {
+			symT = children.get(index).getSymType();
+			if(symT instanceof Params) {
+				functionScope.define(symT);		//adds the parameter to the scope
+
+			} else if(symT instanceof Block) {
+				symT.decorateSecond();			//call decorateSecond on Block so it
+												//will populate it's table
+			}
+		}
 	}
 
 
