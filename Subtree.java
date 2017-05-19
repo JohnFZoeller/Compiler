@@ -45,12 +45,13 @@ public class Subtree {
 	 *
 	 */
 
-	public Type typeCheck(SymbolTable symtab) {
-		try {
-			return symtab.resolve(token.getVal());
-		} catch (NotFound exc) {
-			throw new UndefinedIdentifier(this);
-		}
+	public TypeInterface typeCheck(SymbolTable symtab) {
+		return new BuiltInTypeSymbol("");
+		// try {
+		// 	return symtab.resolve(token.getTokenType());
+		// } catch (NotFound exc) {
+		// 	throw new UndefinedIdentifier(this);
+		// }
 	}
 
 	public void addChild(Subtree subtree) {
@@ -565,7 +566,7 @@ class Block extends Subtree {
 
 	public void createScopes(SymbolTable parent) throws SemanticTypeCheckException {
 		//create a new symbol table with the parent as the enclosing scope
-		SymbolTable nested = new SymbolTable(parent)
+		SymbolTable nested = new SymbolTable(parent);
 		//iterate over the children in the block statement, if it is a type
 		//that requires a new scope we want to create a new scope.
 		//otherwise it is a declaration and we need to add it to the table,
