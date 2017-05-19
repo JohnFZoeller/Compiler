@@ -3,9 +3,9 @@ import java.util.*;
 
 public class Symbol{
 	public String name;
-	public TypeInterface type;
+	public Type type;
 
-	Symbol(String n, TypeInterface t){
+	Symbol(String n, Type t){
 		name = n;
 		type = t;
 	}
@@ -29,8 +29,8 @@ class VarSymbol extends Symbol{
 	}
 }
 
-class FuncSymbol extends Symbol implements Scope{
-	FuncSymbol(String n, TypeInterface t){
+class FuncSymbol extends Symbol implements Scope {
+	FuncSymbol(String n, Type t){
 		super(n, t);
 	}
 

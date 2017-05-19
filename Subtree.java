@@ -22,6 +22,7 @@ public class Subtree {
 	Iterator<Token> it;
 	String print = "";
 	ScopeTree astScope;
+	Type type;				//track the type this is
 
 	public Subtree(){}
 
@@ -545,9 +546,13 @@ class Type extends Subtree{
 
 /*********************Support Statements**********************/
 
-class Block extends Subtree{
+class Block extends Subtree {
+
 	Block(Token t, Iterator<Token> i){
 		super(t, i);
+
+		//
+		this.type = null;
 
 		match("OPEN_BRACE");
 
@@ -558,20 +563,31 @@ class Block extends Subtree{
 		match("CLOSE_BRACE");
 	}
 
-	@Override
-	public Type typeCheck(SymbolTable symtab) {
-		Type type;
-		for(int i = 0; i < children.size(); i++) {
-			sym = children.get(i).typeCheck(symtab);
-			//if the child that we are handling is an instanceof
-			//a initializer, function body, or statement, we should define() it
-			//in the symbol table.
-			if(children.get(i) instanceof Func) {
-				Func toAdd = (Func) children.get(i);
-				symtab.define(toAdd);
-			}
+	public void createScopes(SymbolTable parent) throws SemanticTypeCheckException {
+		//create a new symbol table with the parent as the enclosing scope
+		SymbolTable nested = new SymbolTable(parent)
+		//iterate over the children in the block statement, if it is a type
+		//that requires a new scope we want to create a new scope.
+		//otherwise it is a declaration and we need to add it to the table,
+		//but this is done in the second pass/
+		for(int index = 0; index < children.size(); index++) {
+
 		}
-		return type;
+
+
+		//-----------------------------OLD CODE---------------------------
+		// for(int i = 0; i < children.size(); i++) {
+		// 	children.get(i).typeCheck(nested);
+		// 	//if the child that we are handling is an instanceof
+		// 	//a initializer, function body, or statement, we should define() it
+		// 	//in the symbol table.
+		// 	if(children.get(i) instanceof Func) {
+		// 		Func toAdd = (Func) children.get(i);
+		// 		symtab.define(toAdd);
+		// 	}
+		// }
+		// return type;
+		//----------------------------------------------------------------
 	}
 
 	public void match(){
