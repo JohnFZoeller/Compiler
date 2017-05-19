@@ -337,6 +337,39 @@ class Func extends Subtree{
 		addChild(new Block(token, it));
 	}
 
+	/*
+	 *	So this function would add all of the parameters to the local scope
+	 *	and create a local scope. But then we can have another function that
+	 *	then encounters the block and creates a scope for that. I'm not entirely
+	 *	sure that these need to be two separate functions, but, if we are doing
+	 *	two passes and walking the tree it would probably be best to separate
+	 *	the two just for clarity and so we have two distinct functions to call
+	 *	with each pass.
+	 *
+	 */
+
+	public void decorateSecond(scope enclosing) {
+		SymbolType symT;
+		//creates scope local to the function
+		LocalScope functionScope = new LocalScope(enclosing);
+		//iterate over children adding parameters to the symbol table
+		//and then creating a new scope when we reach the block statement
+		for(int index = 0; index < children.size(); index++) {
+			symT = children.get(index).getSymType();
+			if(symT instanceof Params) {
+				functionScope.define(symT);		//adds the parameter to the scope
+
+			}
+		}
+
+	}
+
+
+	@Override
+	public void decor1(Scope cur) {
+
+	}
+
 	@Override
 	public void print(){
 		int i = 0;
@@ -374,6 +407,7 @@ class Func extends Subtree{
 }
 
 class Var extends Subtree{
+
 	public Var(Token t, Iterator<Token> i){
 		super(t, i);
 
