@@ -476,9 +476,9 @@ class Var extends Subtree{
 
 	public void decorateFirst(Scope enclosing) {
 		if(children.get(1) instanceof TypeDescriptor){
-			Subtree temp = children.get(1).children.get(0).children.get(0);
+			Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
-			if(temp instanceof BasicType){
+			if(nodeType instanceof BasicType){
 					//this line was done in the SymbolTable initializer
 				//globals.define(new BuiltInTypeSymbol("int32"));
 
@@ -490,7 +490,7 @@ class Var extends Subtree{
 				
 
 					// all of that condenses down into the next line
-				SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(temp.token.getTokenType());
+				SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
 
 					//and now we decorate the node with a new symbol named "zzz"
 					//and its type is int32
@@ -503,10 +503,10 @@ class Var extends Subtree{
 
 
 			}
-			else if(temp instanceof Name){
-
+			else if(nodeType instanceof Name){
+				Symbol tempS = enclosing.resolve(nodeType.token.getTokenType());
 			}
-			else if(temp instanceof RecordDescriptor){
+			else if(nodeType instanceof RecordDescriptor){
 
 			}
 		}
