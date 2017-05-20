@@ -3,16 +3,31 @@ import java.util.*;
 
 public class Symbol{
 	public String name;
-	public TypeInterface type;
+	public SymbolType type;			//for built in types
+	public Symbol symbol;			//for user defined types
 
-	Symbol(String n, TypeInterface t){
+	Symbol(){
+		name = "";
+		type = null;
+		symbol = null;
+	}
+
+	Symbol(String n, Symbol s){
+		name = n;
+		symbol = s;
+		type = null;
+	}
+
+	Symbol(String n, SymbolType t){
 		name = n;
 		type = t;
+		symbol = null;
 	}
 
 	Symbol(String n){
 		name = n;
-
+		type = null;
+		symbol = null;
 	}
 
 	public String getName(){ return name; }
@@ -25,20 +40,32 @@ public class Symbol{
 }
 
 class VarSymbol extends Symbol{
-	VarSymbol(String n, TypeInterface t){
+	VarSymbol(String n, SymbolType t){
 		super(n, t);
+	}
+
+	VarSymbol(String n, Symbol s){
+		super(n, s);
 	}
 }
 
 class TypeSymbol extends Symbol{
-	TypeSymbol(String n, TypeInterface t){
+	TypeSymbol(String n, SymbolType t){
 		super(n, t);
+	}
+
+	TypeSymbol(String n, Symbol s){
+		super(n, s);
 	}
 }
 
 class FuncSymbol extends Symbol implements Scope {
-	FuncSymbol(String n, TypeInterface t){
+	FuncSymbol(String n, SymbolType t){
 		super(n, t);
+	}
+
+	FuncSymbol(String n, Symbol s){
+		super(n, s);
 	}
 
 	public String getScopeName(){return "";}

@@ -3,6 +3,10 @@ public class LocalScope extends BaseScope {
 		super();
 	}
 
+	public LocalScope(Scope enc){
+		super(enc);
+	}
+
 	public String getScopeName() {
 		return "local";
 	}

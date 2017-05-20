@@ -46,7 +46,7 @@ public class Subtree {
 	 */
 
 	//commented out implementation just for compilation purposes.
-	public TypeInterface typeCheck(SymbolTable symtab) {
+	public SymbolType typeCheck(SymbolTable symtab) {
 		return new BuiltInTypeSymbol("");
 
 		// try {
@@ -54,6 +54,10 @@ public class Subtree {
 		// } catch (NotFound exc) {
 		// 	throw new UndefinedIdentifier(this);
 		// }
+	}
+
+	public SymbolType getSymType(){
+		return type;
 	}
 
 	public void addChild(Subtree subtree) {
@@ -68,12 +72,13 @@ public class Subtree {
 		return (children != null);
 	}
 
-	public void decorateFirst(SymbolTable mainTable){	
-	}
+	public void decorateFirst(Scope e){;}
 
-	public void decor1(Scope cur){;}
+	public void decorateSecond(Scope e){;}
 
-	public void decorateSecond(){}
+	public void decor1(SymbolTable mainTable){;}
+
+	public void decor2(SymbolTable mainTable){;}
 
 	public void print(){;}
 
@@ -311,6 +316,7 @@ class Else extends Subtree{
 }
 
 class Func extends Subtree{
+
 	Func(Token t, Iterator<Token> i){
 		super(t, i);
 
@@ -340,7 +346,7 @@ class Func extends Subtree{
 	 *	the two just for clarity and so we have two distinct functions to call
 	 *	with each pass.
 
-
+	 
 	 *
 	 */
 	@Override
@@ -353,7 +359,7 @@ class Func extends Subtree{
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
 			if(symT instanceof Block) {
-				symT.decorateFirst(functionScope);	//once we encounter a block, call
+				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
 													//decorateFirst() on the block
 													//passing in the functionScope that will
 													//be the parent scope for the block
@@ -369,26 +375,24 @@ class Func extends Subtree{
 	 *
 	 */
 	@Override
-	public void decorateSecond(Scope currentScope) {
+	public void decorateSecond(Scope enclosing) {
 		SymbolType symT;		//SymbolType for casting
 		//iterate over children adding parameters to the symbol table
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
+
+			//temporary
+			Symbol childSymbol = new Symbol(); 
+
 			if(symT instanceof Params) {
-				currentScope.define(symT);			//adds the parameter to the scope
+				enclosing.define(childSymbol);		//adds the parameter to the scope
 
 			} else if(symT instanceof Block) {
-				symT.decorateSecond(currentScope);	//call decorateSecond on Block so it
-													//will populate it's table
+				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
+												//will populate it's table
 			}
 		}
-	}
-
-
-	@Override
-	public void decor1(Scope cur) {
-
 	}
 
 	@Override
@@ -463,7 +467,7 @@ class Var extends Subtree{
 	 *
 	 */
 
-	public void decorateFirst(scope enclosing) {
+	public void decorateFirst(Scope enclosing) {
 		SymbolType symT;
 		//creates scope local to the function
 		LocalScope functionScope = new LocalScope(enclosing);
@@ -472,7 +476,7 @@ class Var extends Subtree{
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
 			if(symT instanceof Block) {
-				symT.decorateFirst(functionScope);	//once we encounter a block, call
+				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
 													//decorateFirst() on the block
 													//passing in the functionScope that will
 													//be the parent scope for the block
@@ -488,17 +492,21 @@ class Var extends Subtree{
 	 *
 	 */
 
-	public void decorateSecond() {
+	public void decorateSecond(Scope enclosing) {
 		SymbolType symT;		//SymbolType for casting
 		//iterate over children adding parameters to the symbol table
+
+		//temporary
+		Symbol childSymbol = new Symbol(); 
+
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
 			if(symT instanceof Params) {
-				functionScope.define(symT);		//adds the parameter to the scope
+				enclosing.define(childSymbol);		//adds the parameter to the scope
 
 			} else if(symT instanceof Block) {
-				symT.decorateSecond();			//call decorateSecond on Block so it
+				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
 												//will populate it's table
 			}
 		}
@@ -618,11 +626,25 @@ class Type extends Subtree{
 	}
 
 	/*
-	 *	Type does not correlate to a new scope, decorate first does
-	 *	not apply
+	 *
 	 */
 
 	public void decorateFirst(Scope enclosing) {
+		SymbolType symT;
+		//creates scope local to the function
+		LocalScope functionScope = new LocalScope(enclosing);
+		//iterate over children adding parameters to the symbol table
+		//and then creating a new scope when we reach the block statement
+		for(int index = 0; index < children.size(); index++) {
+			symT = children.get(index).getSymType();
+			if(symT instanceof Block) {
+				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
+													//decorateFirst() on the block
+													//passing in the functionScope that will
+													//be the parent scope for the block
+
+			}
+		}
 
 	}
 
@@ -632,17 +654,23 @@ class Type extends Subtree{
 	 *
 	 */
 
-	public void decorateSecond(Scope currentScope) throws AlreadyDefinedException {
+	public void decorateSecond(Scope enclosing) {
 		SymbolType symT;		//SymbolType for casting
-		//first we want to check that the identifier for 
-		//this type is not already defined in the current scope
-		//below checks if the identifier is already defined in the
-		//current scope by retrieving the identifier in the children
-		//list and getting it's value which should be the string
-		if(currentScope.syms.get(children.get(0).getVal()) == null) {
+		//iterate over children adding parameters to the symbol table
+		//and then creating a new scope when we reach the block statement
+		for(int index = 0; index < children.size(); index++) {
+			symT = children.get(index).getSymType();
 
-		} else {
-			throw new AlreadyDefinedException(children.get(0).getVal());
+			//temporary
+			Symbol childSymbol = new Symbol(); 
+
+			if(symT instanceof Params) {
+				enclosing.define(childSymbol);		//adds the parameter to the scope
+
+			} else if(symT instanceof Block) {
+				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
+												//will populate it's table
+			}
 		}
 	}
 
