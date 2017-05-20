@@ -77,7 +77,13 @@ public class Subtree {
 
 	public void decorateSecond(Scope e){;}
 
-	public void decor1(SymbolTable mainTable){;}
+	public void beginDecorateFirst(SymbolTable mainTable){
+		currentScope = mainTable.globals;
+
+		for(int i = 0; i < children.size(); i++){
+			children.get(i).decorateFirst(currentScope);
+		}
+	}
 
 	public void decor2(SymbolTable mainTable){;}
 
@@ -469,22 +475,22 @@ class Var extends Subtree{
 	 */
 
 	public void decorateFirst(Scope enclosing) {
-		SymbolType symT;
-		//creates scope local to the function
-		LocalScope functionScope = new LocalScope(enclosing);
-		//iterate over children adding parameters to the symbol table
-		//and then creating a new scope when we reach the block statement
-		for(int index = 0; index < children.size(); index++) {
-			symT = children.get(index).getSymType();
-			if(children.get(index) instanceof Block) {
-				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
-													//decorateFirst() on the block
-													//passing in the functionScope that will
-													//be the parent scope for the block
+		if(children.get(1) instanceof TypeDescriptor){
+			Subtree temp = children.get(1).children.get(0).children.get(0);
+
+			if(temp instanceof BasicType){
+				System.out.println("found");
+			}
+			else if(temp instanceof Name){
+
+			}
+			else if(temp instanceof RecordDescriptor){
 
 			}
 		}
+		else if(children.get(1) instanceof Expression){
 
+		}
 	}
 
 	/*
@@ -494,23 +500,7 @@ class Var extends Subtree{
 	 */
 
 	public void decorateSecond(Scope enclosing) {
-		SymbolType symT;		//SymbolType for casting
-		//iterate over children adding parameters to the symbol table
 
-		//temporary
-		Symbol childSymbol = new Symbol(); 
-
-		//and then creating a new scope when we reach the block statement
-		for(int index = 0; index < children.size(); index++) {
-			symT = children.get(index).getSymType();
-			if(children.get(index) instanceof Params) {
-				enclosing.define(childSymbol);		//adds the parameter to the scope
-
-			} else if(children.get(index) instanceof Block) {
-				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
-												//will populate it's table
-			}
-		}
 	}
 
 	@Override

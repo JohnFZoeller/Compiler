@@ -31,7 +31,7 @@ public class SyntaxParser {
 			//these would by symbols -> ie. use define()
 
 
-		root.decorateFirst(mainTable.globals);
+		root.beginDecorateFirst(mainTable);
 		//root.decor2(mainTable);
 	}
 
