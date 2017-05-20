@@ -496,6 +496,10 @@ class Var extends Subtree{
 				//this symbols type is BuiltInSymbolType
 				//and the name of that type is int32
 				symbol = new VarSymbol(children.get(0).token.getName(), type);
+				enclosing.define(symbol);
+
+				//System.out.println(type.getTypeName());
+				//got to figure out how to print the name of the type
 
 			}
 			else if(temp instanceof Name){
@@ -1021,15 +1025,15 @@ class Param extends Subtree{
 			match("ref");
 			if(token.getTokenType().equals("const")) {
 				match("const");
-				this.symbol = new RefConstSymbol(token.getVal());
+				//this.symbol = new RefConstSymbol(token.getVal());
 			} else {
-				this.symbol = RefSymbol(token.getVal());
+				//this.symbol = RefSymbol(token.getVal());
 			}
 		}
 
 		if(token.getTokenType().equals("const")) {
 			match("const");
-			this.symbol = ConstSymbol(token.getVal());
+			//this.symbol = ConstSymbol(token.getVal());
 		}
 
 		addChild(new Name(token));

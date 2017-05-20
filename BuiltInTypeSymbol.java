@@ -9,6 +9,6 @@ public class BuiltInTypeSymbol extends Symbol implements SymbolType {
 	@Override
 	public String getName(){ return name; }
 
-	public String getTypeName(){ return "BuiltInTypeSymbol"; }
+	public String getTypeName(){ return name; }
 	
 }
