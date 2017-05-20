@@ -17,13 +17,13 @@ public class Subtree {
 	protected int row = 0;
 	protected int col = 0;
 	protected int level = 0;
-	Token token;
-	List<Subtree> children;
-	Iterator<Token> it;
+	Token token = null;
+	List<Subtree> children = null;
+	Iterator<Token> it = null;
 	String print = "";
-	Scope currentScope;
-	Symbol sym = null;
-	SymbolType type;
+	Scope currentScope = null;
+	Symbol symbol = null;
+	SymbolType type = null;
 
 	public Subtree(){}
 
@@ -318,12 +318,12 @@ class Else extends Subtree{
 
 class Function extends Subtree {
 
-	Function(Token t, Iterator<Token> i){
-		super(t, i);
-
-		match("function");
-		this.sym = new FunctionSymbol(token.getVarName(), null);
-		addChild(new Symbo(token));
+	Function(Token t, Iterator<Token> i) {
+		super(t, i);					//calls super constructor
+		match("function");				//matches type
+		//creates new FunctionSymbol object unique to this node
+		this.symbol = new FunctionSymbol(token.getVarName(), null);
+		addChild(new Name(token));
 		match("StringIdentifier");
 		match("OPEN_PARENTHESIS");
 
@@ -450,7 +450,7 @@ class Var extends Subtree{
 
 		match("var");
 
-		addChild(new Symbo(token));
+		addChild(new Name(token));
 		match("StringIdentifier");
 
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
@@ -623,7 +623,7 @@ class Type extends Subtree{
 
 		match("type");
 
-		addChild(new Symbo(token));
+		addChild(new Name(token));
 		match("StringIdentifier");
 
 		addChild(new TypeDescriptor(token, it));
@@ -829,7 +829,7 @@ class NaTypeDescriptor extends Subtree{
 			addChild(new RecordDescriptor(token, it));
 		}
 		else if(token.getTokenType().equals("StringIdentifier")){
-			addChild(new Symbo(token));
+			addChild(new Name(token));
 			match("StringIdentifier");
 		}
 		else{
@@ -911,7 +911,7 @@ class FieldDeclaration extends Subtree{
 	FieldDeclaration(Token t, Iterator<Token> i){
 		super(t, i);
 
-		addChild(new Symbo(token));
+		addChild(new Name(token));
 		match("StringIdentifier");
 
 		addChild(new TypeDescriptor(token, it));
@@ -998,7 +998,7 @@ class Param extends Subtree{
 		if(token.getTokenType().equals("const"))
 			match("const");
 
-		addChild(new Symbo(token));
+		addChild(new Name(token));
 		match("StringIdentifier");
 
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
@@ -1081,8 +1081,8 @@ class WildCard extends Subtree{
 
 /***********************Output Helpers********************/
 
-class Symbo extends Subtree{
-	Symbo(Token t){
+class Name extends Subtree{
+	Name(Token t){
 		token = t;
 	}
 
