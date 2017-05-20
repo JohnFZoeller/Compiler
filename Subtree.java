@@ -68,13 +68,7 @@ public class Subtree {
 		return (children != null);
 	}
 
-	public void decorateFirst(SymbolTable mainTable){
-		currentScope = mainTable.globals;
-
-		if(hasChildren())
-			for(int i = 0; i < children.size(); i++){
-				children.get(i).decor1(currentScope);
-			}		
+	public void decorateFirst(SymbolTable mainTable){	
 	}
 
 	public void decor1(Scope cur){;}
@@ -345,9 +339,11 @@ class Func extends Subtree{
 	 *	two passes and walking the tree it would probably be best to separate
 	 *	the two just for clarity and so we have two distinct functions to call
 	 *	with each pass.
+
+	 
 	 *
 	 */
-
+	@Override
 	public void decorateFirst(scope enclosing) {
 		SymbolType symT;
 		//creates scope local to the function
@@ -372,7 +368,7 @@ class Func extends Subtree{
 	 *	variable, statements etc.
 	 *
 	 */
-
+	@Override
 	public void decorateSecond() {
 		SymbolType symT;		//SymbolType for casting
 		//iterate over children adding parameters to the symbol table
@@ -457,18 +453,55 @@ class Var extends Subtree{
 		match("SEMICOLON");
 	}
 
-	@Override
-	public void decor1(Scope cur){
-		currentScope = cur;
+	/*
+	 *	Want to store the identifier and the type-desciptor in the first
+	 *	pass if the rule:
+	 *	variable-decl -> static(opt) const(opt) var identifier type-descriptor
+	 *
+	 *	or we want to store the identifier and the type descriptor of the
+	 *	expression, as the initializing will be done in the second pass.
+	 *
+	 */
 
-		if(children.get(1) instanceof TypeDescriptor){
+	public void decorateFirst(scope enclosing) {
+		SymbolType symT;
+		//creates scope local to the function
+		LocalScope functionScope = new LocalScope(enclosing);
+		//iterate over children adding parameters to the symbol table
+		//and then creating a new scope when we reach the block statement
+		for(int index = 0; index < children.size(); index++) {
+			symT = children.get(index).getSymType();
+			if(symT instanceof Block) {
+				symT.decorateFirst(functionScope);	//once we encounter a block, call
+													//decorateFirst() on the block
+													//passing in the functionScope that will
+													//be the parent scope for the block
 
-			//VarSymbol v = new VarSymbol(children.get(0).token.getName(), );
-			//currentScope.define(v);
-
+			}
 		}
 
-		//System.out.println(astScope.resolve(children.get(0).token.getName()) + " hehre");
+	}
+
+	/*
+	 *	For variables the most important thing is that the expression that
+	 *	the variable is assigned to matches the variable's type descriptor.
+	 *
+	 */
+
+	public void decorateSecond() {
+		SymbolType symT;		//SymbolType for casting
+		//iterate over children adding parameters to the symbol table
+		//and then creating a new scope when we reach the block statement
+		for(int index = 0; index < children.size(); index++) {
+			symT = children.get(index).getSymType();
+			if(symT instanceof Params) {
+				functionScope.define(symT);		//adds the parameter to the scope
+
+			} else if(symT instanceof Block) {
+				symT.decorateSecond();			//call decorateSecond on Block so it
+												//will populate it's table
+			}
+		}
 	}
 
 	@Override
@@ -582,6 +615,51 @@ class Type extends Subtree{
 		addChild(new TypeDescriptor(token, it));
 
 		match("SEMICOLON");
+	}
+
+	/*
+	 *
+	 */
+
+	public void decorateFirst(scope enclosing) {
+		SymbolType symT;
+		//creates scope local to the function
+		LocalScope functionScope = new LocalScope(enclosing);
+		//iterate over children adding parameters to the symbol table
+		//and then creating a new scope when we reach the block statement
+		for(int index = 0; index < children.size(); index++) {
+			symT = children.get(index).getSymType();
+			if(symT instanceof Block) {
+				symT.decorateFirst(functionScope);	//once we encounter a block, call
+													//decorateFirst() on the block
+													//passing in the functionScope that will
+													//be the parent scope for the block
+
+			}
+		}
+
+	}
+
+	/*
+	 *	Second decorate function which populates already created scopes with
+	 *	variable, statements etc.
+	 *
+	 */
+
+	public void decorateSecond() {
+		SymbolType symT;		//SymbolType for casting
+		//iterate over children adding parameters to the symbol table
+		//and then creating a new scope when we reach the block statement
+		for(int index = 0; index < children.size(); index++) {
+			symT = children.get(index).getSymType();
+			if(symT instanceof Params) {
+				functionScope.define(symT);		//adds the parameter to the scope
+
+			} else if(symT instanceof Block) {
+				symT.decorateSecond();			//call decorateSecond on Block so it
+												//will populate it's table
+			}
+		}
 	}
 
 	@Override 
