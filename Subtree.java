@@ -475,11 +475,17 @@ class Var extends Subtree{
 	 */
 
 	public void decorateFirst(Scope enclosing) {
+	public void decorateFirst(Scope enclosing) {
 		if(children.get(1) instanceof TypeDescriptor){
 			Subtree temp = children.get(1).children.get(0).children.get(0);
 
 			if(temp instanceof BasicType){
-				System.out.println("found");
+				System.out.println("found" + temp.token.getTokenType() 
+					+ " name " + children.get(0).token.getName());
+
+				
+				symbol = new VarSymbol(children.get(0).token.getName(), temp.token.getTokenType());
+
 			}
 			else if(temp instanceof Name){
 
@@ -491,6 +497,7 @@ class Var extends Subtree{
 		else if(children.get(1) instanceof Expression){
 
 		}
+	}
 	}
 
 	/*
