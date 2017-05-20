@@ -59,17 +59,9 @@ class TypeSymbol extends Symbol{
 	// }
 }
 
-class FuncSymbol extends Symbol implements Scope {
-	FuncSymbol(String n, SymbolType t){
+class FunctionSymbol extends Symbol {
+	FunctionSymbol(String n, SymbolType t){
 		super(n, t);
 	}
 
-	// FuncSymbol(String n, Symbol s){
-	// 	super(n, s);
-	// }
-
-	public String getScopeName(){return "";}
-	public Scope getEnclosingScope(){return null;}
-	public void define(Symbol sym){;}
-	public Symbol resolve(String name){return null;}
 }
