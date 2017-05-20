@@ -39,24 +39,41 @@ public class Symbol {
 	}
 }
 
-class VarSymbol extends Symbol{
+class RefConstSymbol extends Symbol {
+	RefConstSymbol(String n, SymbolType t) {
+		super(n, t);
+	}
+}
+
+class ConstSymbol extends Symbol {
+	ConstSymbol(String n, SymbolType t) {
+		super(n, t);
+	}
+}
+
+class RefSymbol extends Symbol {
+	RefSymbol(String n, SymbolType t) {
+		super(n, t);
+	}
+}
+
+class VarSymbol extends Symbol {
 	VarSymbol(String n, SymbolType t){
 		super(n, t);
 	}
 
-	VarSymbol(String n, Symbol s){
-		super(n, s);
-	}
+
+	//commented out because this caused a compile error
+	// VarSymbol(String n, Symbol s) {
+	// 	super(n, s);
+	// }
 }
 
-class TypeSymbol extends Symbol{
-	TypeSymbol(String n, SymbolType t){
+class TypeSymbol extends Symbol {
+	TypeSymbol(String n, SymbolType t) {
 		super(n, t);
 	}
 
-	// TypeSymbol(String n, Symbol s){
-	// 	super(n, s);
-	// }
 }
 
 class FunctionSymbol extends Symbol {

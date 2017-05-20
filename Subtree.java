@@ -992,11 +992,18 @@ class Param extends Subtree{
 	Param(Token t, Iterator<Token> i){
 		super(t, i);
 		//this.symbol = new Symbol("Param");
-		if(token.getTokenType().equals("ref"))
+		if(token.getTokenType().equals("ref")) {
 			match("ref");
+			if(token.getTokenType().equals("const")) {
+				match("const");
+			} else {
+				
+			}
+		}
 
-		if(token.getTokenType().equals("const"))
+		if(token.getTokenType().equals("const")) {
 			match("const");
+		}
 
 		addChild(new Name(token));
 		match("StringIdentifier");
