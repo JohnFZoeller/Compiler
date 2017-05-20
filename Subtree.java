@@ -375,7 +375,7 @@ class Func extends Subtree{
 	 *
 	 */
 	@Override
-	public void decorateSecond(Scope enclosing) {
+	public void decorateSecond(Scope currentScope) {
 		SymbolType symT;		//SymbolType for casting
 		//iterate over children adding parameters to the symbol table
 		//and then creating a new scope when we reach the block statement
@@ -383,13 +383,12 @@ class Func extends Subtree{
 			symT = children.get(index).getSymType();
 
 			//temporary
-			Symbol childSymbol = new Symbol(); 
-
+			Symbol childSymbol = new Symbol();
 			if(symT instanceof Params) {
-				enclosing.define(childSymbol);		//adds the parameter to the scope
+				currentScope.define(childSymbol);		//adds the parameter to the scope
 
 			} else if(symT instanceof Block) {
-				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
+				children.get(index).decorateSecond(currentScope);			//call decorateSecond on Block so it
 												//will populate it's table
 			}
 		}
