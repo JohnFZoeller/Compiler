@@ -1,3 +1,3 @@
-public interface TypeInterface{
+public interface SymbolType {
 	public String getTypeName();
 }

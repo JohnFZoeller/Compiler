@@ -22,7 +22,7 @@ public class Subtree {
 	Iterator<Token> it;
 	String print = "";
 	Scope currentScope;
-	TypeInterface type;				//track the type this is
+	SymbolType type;				//track the type this is
 
 	public Subtree(){}
 

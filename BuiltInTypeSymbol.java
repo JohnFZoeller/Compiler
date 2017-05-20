@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class BuiltInTypeSymbol extends Symbol implements TypeInterface{
+public class BuiltInTypeSymbol extends Symbol implements SymbolType {
 	BuiltInTypeSymbol(String n){
 		super(n);
 	}
