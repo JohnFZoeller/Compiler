@@ -316,14 +316,13 @@ class Else extends Subtree{
 	}
 }
 
-class Func extends Subtree {
+class Function extends Subtree {
 
-	Func(Token t, Iterator<Token> i){
+	Function(Token t, Iterator<Token> i){
 		super(t, i);
-		//this.sym = new Symbol("Function Node");
 
 		match("function");
-
+		this.sym = new FunctionSymbol(token.getVarName(), null);
 		addChild(new Symbo(token));
 		match("StringIdentifier");
 		match("OPEN_PARENTHESIS");
@@ -333,8 +332,9 @@ class Func extends Subtree {
 
 		match("CLOSE_PARENTHESIS");
 
-		if(hasTypeDesc())
+		if(hasTypeDesc()) {
 			addChild(new TypeDescriptor(token, it));
+		}
 
 		addChild(new Block(token, it));
 	}
@@ -349,19 +349,20 @@ class Func extends Subtree {
 	 *	with each pass.
 
 	 
-	 *
+	 WILL WANT TO ADD A FUNCTION TYPE SYMBOL TO THE ENCLOSING SCOPE
+
+
 	 */
 	@Override
 	public void decorateFirst(Scope enclosing) {
-		Subtree currentNode;
-		Symbol symT;
+		Subtree currentNode = null;
 		//creates scope local to the function
 		LocalScope functionScope = new LocalScope(enclosing);
-		//iterate over children adding parameters to the symbol table
-		//and then creating a new scope when we reach the block statement
+		//iterate over children until we reach a block statement. Then we will want
+		//to call decorateFirst on the block statement to create a scope for that
+		//block
 		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
-			symT = children.get(index).sym;
+			currentNode = children.get(index);		//sets currentNode equal to current child
 			if(currentNode instanceof Block) {
 				currentNode.decorateFirst(functionScope);	//once we encounter a block, call
 																	//decorateFirst() on the block
@@ -380,11 +381,11 @@ class Func extends Subtree {
 	 */
 	@Override
 	public void decorateSecond(Scope enclosing) {
-		SymbolType symT;		//SymbolType for casting
+		
 		//iterate over children adding parameters to the symbol table
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
-			symT = children.get(index).getSymType();
+			//symT = children.get(index).getSymType();
 
 			//temporary
 			Symbol childSymbol = new Symbol(); 
@@ -762,7 +763,7 @@ class Block extends Subtree {
 							break;
 			case "exit":	addChild(new Exit(token, it));
 							break;
-			case "function":addChild(new Func(token, it));
+			case "function":addChild(new Function(token, it));
 							break;
 			case "var":		addChild(new Var(token, it));
 							break;
