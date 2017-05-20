@@ -316,27 +316,37 @@ class Else extends Subtree{
 	}
 }
 
+/*----------------------------- Function Class --------------------------------
+ *
+ *	Function class is an extension of Subtree. Class is setup to model a 
+ *	function declaration with the grammar specifications outlined in the
+ *	CSS 448 Programming Languaeg
+ *
+ *---------------------------------------------------------------------------*/
+
 class Function extends Subtree {
 
 	Function(Token t, Iterator<Token> i) {
-		super(t, i);					//calls super constructor
-		match("function");				//matches type
+		super(t, i);								//calls super constructor
+		match("function");							//matches type
 		//creates new FunctionSymbol object unique to this node
 		this.symbol = new FunctionSymbol(token.getVarName(), null);
+		//first child is now Name node
 		addChild(new Name(token));
-		match("StringIdentifier");
-		match("OPEN_PARENTHESIS");
+		match("StringIdentifier");					//increments Iterator
+		match("OPEN_PARENTHESIS");					//increments Iterator, enter Params
 
-		if(hasParams())
-			addChild(new Params(token, it));
-
-		match("CLOSE_PARENTHESIS");
-
-		if(hasTypeDesc()) {
-			addChild(new TypeDescriptor(token, it));
+		if(hasParams()) {							//checks if Params are present
+			addChild(new Params(token, it));		//adds child Nodes accordingly
 		}
 
-		addChild(new Block(token, it));
+		match("CLOSE_PARENTHESIS");					//increments Iterator
+
+		if(hasTypeDesc()) {							//checks for type descriptor
+			addChild(new TypeDescriptor(token, it));//adds child node accordingly
+		}
+
+		addChild(new Block(token, it));				//final child, Block
 	}
 
 	/*
@@ -363,15 +373,18 @@ class Function extends Subtree {
 		//block
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);		//sets currentNode equal to current child
-			if(currentNode instanceof Block) {
-				currentNode.decorateFirst(functionScope);	//once we encounter a block, call
-																	//decorateFirst() on the block
-																	//passing in the functionScope that will
-																	//be the parent scope for the block
-
+			//if the currentNode is a params type, then we want to call
+			//decorate first on the params node and pass the function scope.
+			//the params node will then add it's children to the function scope
+			//symbol table
+			if(currentNode instanceof Params) {
+				currentNode.decorateFirst(functionScope);
+				//once we encounter a block, call decorateFirst() on the block
+				//passing in the functionScope that will be the parent scope for the block
+			} else if(currentNode instanceof Block) {
+				currentNode.decorateFirst(functionScope);
 			}
 		}
-
 	}
 
 	/*
@@ -381,7 +394,7 @@ class Function extends Subtree {
 	 */
 	@Override
 	public void decorateSecond(Scope enclosing) {
-		
+		Subtree currentNode = null;
 		//iterate over children adding parameters to the symbol table
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {

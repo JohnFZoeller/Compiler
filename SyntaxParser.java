@@ -51,7 +51,7 @@ public class SyntaxParser {
 							break;
 			case "exit":	root.addChild(new Exit(currentTok, i));
 							break;
-			case "function":root.addChild(new Func(currentTok, i));
+			case "function":root.addChild(new Function(currentTok, i));
 							break;
 			case "var":		root.addChild(new Var(currentTok, i));
 							break;
