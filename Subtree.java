@@ -394,24 +394,6 @@ class Function extends Subtree {
 	 */
 	@Override
 	public void decorateSecond(Scope enclosing) {
-		Subtree currentNode = null;
-		//iterate over children adding parameters to the symbol table
-		//and then creating a new scope when we reach the block statement
-		for(int index = 0; index < children.size(); index++) {
-			//symT = children.get(index).getSymType();
-
-			//temporary
-			Symbol childSymbol = new Symbol(); 
-
-			if(children.get(index) instanceof Params) {
-				
-				enclosing.define(childSymbol);		//adds the parameter to the scope
-
-			} else if(children.get(index) instanceof Block) {
-				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
-												//will populate it's table
-			}
-		}
 	}
 
 	@Override
@@ -973,7 +955,22 @@ class Params extends Subtree{
 
 		addChild(new Param(token, it));
 
+		this.symbol = new Symbol("Params");
+
 		x();
+	}
+
+	public void decorateFirst(Scope enclosing) {
+		Subtree currentNode = null;
+		//iterate over children and if the node is a Param, we will call
+		//decorateFirst and pass in the enclosing scope for the Param
+		//to add itself to the enclosing scope's symbol table
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+			if(currentNode instanceof Param) {
+				currentNode.decorateFirst(enclosing);
+			}
+		}
 	}
 
 	public void x(){
@@ -1004,7 +1001,7 @@ class Params extends Subtree{
 class Param extends Subtree{
 	Param(Token t, Iterator<Token> i){
 		super(t, i);
-
+		//this.symbol = new Symbol("Param");
 		if(token.getTokenType().equals("ref"))
 			match("ref");
 
@@ -1017,8 +1014,7 @@ class Param extends Subtree{
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
 			match("ASSIGNMENT_OPERATOR");
 			addChild(new Expression(token, it));
-		}
-		else{
+		} else {
 			addChild(new NaTypeDescriptor(token, it));
 
 			if(hasWilds()){
@@ -1027,7 +1023,19 @@ class Param extends Subtree{
 				match("CLOSE_BRACKET");
 			}
 		}
+	}
 
+	public void decorateFirst(Scope enclosing) {
+		Subtree currentNode = null;
+		//iterate over children and if the node is a Param, we will call
+		//decorateFirst and pass in the enclosing scope for the Param
+		//to add itself to the enclosing scope's symbol table
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+			if(currentNode instanceof Param) {
+				currentNode.decorateFirst(enclosing);
+			}
+		}
 	}
 
 	@Override
