@@ -826,10 +826,18 @@ class NaTypeDescriptor extends Subtree{
 		else{
 			addChild(new BasicType(token));
 			switch(token.getTokenType()){
-				case "byte" : 	match("byte"); break;
-				case "int32": 	match("int32"); break;
-				case "float64": match("float64"); break;
-				default : break;
+				case "byte" :
+					//this.symbol = new BuiltInTypeSymbol("");
+					match("byte");
+					break;
+				case "int32":
+					match("int32");
+					break;
+				case "float64":
+					match("float64");
+					break;
+				default:
+					break;
 			}
 		}
 	}
@@ -997,18 +1005,19 @@ class Params extends Subtree{
 class Param extends Subtree{
 	Param(Token t, Iterator<Token> i){
 		super(t, i);
-		//this.symbol = new Symbol("Param");
 		if(token.getTokenType().equals("ref")) {
 			match("ref");
 			if(token.getTokenType().equals("const")) {
 				match("const");
+				this.symbol = new RefConstSymbol(token.getVal());
 			} else {
-				
+				this.symbol = RefSymbol(token.getVal());
 			}
 		}
 
 		if(token.getTokenType().equals("const")) {
 			match("const");
+			this.symbol = ConstSymbol(token.getVal());
 		}
 
 		addChild(new Name(token));
@@ -1018,6 +1027,7 @@ class Param extends Subtree{
 			match("ASSIGNMENT_OPERATOR");
 			addChild(new Expression(token, it));
 		} else {
+
 			addChild(new NaTypeDescriptor(token, it));
 
 			if(hasWilds()){
@@ -1030,12 +1040,9 @@ class Param extends Subtree{
 
 	public void decorateFirst(Scope enclosing) {
 		Subtree currentNode = null;
-		//iterate over children and if the node is a Param, we will call
-		//decorateFirst and pass in the enclosing scope for the Param
-		//to add itself to the enclosing scope's symbol table
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
-			if(currentNode instanceof Param) {
+			if(currentNode instanceof NaTypeDescriptor) {
 				currentNode.decorateFirst(enclosing);
 			}
 		}
