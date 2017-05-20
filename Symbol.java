@@ -40,6 +40,10 @@ public class Symbol {
 }
 
 class RefConstSymbol extends Symbol {
+	RefConstSymbol() {
+		super();
+	}
+
 	RefConstSymbol(String n, SymbolType t) {
 		super(n, t);
 	}
@@ -50,6 +54,10 @@ class RefConstSymbol extends Symbol {
 }
 
 class ConstSymbol extends Symbol {
+	ConstSymbol() {
+		super();
+	}
+
 	ConstSymbol(String n, SymbolType t) {
 		super(n, t);
 	}
@@ -60,6 +68,10 @@ class ConstSymbol extends Symbol {
 }
 
 class RefSymbol extends Symbol {
+	RefSymbol() {
+		super();
+	}
+	
 	RefSymbol(String n, SymbolType t) {
 		super(n, t);
 	}
