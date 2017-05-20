@@ -358,7 +358,7 @@ class Func extends Subtree{
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
-			if(symT instanceof Block) {
+			if(children.get(index) instanceof Block) {
 				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
 													//decorateFirst() on the block
 													//passing in the functionScope that will
@@ -385,10 +385,11 @@ class Func extends Subtree{
 			//temporary
 			Symbol childSymbol = new Symbol(); 
 
-			if(symT instanceof Params) {
+			if(children.get(index) instanceof Params) {
+				
 				enclosing.define(childSymbol);		//adds the parameter to the scope
 
-			} else if(symT instanceof Block) {
+			} else if(children.get(index) instanceof Block) {
 				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
 												//will populate it's table
 			}
@@ -475,7 +476,7 @@ class Var extends Subtree{
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
-			if(symT instanceof Block) {
+			if(children.get(index) instanceof Block) {
 				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
 													//decorateFirst() on the block
 													//passing in the functionScope that will
@@ -502,10 +503,10 @@ class Var extends Subtree{
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
-			if(symT instanceof Params) {
+			if(children.get(index) instanceof Params) {
 				enclosing.define(childSymbol);		//adds the parameter to the scope
 
-			} else if(symT instanceof Block) {
+			} else if(children.get(index) instanceof Block) {
 				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
 												//will populate it's table
 			}
@@ -637,7 +638,7 @@ class Type extends Subtree{
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
 			symT = children.get(index).getSymType();
-			if(symT instanceof Block) {
+			if(children.get(index) instanceof Block) {
 				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
 													//decorateFirst() on the block
 													//passing in the functionScope that will
@@ -664,10 +665,10 @@ class Type extends Subtree{
 			//temporary
 			Symbol childSymbol = new Symbol(); 
 
-			if(symT instanceof Params) {
+			if(children.get(index) instanceof Params) {
 				enclosing.define(childSymbol);		//adds the parameter to the scope
 
-			} else if(symT instanceof Block) {
+			} else if(children.get(index) instanceof Block) {
 				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
 												//will populate it's table
 			}
