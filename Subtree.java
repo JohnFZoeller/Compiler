@@ -479,11 +479,27 @@ class Var extends Subtree{
 			Subtree temp = children.get(1).children.get(0).children.get(0);
 
 			if(temp instanceof BasicType){
-				System.out.println("found" + temp.token.getTokenType() 
-					+ " name " + children.get(0).token.getName());
 
-				
-				//symbol = new VarSymbol(children.get(0).token.getName(), temp.token.getTokenType());
+				//this line was done in the SymbolTable initializer
+				//Type intType = new BuiltInTypeSymbol("int32");
+
+				// so we can use resolve to get the Symbol corresponding to "int32"
+				//Symbol john = enclosing.resolve(temp.token.getTokenType());
+
+				//and then get the SymbolType of the previous symbol
+				//SymbolType zoeller = john.getType();
+
+				// all of that condenses down into the next line
+				SymbolType type = enclosing.resolve(temp.token.getTokenType()).getType();
+
+				//and now we decorate the node with a new symbol named "zzz"
+				//this symbols type is BuiltInSymbolType
+				//and the name of that type is int32
+				symbol = new VarSymbol(children.get(0).token.getName(), type);
+				enclosing.define(symbol);
+
+				//System.out.println(type.getTypeName());
+				//got to figure out how to print the name of the type
 
 			}
 			else if(temp instanceof Name){
@@ -1009,15 +1025,15 @@ class Param extends Subtree{
 			match("ref");
 			if(token.getTokenType().equals("const")) {
 				match("const");
-				this.symbol = new RefConstSymbol(token.getVal());
+				//this.symbol = new RefConstSymbol(token.getVal());
 			} else {
-				this.symbol = RefSymbol(token.getVal());
+				//this.symbol = RefSymbol(token.getVal());
 			}
 		}
 
 		if(token.getTokenType().equals("const")) {
 			match("const");
-			this.symbol = ConstSymbol(token.getVal());
+			//this.symbol = ConstSymbol(token.getVal());
 		}
 
 		addChild(new Name(token));
