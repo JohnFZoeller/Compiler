@@ -479,7 +479,12 @@ class Var extends Subtree{
 			Subtree temp = children.get(1).children.get(0).children.get(0);
 
 			if(temp instanceof BasicType){
-				System.out.println("found");
+				System.out.println("found" + temp.token.getTokenType() 
+					+ " name " + children.get(0).token.getName());
+
+				
+				//symbol = new VarSymbol(children.get(0).token.getName(), temp.token.getTokenType());
+
 			}
 			else if(temp instanceof Name){
 
@@ -492,6 +497,7 @@ class Var extends Subtree{
 
 		}
 	}
+
 
 	/*
 	 *	For variables the most important thing is that the expression that
