@@ -479,11 +479,12 @@ class Var extends Subtree{
 			Subtree temp = children.get(1).children.get(0).children.get(0);
 
 			if(temp instanceof BasicType){
-				System.out.println("found" + temp.token.getTokenType() 
-					+ " name " + children.get(0).token.getName());
+				// System.out.println("found" + temp.token.getTokenType() 
+				// 	+ " name " + children.get(0).token.getName());
 
-				
-				//symbol = new VarSymbol(children.get(0).token.getName(), temp.token.getTokenType());
+				SymbolType type = enclosing.resolve(temp.token.getTokenType()).getType();
+
+				symbol = new VarSymbol(children.get(0).token.getName(), type);
 
 			}
 			else if(temp instanceof Name){

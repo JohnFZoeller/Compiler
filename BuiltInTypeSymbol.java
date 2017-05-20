@@ -7,7 +7,7 @@ public class BuiltInTypeSymbol extends Symbol implements SymbolType {
 	}
 
 	@Override
-	public String getName(){ return "BuiltInTypeSymbol"; }
+	public String getName(){ return name; }
 
 	public String getTypeName(){ return "BuiltInTypeSymbol"; }
 	
