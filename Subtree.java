@@ -504,7 +504,11 @@ class Var extends Subtree{
 
 			}
 			else if(nodeType instanceof Name){
-				Symbol tempS = enclosing.resolve(nodeType.token.getTokenType());
+				if(enclosing.resolve(nodeType.token.getTokenType()) != null){
+					//symbol = new VarSymbol(children.get(0).token.getName(),
+					//			children.get(1).token.getName());
+					//enclosing.define(symbol);
+				}
 			}
 			else if(nodeType instanceof RecordDescriptor){
 
@@ -644,22 +648,26 @@ class Type extends Subtree{
 	 */
 
 	public void decorateFirst(Scope enclosing) {
-		SymbolType symT;
-		//creates scope local to the function
-		LocalScope functionScope = new LocalScope(enclosing);
-		//iterate over children adding parameters to the symbol table
-		//and then creating a new scope when we reach the block statement
-		for(int index = 0; index < children.size(); index++) {
-			symT = children.get(index).getSymType();
-			if(children.get(index) instanceof Block) {
-				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
-													//decorateFirst() on the block
-													//passing in the functionScope that will
-													//be the parent scope for the block
+		Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
+		if(nodeType instanceof BasicType){
+
+			SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
+
+			symbol = new VarSymbol(children.get(0).token.getName(), t);
+			enclosing.define(symbol);
+			
+		}
+		else if(nodeType instanceof Name){
+			if(enclosing.resolve(nodeType.token.getTokenType()) != null){
+				//symbol = new VarSymbol(children.get(0).token.getName(),
+				//			children.get(1).token.getName());
+				//enclosing.define(symbol);
 			}
 		}
+		else if(nodeType instanceof RecordDescriptor){
 
+		}
 	}
 
 	/*
