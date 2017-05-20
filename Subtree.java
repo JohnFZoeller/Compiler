@@ -475,7 +475,6 @@ class Var extends Subtree{
 	 */
 
 	public void decorateFirst(Scope enclosing) {
-	public void decorateFirst(Scope enclosing) {
 		if(children.get(1) instanceof TypeDescriptor){
 			Subtree temp = children.get(1).children.get(0).children.get(0);
 
@@ -484,7 +483,7 @@ class Var extends Subtree{
 					+ " name " + children.get(0).token.getName());
 
 				
-				symbol = new VarSymbol(children.get(0).token.getName(), temp.token.getTokenType());
+				//symbol = new VarSymbol(children.get(0).token.getName(), temp.token.getTokenType());
 
 			}
 			else if(temp instanceof Name){
@@ -498,7 +497,7 @@ class Var extends Subtree{
 
 		}
 	}
-	}
+
 
 	/*
 	 *	For variables the most important thing is that the expression that
