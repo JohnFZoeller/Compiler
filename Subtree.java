@@ -22,7 +22,8 @@ public class Subtree {
 	Iterator<Token> it;
 	String print = "";
 	Scope currentScope;
-	SymbolType type;				//track the type this is
+	Symbol sym = null;
+	SymbolType type;
 
 	public Subtree(){}
 
@@ -315,10 +316,11 @@ class Else extends Subtree{
 	}
 }
 
-class Func extends Subtree{
+class Func extends Subtree {
 
 	Func(Token t, Iterator<Token> i){
 		super(t, i);
+		//this.sym = new Symbol("Function Node");
 
 		match("function");
 
@@ -351,18 +353,20 @@ class Func extends Subtree{
 	 */
 	@Override
 	public void decorateFirst(Scope enclosing) {
-		SymbolType symT;
+		Subtree currentNode;
+		Symbol symT;
 		//creates scope local to the function
 		LocalScope functionScope = new LocalScope(enclosing);
 		//iterate over children adding parameters to the symbol table
 		//and then creating a new scope when we reach the block statement
 		for(int index = 0; index < children.size(); index++) {
-			symT = children.get(index).getSymType();
-			if(children.get(index) instanceof Block) {
-				children.get(index).decorateFirst(functionScope);	//once we encounter a block, call
-													//decorateFirst() on the block
-													//passing in the functionScope that will
-													//be the parent scope for the block
+			currentNode = children.get(index);
+			symT = children.get(index).sym;
+			if(currentNode instanceof Block) {
+				currentNode.decorateFirst(functionScope);	//once we encounter a block, call
+																	//decorateFirst() on the block
+																	//passing in the functionScope that will
+																	//be the parent scope for the block
 
 			}
 		}
@@ -704,7 +708,7 @@ class Block extends Subtree {
 		super(t, i);
 
 		//
-		this.type = null;
+		//this.type = null;
 
 		match("OPEN_BRACE");
 

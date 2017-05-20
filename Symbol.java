@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class Symbol{
+public class Symbol {
 	public String name;
 	public SymbolType type;			//for built in types
 	public Symbol symbol;			//for user defined types
@@ -13,9 +13,9 @@ public class Symbol{
 	}
 
 	Symbol(String n, Symbol s){
-		name = n;
-		symbol = s;
-		type = null;
+	 	name = n;
+	 	symbol = s;
+	 	type = null;
 	}
 
 	Symbol(String n, SymbolType t){
@@ -54,9 +54,9 @@ class TypeSymbol extends Symbol{
 		super(n, t);
 	}
 
-	TypeSymbol(String n, Symbol s){
-		super(n, s);
-	}
+	// TypeSymbol(String n, Symbol s){
+	// 	super(n, s);
+	// }
 }
 
 class FuncSymbol extends Symbol implements Scope {
@@ -64,9 +64,9 @@ class FuncSymbol extends Symbol implements Scope {
 		super(n, t);
 	}
 
-	FuncSymbol(String n, Symbol s){
-		super(n, s);
-	}
+	// FuncSymbol(String n, Symbol s){
+	// 	super(n, s);
+	// }
 
 	public String getScopeName(){return "";}
 	public Scope getEnclosingScope(){return null;}
