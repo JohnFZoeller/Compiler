@@ -45,17 +45,29 @@ class RefConstSymbol extends Symbol {
 	RefConstSymbol(String n, SymbolType t) {
 		super(n, t);
 	}
+
+	RefConstSymbol(String n) {
+		super(n);
+	}
 }
 
 class ConstSymbol extends Symbol {
 	ConstSymbol(String n, SymbolType t) {
 		super(n, t);
 	}
+
+	ConstSymbol(String n) {
+		super(n);
+	}
 }
 
 class RefSymbol extends Symbol {
 	RefSymbol(String n, SymbolType t) {
 		super(n, t);
+	}
+
+	RefSymbol(String n) {
+		super(n);
 	}
 }
 
