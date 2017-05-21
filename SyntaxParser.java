@@ -21,7 +21,7 @@ public class SyntaxParser {
 		Main match function for the program. Logic is based off of the fact that the only
 		time this match function will be called is in the case of a new statement in the program.
 	*/
-	public void decorate(SymbolTable mainTable){
+	public void decorate(SymbolTable mainTable) throws AlreadyDefinedException, UndefinedTypeException {
 
 		//Bernsteins recommendation for how to decorate
 		//0th pass = lexing and parsing							-> already done
