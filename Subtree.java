@@ -338,21 +338,6 @@ class Function extends Subtree {
 	}
 
 	/*
-	 *	So this function would add all of the parameters to the local scope
-	 *	and create a local scope. But then we can have another function that
-	 *	then encounters the block and creates a scope for that. I'm not entirely
-	 *	sure that these need to be two separate functions, but, if we are doing
-	 *	two passes and walking the tree it would probably be best to separate
-	 *	the two just for clarity and so we have two distinct functions to call
-	 *	with each pass.
-
-	 
-	 WILL WANT TO ADD A FUNCTION TYPE SYMBOL TO THE ENCLOSING SCOPE
-
-
-	 */
-
-	/*
 	 *	Semantic Rules for Parameters:
 	 *	1. All parameters of type var must be pass by reference
 	 *	2. All parameters not of type var must be pass-by-value
@@ -411,12 +396,34 @@ class Function extends Subtree {
 	}
 
 	/*
-	 *	Second decorate function which populates already created scopes with
-	 *	variable, statements etc.
+	 *	Second decorate function. The Function symbol has already been added to the
+	 *	enclosing scope. The encompassing scope is passed in to decorate second and
+	 *	a local scope is created. Parameters are added to the local scope, and then
+	 *	the local scope is passed to the Block child, as the Block child requires
+	 *	the creation of a new semantic scope.
 	 *
 	 */
+
 	@Override
 	public void decorateSecond(Scope enclosing) {
+		//creates scope local to the function
+		LocalScope localScope = new LocalScope(enclosing);
+
+		//iterates over children. When a child of type Params is encountered
+		//the decorateSecond() function is called on that child and the localScope
+		//is passed in so that the parameters can be added to the function's scope
+		Subtree currentNode;
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+			if(currentNode instanceof Params) {
+				//adds Params to localScope symbol table
+				currentNode.decorateSecond(localScope);
+			} else if(currentNode instanceof Block) {
+				//passes local scope to Block, local scope will become the Block's
+				//encompassing scope
+				currentNode.decorateSecond(localScope);
+			}
+		}
 	}
 
 	@Override
@@ -1302,9 +1309,6 @@ class Expressions extends Subtree {
 		}
 	}
 }
-
-
-
 
 class Expression extends Subtree {
 	Expression operand = null;
