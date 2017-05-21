@@ -2,12 +2,12 @@ import java.io.*;
 import java.util.*;
 
 public class Main{
-	public static void main(String[] args){
+	public static void main(String[] args) throws UndefinedTypeException, AlreadyDefinedException {
 		//collapse
 		new Main().run("testin.txt");
 	}
 
-	public static void run(String in){
+	public static void run(String in) throws UndefinedTypeException, AlreadyDefinedException {
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		SyntaxParser par = new SyntaxParser(lexer);
