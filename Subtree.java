@@ -58,7 +58,7 @@ public class Subtree {
 
 	public void decorateFirst(Scope e) throws AlreadyDefinedException, UndefinedTypeException{;}
 
-	public void decorateSecond(Scope e){;}
+	public void decorateSecond(Scope e) throws UndefinedTypeException, AlreadyDefinedException {;}
 
 	public void beginDecorateFirst(SymbolTable mainTable) throws AlreadyDefinedException, UndefinedTypeException{
 		currentScope = mainTable.globals;
@@ -102,29 +102,24 @@ public class Subtree {
 			if(token == null) {
 				readNextTok();
 			}
+		} else {
+			throw new Error("Expected: " + expect + " Got: " + token.getTokenType());
 		}
-		else throw new 
-			Error("Expected: " + expect + " Got: " + token.getTokenType());
 	}
 
 	public void readNextTok() {
 		if(it.hasNext()){
 			token = it.next();
-
-			if(token != null){
-
+			if(token != null) {
 				System.err.println(token.getTokenType() + " " 
 					+ token.getName());
 			}
-		}
-		else 
+		} else {
 			return;
+		}
 	}
 
 	public int runningCol(){
-		// col = (currentTok.getCol() < col) ? 
-		// (col + currentTok.getCol()) : currentTok.getCol();
-
 		return col;
 	}
 
@@ -159,7 +154,7 @@ public class Subtree {
 	}
 }
 
-/************************Main Node Types********************/
+/*------------------------------ Main Node Types ---------------------------------*/
 
 class For extends Subtree{
 	For(Token t, Iterator<Token> i){
@@ -309,9 +304,11 @@ class Else extends Subtree{
  *
  *	Function class is an extension of Subtree. Class is setup to model a 
  *	function declaration with the grammar specifications outlined in the
- *	CSS 448 Programming Languaeg
+ *	CSS 448 Programming Language
  *
  *---------------------------------------------------------------------------*/
+
+// !----- DECORATE FIRST AND DECORATE SECOND SHOULD BE DONE FOR FUNCTION -------!
 
 class Function extends Subtree {
 
@@ -405,7 +402,7 @@ class Function extends Subtree {
 	 */
 
 	@Override
-	public void decorateSecond(Scope enclosing) {
+	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		//creates scope local to the function
 		LocalScope localScope = new LocalScope(enclosing);
 
@@ -421,7 +418,8 @@ class Function extends Subtree {
 			} else if(currentNode instanceof Block) {
 				//passes local scope to Block, local scope will become the Block's
 				//encompassing scope
-				currentNode.decorateSecond(localScope);
+				Block blockNode = (Block) currentNode;
+				blockNode.decorateBlock(localScope);
 			}
 		}
 	}
@@ -649,6 +647,9 @@ class Exit extends Subtree{
 	}
 }
 
+// !------------------- DECORATE FIRST SHOULD BE DONE FOR TYPE ---------------------!
+// !--------------------- DOES NOT REQUIRE DECORATE SECOND -------------------------!
+
 class Type extends Subtree{
 	Type(Token t, Iterator<Token> i){
 		super(t, i);
@@ -726,32 +727,6 @@ class Type extends Subtree{
 		*/
 	}
 
-	/*
-	 *	Second decorate function which populates already created scopes with
-	 *	variable, statements etc.
-	 *
-	 */
-
-	public void decorateSecond(Scope enclosing) {
-		SymbolType symT;		//SymbolType for casting
-		//iterate over children adding parameters to the symbol table
-		//and then creating a new scope when we reach the block statement
-		for(int index = 0; index < children.size(); index++) {
-			symT = children.get(index).getSymType();
-
-			//temporary
-			Symbol childSymbol = new Symbol(); 
-
-			if(children.get(index) instanceof Params) {
-				enclosing.define(childSymbol);		//adds the parameter to the scope
-
-			} else if(children.get(index) instanceof Block) {
-				children.get(index).decorateSecond(enclosing);			//call decorateSecond on Block so it
-												//will populate it's table
-			}
-		}
-	}
-
 	@Override 
 	public void print(){
 		System.out.println(print + "(" + row + ", "
@@ -772,16 +747,14 @@ class Type extends Subtree{
 	}
 }
 
+/*----------------------------- Support Statements -------------------------------*/
 
-/*********************Support Statements**********************/
+// !--------------------- DECORATE BLOCK NEEDS TO BE FINISHED ---------------------!
 
 class Block extends Subtree {
 
 	Block(Token t, Iterator<Token> i){
 		super(t, i);
-
-		//
-		//this.type = null;
 
 		match("OPEN_BRACE");
 
@@ -790,33 +763,6 @@ class Block extends Subtree {
 		}
 
 		match("CLOSE_BRACE");
-	}
-
-	public void createScopes(BaseScope parent) throws SemanticTypeCheckException {
-		//create a new symbol table with the parent as the enclosing scope
-		BaseScope nested = new BaseScope();
-		//iterate over the children in the block statement, if it is a type
-		//that requires a new scope we want to create a new scope.
-		//otherwise it is a declaration and we need to add it to the table,
-		//but this is done in the second pass/
-		for(int index = 0; index < children.size(); index++) {
-
-		}
-
-
-		//-----------------------------OLD CODE---------------------------
-		// for(int i = 0; i < children.size(); i++) {
-		// 	children.get(i).typeCheck(nested);
-		// 	//if the child that we are handling is an instanceof
-		// 	//a initializer, function body, or statement, we should define() it
-		// 	//in the symbol table.
-		// 	if(children.get(i) instanceof Func) {
-		// 		Func toAdd = (Func) children.get(i);
-		// 		symtab.define(toAdd);
-		// 	}
-		// }
-		// return type;
-		//----------------------------------------------------------------
 	}
 
 	public void match(){
@@ -844,7 +790,6 @@ class Block extends Subtree {
 			case "const":	addChild(new Var(token, it));
 							break;
 			case "StringIdentifier":
-							//System.out.println(token.getVarName());
 							addChild(new Expression(token, it));
 							match("SEMICOLON");
 							break;
@@ -852,6 +797,44 @@ class Block extends Subtree {
 							+ token.getTokenType());
 							System.exit(0);
 							break;
+		}
+	}
+
+	public void decorateBlock(Scope encompassing) throws UndefinedTypeException, AlreadyDefinedException {
+		//creates scope local to the block
+		LocalScope localScope = new LocalScope(encompassing);
+
+		//iterates over the children of block and adds them to the local scope if
+		//they are declarations. Or checks if the type is valid in the wider scope
+		//if a type is being used that is not locally defined.
+		//
+		//	STILL NEEDS TO BE COMPLETED
+		//
+		Subtree currentNode;
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+
+			if(currentNode instanceof For) {				//adds new scope
+
+			} else if(currentNode instanceof While) {		//adds new scope
+
+			} else if(currentNode instanceof If) {			//adds new scope
+
+			} else if(currentNode instanceof Function) {	//adds new scope
+
+			} else if(currentNode instanceof Print) {
+
+			} else if(currentNode instanceof Type){
+
+			} else if(currentNode instanceof Var) {
+
+			} else if(currentNode instanceof Exit) {
+
+			} else if(currentNode instanceof Retur) {
+
+			} else if(currentNode instanceof Expression) {
+
+			}
 		}
 	}
 
@@ -870,6 +853,8 @@ class Block extends Subtree {
 		}
 	}
 }
+
+// !------------------- TYPE DESCRIPTOR SHOULD BE FINISHED ------------------------!
 
 class TypeDescriptor extends Subtree{
 	TypeDescriptor(Token t, Iterator<Token> i){
@@ -897,6 +882,8 @@ class TypeDescriptor extends Subtree{
 		}
 	}
 }
+
+// !------------------ NATYPEDESCRIPTOR SHOULD BE FINISHED ------------------------!
 
 class NaTypeDescriptor extends Subtree {
 	String symbolType = "";
@@ -1212,7 +1199,9 @@ class WildCard extends Subtree{
 }
 
 
-/***********************Output Helpers********************/
+/*------------------------------- Output Helpers ---------------------------------*/
+
+// !-------------------------- NAME SHOULD BE FINISHED ----------------------------!
 
 class Name extends Subtree{
 	Name(Token t){
@@ -1252,7 +1241,7 @@ class BasicType extends Subtree{
 	}
 }
 
-/*********************Expressions************************/
+/*--------------------------------- Expressions ----------------------------------*/
 
 
 class Expressions extends Subtree {
@@ -1378,15 +1367,6 @@ class Expression extends Subtree {
 		}
 
 		return it;
-		// if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")) {
-		// 	ExprRest child = new ExprRest();
-		// 	it = child.populateExpr(it, token);
-		// 	addChild(child);
-		// }
-		// ExprRest secondChild = new ExprRest();
-		// it = secondChild.populateExpr(it, token);
-		// addChild(secondChild);
-		// return it;
 	}
 
 	private boolean keepReading(Token current) {
@@ -1491,16 +1471,12 @@ class Expression extends Subtree {
 
 		printUp("+---");
 
-
 		String toPrint = print + this.toPrint();
 		System.out.println(toPrint);
 		for(int i = 0; i < children.size(); i++){
-			//System.out.println(toPrint);
 			children.get(i).printUp("+---+---+---");
 			children.get(i).print();
-			//System.out.println(print + toPrint);
 		}
-		//System.out.println(print + " " + toPrint);
 	}
 
 	private void matchOperand() {
@@ -1599,9 +1575,6 @@ class Expression extends Subtree {
 	}
 
 }
-
-/*=============================================================================*/
-
 
 class ExprRest extends Subtree {
 	public Token operator = null;		//holds operator
