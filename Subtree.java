@@ -39,23 +39,6 @@ public class Subtree {
 		it = i;
 	}
 
-	/*
-	 *	Possible prototype for funtion to check types that we should have in all
-	 *	nodes? Or really just in the identifier nodes. But tell me what you think
-	 *	Also take a look at what I put in the block class.
-	 *
-	 */
-
-	//commented out implementation just for compilation purposes.
-	public SymbolType typeCheck(SymbolTable symtab) {
-		return new BuiltInTypeSymbol("");
-
-		// try {
-		// 	return symtab.resolve(token.getTokenType());
-		// } catch (NotFound exc) {
-		// 	throw new UndefinedIdentifier(this);
-		// }
-	}
 
 	public SymbolType getSymType(){
 		return type;
@@ -73,11 +56,11 @@ public class Subtree {
 		return (children != null);
 	}
 
-	public void decorateFirst(Scope e){;}
+	public void decorateFirst(Scope e) throws AlreadyDefinedException, UndefinedTypeException{;}
 
 	public void decorateSecond(Scope e){;}
 
-	public void beginDecorateFirst(SymbolTable mainTable){
+	public void beginDecorateFirst(SymbolTable mainTable) throws AlreadyDefinedException, UndefinedTypeException{
 		currentScope = mainTable.globals;
 
 		for(int i = 0; i < children.size(); i++){
@@ -336,7 +319,6 @@ class Function extends Subtree {
 		super(t, i);								//calls super constructor
 		match("function");							//matches type
 		//creates new FunctionSymbol object unique to this node
-		this.symbol = new FunctionSymbol(token.getVarName(), null);
 		//first child is now Name node
 		addChild(new Name(token));
 		match("StringIdentifier");					//increments Iterator
@@ -369,26 +351,61 @@ class Function extends Subtree {
 
 
 	 */
+
+	/*
+	 *	Semantic Rules for Parameters:
+	 *	1. All parameters of type var must be pass by reference
+	 *	2. All parameters not of type var must be pass-by-value
+	 *	3. If a formal parameter has a default value, all others must as well
+	 *
+	 *	We want each Function Symbol to hold the id of the function, checking that
+	 *	it has not already been defined in the scope. And to hold the return
+	 *	type of the function, if there is one.
+	 *	
+	 *	We want each parameter to return whether or not it is a var (if so it must
+	 *	be pass by reference), and if the value is initialized. This will be denoted
+	 *	by whether or not the pattern id value is followed.
+	 *
+	 */
+
 	@Override
-	public void decorateFirst(Scope enclosing) {
-		Subtree currentNode = null;
-		//creates scope local to the function
-		LocalScope functionScope = new LocalScope(enclosing);
-		//iterate over children until we reach a block statement. Then we will want
-		//to call decorateFirst on the block statement to create a scope for that
-		//block
-		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);		//sets currentNode equal to current child
-			//if the currentNode is a params type, then we want to call
-			//decorate first on the params node and pass the function scope.
-			//the params node will then add it's children to the function scope
-			//symbol table
-			if(currentNode instanceof Params) {
-				currentNode.decorateFirst(functionScope);
-				//once we encounter a block, call decorateFirst() on the block
-				//passing in the functionScope that will be the parent scope for the block
-			} else if(currentNode instanceof Block) {
-				currentNode.decorateFirst(functionScope);
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException {
+		//Symbol to check if the name of this function has already been used in
+		//the parent scope. If so throws an AlreadyDefinedException
+		Symbol previouslyDefined = enclosing.resolve(token.getTokenType());
+		if(previouslyDefined != null) {	//name has already been used
+			throw new AlreadyDefinedException(token.getTokenType());
+		} else {
+			//otherwise, create scope for new function
+			LocalScope functionScope = new LocalScope(enclosing);
+			Subtree currentNode;
+			String typeDescrip = "";
+			//iterate over children until we find the typedescriptor (if it has one)
+			for(int index = 0; index < children.size(); index++) {
+				currentNode = children.get(index);
+				//if the function has a type descriptor (return type), then we want
+				//to call the corresponding function on that node that will return
+				//what the actual descriptor is so we can add it to the Symbol for
+				//this function. We want Symbol = (function id name, return type)
+				if(currentNode instanceof TypeDescriptor) {
+					//now have String representation of return type. This now
+					//needs to be resolved to check that it is a valid return type
+					//that has already been defined in the scope of the program
+					//thus far
+					TypeDescriptor tempDescrip = (TypeDescriptor) currentNode;
+					typeDescrip = tempDescrip.returnType();
+					//if the typeDescrip has been previously defined then previouslyDefined
+					//should not equal null
+					previouslyDefined = enclosing.resolve(typeDescrip);
+					if(previouslyDefined == null) {
+						throw new UndefinedTypeException(typeDescrip);
+					} else {
+						SymbolType symT = (SymbolType) previouslyDefined;
+						Name name = (Name) children.get(0);
+						symbol = new FunctionSymbol(name.getName(), symT);
+						enclosing.define(symbol);
+					}
+				}
 			}
 		}
 	}
@@ -584,7 +601,7 @@ class Print extends Subtree{
 		match("print");
 		System.out.println(token.getName());
 		addChild(new Expression(token, it));
-
+		this.symbol = new Symbol("Print Statement");
 		match("SEMICOLON");
 	}
 
@@ -643,7 +660,7 @@ class Type extends Subtree{
 	 *
 	 */
 
-	public void decorateFirst(Scope enclosing) {
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException{
 		SymbolType symT;
 		//creates scope local to the function
 		LocalScope functionScope = new LocalScope(enclosing);
@@ -817,6 +834,11 @@ class TypeDescriptor extends Subtree{
 			addChild(new Dimension(token, it));	
 	}
 
+	public String returnType() {
+		NaTypeDescriptor temp = (NaTypeDescriptor) children.get(0);
+		return temp.returnType();
+	}
+
 	@Override 
 	public void print(){
 		children.get(0).printUp(print);
@@ -829,34 +851,43 @@ class TypeDescriptor extends Subtree{
 	}
 }
 
-class NaTypeDescriptor extends Subtree{
+class NaTypeDescriptor extends Subtree {
+	String symbolType = "";
 	NaTypeDescriptor(Token t, Iterator<Token> i){
 		super(t, i);
 
 		if(token.getTokenType().equals("record")){
+			symbolType = "record";
 			addChild(new RecordDescriptor(token, it));
 		}
 		else if(token.getTokenType().equals("StringIdentifier")){
+			StringIdentifier temp = (StringIdentifier)token;
+			symbolType = temp.getVarName();
 			addChild(new Name(token));
 			match("StringIdentifier");
-		}
-		else{
+		} else {
 			addChild(new BasicType(token));
 			switch(token.getTokenType()){
 				case "byte" :
-					//this.symbol = new BuiltInTypeSymbol("");
+					symbolType = "byte";
 					match("byte");
 					break;
 				case "int32":
+					symbolType = "int32";
 					match("int32");
 					break;
 				case "float64":
+					symbolType = "float64";
 					match("float64");
 					break;
 				default:
 					break;
 			}
 		}
+	}
+
+	public String returnType() {
+		return symbolType;
 	}
 
 	@Override 
@@ -981,7 +1012,7 @@ class Params extends Subtree{
 		x();
 	}
 
-	public void decorateFirst(Scope enclosing) {
+	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException{
 		Subtree currentNode = null;
 		//iterate over children and if the node is a Param, we will call
 		//decorateFirst and pass in the enclosing scope for the Param
@@ -1055,7 +1086,14 @@ class Param extends Subtree{
 		}
 	}
 
-	public void decorateFirst(Scope enclosing) {
+	/*
+	 *	All variables must be pass by reference. All other parameters are pass by
+	 *	value. If a formal parameter has a default value, all others must as well.
+	 *	Decorate first should have ref, 
+	 *
+	 */
+
+	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		Subtree currentNode = null;
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
@@ -1132,6 +1170,11 @@ class WildCard extends Subtree{
 class Name extends Subtree{
 	Name(Token t){
 		token = t;
+	}
+
+	public String getName() {
+		StringIdentifier temp = (StringIdentifier) token;
+		return temp.getVarName();
 	}
 
 	@Override
