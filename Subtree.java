@@ -656,11 +656,46 @@ class Type extends Subtree{
 		match("SEMICOLON");
 	}
 
-	/*
+	/*	Semantic Rules for Type Declarations:
+	 *
+	 *	1. type-decl -> type id type-descriptor
+	 *	2. type-descriptor -> basic type, id, record descriptor
+	 *	3. Want the symbol for type to be the identifier for the type, and the return type
+	 *	   the return type must be an already declared type within the enclosing scope
 	 *
 	 */
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
+		//First step is to check that the identifier for this type-declaration is not already
+		//defined in the enclosing scope
+		Name nameNode = (Name) children.get(0);
+		String typeName = nameNode.getName();
+
+		Symbol previouslyDefined = enclosing.resolve(typeName);
+		if(previouslyDefined != null) {		//type name has already been used
+			throw new AlreadyDefinedException(typeName);
+		} else {
+			//we know that the type identifier is unique within the scope and available
+			//for use. The next thing to do is to check if the type-descriptor HAS
+			//been previously defined.
+			
+			TypeDescriptor typeDescriptor = (TypeDescriptor) children.get(1);
+			String typeDescription = typeDescriptor.returnType();
+			previouslyDefined = enclosing.resolve(typeDescription);
+
+			if(previouslyDefined == null) {
+				throw new UndefinedTypeException(typeDescription);
+			} else {
+				//Since both of these things check out, we can add the new type-declaration
+				//to the enclosing scope
+				SymbolType symT = (SymbolType) previouslyDefined;
+				symbol = new VarSymbol(typeName, symT);
+				enclosing.define(symbol);
+			}
+		}
+
+
+		/*-------------------------------- OLD CODE ------------------------------------
 		Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
 		if(nodeType instanceof BasicType){
@@ -681,6 +716,7 @@ class Type extends Subtree{
 		else if(nodeType instanceof RecordDescriptor){
 
 		}
+		*/
 	}
 
 	/*
