@@ -496,12 +496,11 @@ class Var extends Subtree{
 	 *
 	 */
 
-	public void decorateFirst(Scope enclosing) {
+	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		Symbol previouslyDefined = enclosing.resolve(children.get(0).token.getName());
 
 		if(previouslyDefined != null){
-			System.out.println("error here");
-			//throw new AlreadyDefinedException(children.get(0).token.getName());
+			throw new AlreadyDefinedException(previouslyDefined.getName());
 		} else {
 			if(children.get(1) instanceof TypeDescriptor){
 				Subtree nodeType = children.get(1).children.get(0).children.get(0);
@@ -512,13 +511,42 @@ class Var extends Subtree{
 					enclosing.define(symbol);
 				}
 				else if(nodeType instanceof Name){
-					Symbol tempS = enclosing.resolve(nodeType.token.getTokenType());
+					//type zoeller byte;
+					//type john zoeller; -> resolve zoeller's type, thus john => byte
+					//var fred john;     -> resolve john's type, thus fred => byte
+
+					//Symbol tempS = enclosing.resolve(nodeType.token.name());
+					//SymbolType t = (BuiltInTypeSymbol)tempS.getType();
+					SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getName()).getType();
+					symbol = new VarSymbol(children.get(0).token.getName(), t);
+					enclosing.define(symbol);
+
 				}
-				else if(nodeType instanceof RecordDescriptor){}
+				else if(nodeType instanceof RecordDescriptor){
+					// i can't decide what to do with recordDescriptor
+					// i think since its properties are predefined it should be 
+					// a builtInType
+
+					// but then again, builtInTypes should be able to go like this
+					// var john int32; var dest int32; var aaa = john + dest; 
+					//
+					// a record is incapable of this behavior 
+					// var john record (a byte, b float64);
+					// var fred record (c byte, d byte);
+					//
+					// these are both records, but obviously trying to go
+					// var zoeller = john + fred; 
+					// would not work
+
+					// Conclusion:
+					// record should have its own decorateFirst() method,
+					// this way a var/type could be decorated with a record node
+					// 
+					//S
+				}
 			}
-			else if(children.get(1) instanceof Expression){
-			}
-	}}
+		}		
+	}
 
 
 	/*
