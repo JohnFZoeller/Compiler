@@ -90,9 +90,9 @@ class VarSymbol extends Symbol {
 
 
 	//commented out because this caused a compile error
-	// VarSymbol(String n, Symbol s) {
-	// 	super(n, s);
-	// }
+	VarSymbol(String n, Symbol s) {
+		super(n, s);
+	}
 }
 
 class TypeSymbol extends Symbol {

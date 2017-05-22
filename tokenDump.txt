@@ -1,0 +1,13 @@
+StringIdentifier john
+byte 
+SEMICOLON 
+type 
+StringIdentifier zoel
+StringIdentifier john
+SEMICOLON 
+Exception in thread "main" AlreadyDefinedException: null Already Defined in this Scope
+	at Type.decorateFirst(Subtree.java:667)
+	at Subtree.beginDecorateFirst(Subtree.java:67)
+	at SyntaxParser.decorate(SyntaxParser.java:34)
+	at Main.run(Main.java:21)
+	at Main.main(Main.java:7)

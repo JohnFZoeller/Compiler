@@ -1,1 +1,2 @@
-var zzz int32;
+type john byte;
+type zoel john;

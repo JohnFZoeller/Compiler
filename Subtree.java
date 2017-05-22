@@ -497,45 +497,28 @@ class Var extends Subtree{
 	 */
 
 	public void decorateFirst(Scope enclosing) {
-		if(children.get(1) instanceof TypeDescriptor){
-			Subtree nodeType = children.get(1).children.get(0).children.get(0);
+		Symbol previouslyDefined = enclosing.resolve(children.get(0).token.getName());
 
-			if(nodeType instanceof BasicType){
-					//this line was done in the SymbolTable initializer
-				//globals.define(new BuiltInTypeSymbol("int32"));
+		if(previouslyDefined != null){
+			System.out.println("error here");
+			//throw new AlreadyDefinedException(children.get(0).token.getName());
+		} else {
+			if(children.get(1) instanceof TypeDescriptor){
+				Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
-					// so we can use resolve() to get the Symbol corresponding to "int32"
-				//Symbol john = enclosing.resolve(temp.token.getTokenType());
-
-					//this casts it
-				//SymbolType t = (BuiltInTypeSymbol)john;
-				
-
-					// all of that condenses down into the next line
-				SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-
-					//and now we decorate the node with a new symbol named "zzz"
-					//and its type is int32
-				symbol = new VarSymbol(children.get(0).token.getName(), t);
-				enclosing.define(symbol);
-
-					//and the following line can print the name of a symbols type, which...
-					//...gives us the ability to compare symbol types for expr operations
-				System.out.println(symbol.type.getTypeName());
-
-
+				if(nodeType instanceof BasicType) {
+					SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
+					symbol = new VarSymbol(children.get(0).token.getName(), t);
+					enclosing.define(symbol);
+				}
+				else if(nodeType instanceof Name){
+					Symbol tempS = enclosing.resolve(nodeType.token.getTokenType());
+				}
+				else if(nodeType instanceof RecordDescriptor){}
 			}
-			else if(nodeType instanceof Name){
-				Symbol tempS = enclosing.resolve(nodeType.token.getTokenType());
+			else if(children.get(1) instanceof Expression){
 			}
-			else if(nodeType instanceof RecordDescriptor){
-
-			}
-		}
-		else if(children.get(1) instanceof Expression){
-
-		}
-	}
+	}}
 
 
 	/*
@@ -684,8 +667,7 @@ class Type extends Subtree{
 			throw new AlreadyDefinedException(typeName);
 		} else {
 			//we know that the type identifier is unique within the scope and available
-			//for use. The next thing to do is to check if the type-descriptor HAS
-			//been previously defined.
+			//for use. check if the type-descriptor HASbeen previously defined.
 			
 			TypeDescriptor typeDescriptor = (TypeDescriptor) children.get(1);
 			String typeDescription = typeDescriptor.returnType();
@@ -701,30 +683,6 @@ class Type extends Subtree{
 				enclosing.define(symbol);
 			}
 		}
-
-
-		/*-------------------------------- OLD CODE ------------------------------------
-		Subtree nodeType = children.get(1).children.get(0).children.get(0);
-
-		if(nodeType instanceof BasicType){
-
-			SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-
-			symbol = new VarSymbol(children.get(0).token.getName(), t);
-			enclosing.define(symbol);
-			
-		}
-		else if(nodeType instanceof Name){
-			if(enclosing.resolve(nodeType.token.getTokenType()) != null){
-				//symbol = new VarSymbol(children.get(0).token.getName(),
-				//			children.get(1).token.getName());
-				//enclosing.define(symbol);
-			}
-		}
-		else if(nodeType instanceof RecordDescriptor){
-
-		}
-		*/
 	}
 
 	@Override 
