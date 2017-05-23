@@ -1,13 +1,53 @@
-StringIdentifier john
-byte 
+StringIdentifier fib1
+OPEN_PARENTHESIS 
+StringIdentifier n
+int32 
+CLOSE_PARENTHESIS 
+int32 
+OPEN_BRACE 
+var 
+StringIdentifier curr
+ASSIGNMENT_OPERATOR 
+IntIdentifier 
 SEMICOLON 
-type 
-StringIdentifier zoel
-StringIdentifier john
+var 
+StringIdentifier prev
+ASSIGNMENT_OPERATOR 
+IntIdentifier 
 SEMICOLON 
-Exception in thread "main" AlreadyDefinedException: null Already Defined in this Scope
-	at Type.decorateFirst(Subtree.java:667)
-	at Subtree.beginDecorateFirst(Subtree.java:67)
-	at SyntaxParser.decorate(SyntaxParser.java:34)
-	at Main.run(Main.java:21)
-	at Main.main(Main.java:7)
+while 
+OPEN_PARENTHESIS 
+OPEN_PARENTHESIS 
+StringIdentifier n
+ASSIGNMENT_OPERATOR 
+StringIdentifier n
+MINUS 
+IntIdentifier 
+CLOSE_PARENTHESIS 
+RELATIONAL_GREATER_THAN 
+IntIdentifier 
+CLOSE_PARENTHESIS 
+OPEN_BRACE 
+var 
+StringIdentifier swap
+ASSIGNMENT_OPERATOR 
+StringIdentifier curr
+SEMICOLON 
+StringIdentifier prev
+ASSIGNMENT_OPERATOR 
+StringIdentifier curr
+SEMICOLON 
+StringIdentifier curr
+ASSIGNMENT_OPERATOR 
+StringIdentifier prev
+PLUS 
+StringIdentifier swap
+SEMICOLON 
+CLOSE_BRACE 
+return 
+StringIdentifier curr
+SEMICOLON 
+CLOSE_BRACE 
+print 
+StringIdentifier n
+SEMICOLON 

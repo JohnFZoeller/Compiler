@@ -1274,7 +1274,7 @@ class Expressions extends Subtree {
 
 		System.out.println(print + "(,) " 
 			+ System.identityHashCode(this) 
-			+ " expression statement ");
+			+ " expression");
 
 		printUp("+---");
 
@@ -1297,12 +1297,12 @@ class Expression extends Subtree {
 
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
-		tokenType = t.getTokenType();
+		//tokenType = t.getTokenType();
 		addAllChildren();
 	}
 	Expression(Token t, Iterator<Token> i, int p){
 		super(t, i);
-		tokenType = t.getTokenType();
+		//System.out.println(t.getTokenType());
 		precedence = p;
 		addAllChildren();
 	}
@@ -1324,12 +1324,12 @@ class Expression extends Subtree {
 			int currPrec = precedence(token);
 			if(currPrec > this.precedence) {
 				this.precedence = currPrec;
-				System.out.println(precedence);
+				//System.out.println(precedence);
 				Expression subexpression = new Expression(token, it,currPrec);
 				addChild(subexpression);
 			} else {
 				ExprRest toAdd = new ExprRest(token, it);
-				System.out.println("back in Expression");
+				//System.out.println("back in Expression");
 				addChild(toAdd);
 			}
 		}
@@ -1459,9 +1459,13 @@ class Expression extends Subtree {
 
 		String toPrint = print + this.toPrint();
 		System.out.println(toPrint);
-		for(int i = 0; i < children.size(); i++){
-			children.get(i).printUp("+---+---+---");
-			children.get(i).print();
+		toPrint = "";
+		if(children != null) {
+			for(int i = 0; i < children.size(); i++){
+				//children.get(i).printUp("+---+---+---");
+				toPrint += "" + children.get(i).toPrint() + "";
+			}
+			//System.out.println(toPrint);
 		}
 	}
 
@@ -1555,7 +1559,13 @@ class Expression extends Subtree {
 	public String toPrint() {
 		String retVal = "";
 		
-		retVal += " " + tokenType + " " + tokenDescrip + " ";
+		retVal += "" + tokenType + " ";
+
+		if(children != null) {
+			for(int index = 0; index < children.size(); index++) {
+				retVal += children.get(index).toPrint();
+			}
+		}
 
 		return retVal;
 	}
@@ -1570,11 +1580,6 @@ class ExprRest extends Subtree {
 	public String opType = "";			//descriptor for operation type
 	public String operandType = "";		//descriptor for operand
 	int precedence = 0;		
-
-	/*
-	 *	Constructor. Uses Subtree super class.
-	 *
-	 */
 
 	ExprRest() {}
 	ExprRest(int p) {
@@ -1940,14 +1945,22 @@ class ExprRest extends Subtree {
 			return;
 		}
 		printUp("+---");
-		System.out.print(this.toPrint());
+		System.out.print(print + "" + opType + " " + uOperator + operandType + "");
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		
-		retVal = " " + opType + " " + uOperator + operandType + "";
+		String retVal = "" + opType + " " + uOperator + operandType + "";
+
+		if(children != null) {
+			for(int index = 0; index < children.size(); index++) {
+				if(children.get(index) instanceof Expression){
+					retVal += "(" + children.get(index).toPrint() + ")";
+				} else {
+					retVal += children.get(index).toPrint();
+				}
+			}
+		}
 
 		return retVal;
 	}
