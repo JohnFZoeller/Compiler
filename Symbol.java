@@ -84,16 +84,19 @@ class RefSymbol extends Symbol {
 }
 
 class VarSymbol extends Symbol {
+	RecordSymbol record;
 	//add optional dimension member
+
 	VarSymbol(String n, SymbolType t){
 		super(n, t);
 	}
 
-
-	//commented out because this caused a compile error
-	VarSymbol(String n, Symbol s) {
-		super(n, s);
+	VarSymbol(String n, SymbolType t, RecordSymbol r){
+		super(n, t);
+		record = r;
 	}
+
+	//commented out because this caused a compile erro
 }
 
 class TypeSymbol extends Symbol {

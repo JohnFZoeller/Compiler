@@ -500,6 +500,7 @@ class Var extends Subtree{
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		Symbol previouslyDefined = enclosing.resolve(children.get(0).token.getName());
+		String symbolName = children.get(0).token.getName();
 		SymbolType t;
 
 		if(previouslyDefined != null){
@@ -510,7 +511,7 @@ class Var extends Subtree{
 
 				if(nodeType instanceof BasicType){
 					t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new VarSymbol(children.get(0).token.getName(), t);
+					symbol = new VarSymbol(symbolName, t);
 				}
 				else if(nodeType instanceof Name){
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
@@ -519,13 +520,21 @@ class Var extends Subtree{
 						throw new UndefinedTypeException(children.get(1).token.getName());
 					else{
 						t = (BuiltInTypeSymbol)previouslyDefined.getType();
-						symbol = new VarSymbol(children.get(0).token.getName(), t);
+						symbol = new VarSymbol(symbolName, t);
 					}
 				}
-				else if(nodeType instanceof RecordDescriptor){}
-					
+				else if(nodeType instanceof RecordDescriptor){
+
+					RecordSymbol record = new RecordSymbol(symbolName, enclosing, 
+						nodeType.children.get(0).children);
+
+					t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
+					symbol = new VarSymbol(symbolName, t, record);
+				}
+
 				enclosing.define(symbol); 
 			}
+			else if(children.get(1) instanceof Expression){}
 		}		
 	}
 
@@ -690,34 +699,34 @@ class Type extends Subtree{
 	 */
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
-		//First step is to check that the identifier for this type-declaration is not already
-		//defined in the enclosing scope
-		Subtree nodeType = children.get(1).children.get(0).children.get(0);
-		Name nameNode = (Name) children.get(0);
-		String typeName = nameNode.getName();
+		Symbol previouslyDefined = enclosing.resolve(children.get(0).token.getName());
+		SymbolType t;
 
-		Symbol previouslyDefined = enclosing.resolve(typeName);
-		if(previouslyDefined != null) {		//type name has already been used
-			throw new AlreadyDefinedException(typeName);
+		if(previouslyDefined != null){
+			throw new AlreadyDefinedException(previouslyDefined.getName());
 		} else {
-			//we know that the type identifier is unique within the scope and available
-			//for use. check if the type-descriptor HASbeen previously defined.
-			
-			TypeDescriptor typeDescriptor = (TypeDescriptor) children.get(1);
-			String typeDescription = typeDescriptor.returnType();
-			previouslyDefined = enclosing.resolve(typeDescription);
+			if(children.get(1) instanceof TypeDescriptor){
+				Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
+				if(nodeType instanceof BasicType){
+					t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
+					symbol = new TypeSymbol(children.get(0).token.getName(), t);
+				}
+				else if(nodeType instanceof Name){
+					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
-			if(previouslyDefined == null) {
-				throw new UndefinedTypeException(typeDescription);
-			} else {
-				//Since both of these things check out, we can add the new type-declaration
-				//to the enclosing scope
-				SymbolType symT = (SymbolType) previouslyDefined;
-				symbol = new VarSymbol(typeName, symT);
-				enclosing.define(symbol);
+					if(previouslyDefined == null)
+						throw new UndefinedTypeException(children.get(1).token.getName());
+					else{
+						t = (BuiltInTypeSymbol)previouslyDefined.getType();
+						symbol = new TypeSymbol(children.get(0).token.getName(), t);
+					}
+				}
+				else if(nodeType instanceof RecordDescriptor){}
+					
+				enclosing.define(symbol); 
 			}
-		}
+		}		
 	}
 
 	@Override 
