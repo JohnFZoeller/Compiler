@@ -382,7 +382,7 @@ class Function extends Subtree {
 					if(previouslyDefined == null) {
 						throw new UndefinedTypeException(typeDescrip);
 					} else {
-						SymbolType symT = (SymbolType) previouslyDefined;
+						SymbolType symT = (BuiltInTypeSymbol) previouslyDefined;
 						Name name = (Name) children.get(0);
 						symbol = new FunctionSymbol(name.getName(), symT);
 						enclosing.define(symbol);
@@ -391,6 +391,8 @@ class Function extends Subtree {
 			}
 		}
 	}
+
+
 
 	/*
 	 *	Second decorate function. The Function symbol has already been added to the
@@ -498,6 +500,7 @@ class Var extends Subtree{
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		Symbol previouslyDefined = enclosing.resolve(children.get(0).token.getName());
+		SymbolType t;
 
 		if(previouslyDefined != null){
 			throw new AlreadyDefinedException(previouslyDefined.getName());
@@ -505,48 +508,31 @@ class Var extends Subtree{
 			if(children.get(1) instanceof TypeDescriptor){
 				Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
-				if(nodeType instanceof BasicType) {
-					SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new VarSymbol(children.get(0).token.getName(), t);
-					enclosing.define(symbol);
+				if(nodeType instanceof BasicType){
+					t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
 				}
 				else if(nodeType instanceof Name){
-					//type zoeller byte;
-					//type john zoeller; -> resolve zoeller's type, thus john => byte
-					//var fred john;     -> resolve john's type, thus fred => byte
+					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
-					//Symbol tempS = enclosing.resolve(nodeType.token.name());
-					//SymbolType t = (BuiltInTypeSymbol)tempS.getType();
-					SymbolType t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getName()).getType();
-					symbol = new VarSymbol(children.get(0).token.getName(), t);
-					enclosing.define(symbol);
-
+					if(previouslyDefined == null)
+						throw new UndefinedTypeException(typeDescription);
+					else
+						t = (BuiltInTypeSymbol)previouslyDefined.getType();
 				}
 				else if(nodeType instanceof RecordDescriptor){
-					// i can't decide what to do with recordDescriptor
-					// i think since its properties are predefined it should be 
-					// a builtInType
 
-					// but then again, builtInTypes should be able to go like this
-					// var john int32; var dest int32; var aaa = john + dest; 
-					//
-					// a record is incapable of this behavior 
-					// var john record (a byte, b float64);
-					// var fred record (c byte, d byte);
-					//
-					// these are both records, but obviously trying to go
-					// var zoeller = john + fred; 
-					// would not work
-
-					// Conclusion:
-					// record should have its own decorateFirst() method,
-					// this way a var/type could be decorated with a record node
-					// 
-					//S
+					//see note 
+					//idea: a record is basically an initializer list
+					//so it should be handled in the second pass 
 				}
+
+				symbol = new VarSymbol(children.get(0).token.getName(), t);
+				enclosing.define(symbol); 
 			}
 		}		
 	}
+
+	//var john = 4;
 
 
 	/*
@@ -556,7 +542,29 @@ class Var extends Subtree{
 	 */
 
 	public void decorateSecond(Scope enclosing) {
+		// i can't decide what to do with recordDescriptor
+		// i think since its properties are predefined it should be 
+		// a builtInType
 
+		// but then again, builtInTypes should be able to go like this
+		// var john int32; var dest int32; var aaa = john + dest; 
+		//
+		// a record is incapable of this behavior 
+		// var john record (a byte, b float64);
+		// var fred record (c byte, d byte);
+		//
+		// these are both records, but obviously trying to go
+		// var zoeller = john + fred; 
+		// would not work
+
+		// Conclusion:
+		// record should have its own decorateFirst() method,
+		// this way a var/type could be decorated with a recordnode symbol
+		//
+		// varSymbol("john", record):
+		// symbol(record, fieldDecls);
+		// symbol(fieldDecls, )???
+		// 
 	}
 
 	@Override
@@ -687,6 +695,7 @@ class Type extends Subtree{
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		//First step is to check that the identifier for this type-declaration is not already
 		//defined in the enclosing scope
+		Subtree nodeType = children.get(1).children.get(0).children.get(0);
 		Name nameNode = (Name) children.get(0);
 		String typeName = nameNode.getName();
 
@@ -700,6 +709,7 @@ class Type extends Subtree{
 			TypeDescriptor typeDescriptor = (TypeDescriptor) children.get(1);
 			String typeDescription = typeDescriptor.returnType();
 			previouslyDefined = enclosing.resolve(typeDescription);
+
 
 			if(previouslyDefined == null) {
 				throw new UndefinedTypeException(typeDescription);
@@ -732,6 +742,11 @@ class Type extends Subtree{
 
 	}
 }
+
+//var john = 4;
+//type fred byte;
+//type zoeller fred;
+//Type john zoeller;
 
 /*----------------------------- Support Statements -------------------------------*/
 
