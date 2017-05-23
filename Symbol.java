@@ -84,6 +84,7 @@ class RefSymbol extends Symbol {
 }
 
 class VarSymbol extends Symbol {
+	//add optional dimension member
 	VarSymbol(String n, SymbolType t){
 		super(n, t);
 	}
@@ -96,6 +97,7 @@ class VarSymbol extends Symbol {
 }
 
 class TypeSymbol extends Symbol {
+	//add optional dimension member
 	TypeSymbol(String n, SymbolType t) {
 		super(n, t);
 	}

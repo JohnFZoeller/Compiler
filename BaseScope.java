@@ -36,7 +36,11 @@ public class BaseScope implements Scope {
 
 	public void define(Symbol sym){ 
 		syms.put(sym.name, sym); 
-		//sym.scope = this;			//ensure that the scope is
+		//sym.scope = this;			//this only would have been 
+		//applicable if we were using classes, you would have had to
+		//search back up through class hierarchies via old scopes
+		//to resolve whether or not a something could access a base class
+		//member.   No classes tho so nada
 	}
 
 	public Symbol resolve(String name){

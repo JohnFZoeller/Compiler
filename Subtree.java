@@ -510,23 +510,20 @@ class Var extends Subtree{
 
 				if(nodeType instanceof BasicType){
 					t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
+					symbol = new VarSymbol(children.get(0).token.getName(), t);
 				}
 				else if(nodeType instanceof Name){
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
 					if(previouslyDefined == null)
-						throw new UndefinedTypeException(typeDescription);
-					else
+						throw new UndefinedTypeException(children.get(1).token.getName());
+					else{
 						t = (BuiltInTypeSymbol)previouslyDefined.getType();
+						symbol = new VarSymbol(children.get(0).token.getName(), t);
+					}
 				}
-				else if(nodeType instanceof RecordDescriptor){
-
-					//see note 
-					//idea: a record is basically an initializer list
-					//so it should be handled in the second pass 
-				}
-
-				symbol = new VarSymbol(children.get(0).token.getName(), t);
+				else if(nodeType instanceof RecordDescriptor){}
+					
 				enclosing.define(symbol); 
 			}
 		}		

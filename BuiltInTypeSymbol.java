@@ -3,6 +3,7 @@ import java.util.*;
 
 public class BuiltInTypeSymbol extends Symbol implements SymbolType {
 	String typeName;
+	
 	BuiltInTypeSymbol(String n){
 		super(n);
 		typeName = n;
