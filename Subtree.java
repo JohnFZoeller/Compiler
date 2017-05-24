@@ -68,7 +68,9 @@ public class Subtree {
 		}
 	}
 
-	public void decor2(SymbolTable mainTable){;}
+	public void beginDecorateSecond(SymbolTable mainTable)throws AlreadyDefinedException, UndefinedTypeException{
+		;
+	}
 
 	public void print(){;}
 
@@ -541,39 +543,8 @@ class Var extends Subtree{
 		}		
 	}
 
-	//var john = 4;
+	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException{
 
-
-	/*
-	 *	For variables the most important thing is that the expression that
-	 *	the variable is assigned to matches the variable's type descriptor.
-	 *
-	 */
-
-	public void decorateSecond(Scope enclosing) {
-		// i can't decide what to do with recordDescriptor
-		// i think since its properties are predefined it should be 
-		// a builtInType
-
-		// but then again, builtInTypes should be able to go like this
-		// var john int32; var dest int32; var aaa = john + dest; 
-		//
-		// a record is incapable of this behavior 
-		// var john record (a byte, b float64);
-		// var fred record (c byte, d byte);
-		//
-		// these are both records, but obviously trying to go
-		// var zoeller = john + fred; 
-		// would not work
-
-		// Conclusion:
-		// record should have its own decorateFirst() method,
-		// this way a var/type could be decorated with a recordnode symbol
-		//
-		// varSymbol("john", record):
-		// symbol(record, fieldDecls);
-		// symbol(fieldDecls, )???
-		// 
 	}
 
 	@Override
