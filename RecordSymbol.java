@@ -19,30 +19,30 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 		}
 	}
 
-	public Symbol fieldDeclType(Subtree nodeType, String name){
+	public Symbol fieldDeclType(Subtree nodeType, String sName){
 		SymbolType t;
 		Symbol temp;
 
 		if(nodeType instanceof BasicType){
 			t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-			return new Symbol(name, t);
+			return new Symbol(sName, t);
 		}
 		else if(nodeType instanceof Name){
-			temp = resolve(name);
+			temp = resolve(sName);
 
 			if(temp == null)
 				System.out.println("record member undefined");
 			else{
 				t = (BuiltInTypeSymbol)temp.getType();
-				return new Symbol(name, t);
+				return new Symbol(sName, t);
 			}
 		}
 		else if(nodeType instanceof RecordDescriptor){
-			RecordSymbol record = new RecordSymbol(name, this, 
+			RecordSymbol record = new RecordSymbol(sName, this, 
 				nodeType.children.get(0).children);
 
-			// t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-			// symbol = new VarSymbol(symbolName, t, record);
+			t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
+			return new VarSymbol(sName, t, record);
 		}
 
 		System.out.println("record parse error");

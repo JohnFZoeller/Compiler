@@ -534,7 +534,10 @@ class Var extends Subtree{
 
 				enclosing.define(symbol); 
 			}
-			else if(children.get(1) instanceof Expression){}
+			else if(children.get(1) instanceof Expression){
+				t = null;
+				symbol = new VarSymbol(symbolName, t);
+			}
 		}		
 	}
 
@@ -689,44 +692,38 @@ class Type extends Subtree{
 		match("SEMICOLON");
 	}
 
-	/*	Semantic Rules for Type Declarations:
-	 *
-	 *	1. type-decl -> type id type-descriptor
-	 *	2. type-descriptor -> basic type, id, record descriptor
-	 *	3. Want the symbol for type to be the identifier for the type, and the return type
-	 *	   the return type must be an already declared type within the enclosing scope
-	 *
-	 */
-
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		Symbol previouslyDefined = enclosing.resolve(children.get(0).token.getName());
+		String symbolName = children.get(0).token.getName();
 		SymbolType t;
 
 		if(previouslyDefined != null){
 			throw new AlreadyDefinedException(previouslyDefined.getName());
 		} else {
-			if(children.get(1) instanceof TypeDescriptor){
-				Subtree nodeType = children.get(1).children.get(0).children.get(0);
+			Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
-				if(nodeType instanceof BasicType){
-					t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new TypeSymbol(children.get(0).token.getName(), t);
-				}
-				else if(nodeType instanceof Name){
-					previouslyDefined = enclosing.resolve(nodeType.token.getName());
-
-					if(previouslyDefined == null)
-						throw new UndefinedTypeException(children.get(1).token.getName());
-					else{
-						t = (BuiltInTypeSymbol)previouslyDefined.getType();
-						symbol = new TypeSymbol(children.get(0).token.getName(), t);
-					}
-				}
-				else if(nodeType instanceof RecordDescriptor){}
-					
-				enclosing.define(symbol); 
+			if(nodeType instanceof BasicType){
+				t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
+				symbol = new TypeSymbol(symbolName, t);
 			}
-		}		
+			else if(nodeType instanceof Name){
+				previouslyDefined = enclosing.resolve(nodeType.token.getName());
+
+				if(previouslyDefined == null)
+					throw new UndefinedTypeException(children.get(1).token.getName());
+				else{
+					t = (BuiltInTypeSymbol)previouslyDefined.getType();
+					symbol = new TypeSymbol(symbolName, t);
+				}
+			}
+			else if(nodeType instanceof RecordDescriptor){
+				RecordSymbol record = new RecordSymbol(symbolName, enclosing, 
+					nodeType.children.get(0).children);
+				t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
+				symbol = new TypeSymbol(symbolName, t, record);
+			}
+			enclosing.define(symbol); 
+		}	
 	}
 
 	@Override 
@@ -749,10 +746,6 @@ class Type extends Subtree{
 	}
 }
 
-//var john = 4;
-//type fred byte;
-//type zoeller fred;
-//Type john zoeller;
 
 /*----------------------------- Support Statements -------------------------------*/
 
