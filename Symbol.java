@@ -4,30 +4,20 @@ import java.util.*;
 public class Symbol {
 	public String name;
 	public SymbolType type;			//for built in types
-	public Symbol symbol;			//for user defined types
 
 	Symbol(){
 		name = "";
 		type = null;
-		symbol = null;
-	}
-
-	Symbol(String n, Symbol s){
-	 	name = n;
-	 	symbol = s;
-	 	type = null;
 	}
 
 	Symbol(String n, SymbolType t){
 		name = n;
 		type = t;
-		symbol = null;
 	}
 
 	Symbol(String n){
 		name = n;
 		type = null;
-		symbol = null;
 	}
 
 	public String getName(){ return name; }
@@ -113,6 +103,8 @@ class TypeSymbol extends Symbol {
 		super(n, t);
 		record = r;
 	}
+
+
 
 }
 

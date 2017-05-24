@@ -21,6 +21,7 @@ public class Subtree {
 	List<Subtree> children = null;
 	Iterator<Token> it = null;
 	String print = "";
+
 	Scope currentScope = null;
 	Symbol symbol = null;
 	SymbolType type = null;
@@ -69,7 +70,10 @@ public class Subtree {
 	}
 
 	public void beginDecorateSecond(SymbolTable mainTable)throws AlreadyDefinedException, UndefinedTypeException{
-		;
+
+		for(int i = 0; i < children.size(); i++){
+			 children.get(i).decorateSecond(null);
+		}
 	}
 
 	public void print(){;}
@@ -491,19 +495,14 @@ class Var extends Subtree{
 	}
 
 	/*
-	 *	Want to store the identifier and the type-desciptor in the first
-	 *	pass if the rule:
-	 *	variable-decl -> static(opt) const(opt) var identifier type-descriptor
-	 *
 	 *	or we want to store the identifier and the type descriptor of the
-	 *	expression, as the initializing will be done in the second pass.
-	 *
+	 *	expression, as the initializing will be done in the second pass
 	 */
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
-		Symbol previouslyDefined = enclosing.resolve(children.get(0).token.getName());
 		String symbolName = children.get(0).token.getName();
-		SymbolType t;
+		Symbol previouslyDefined = enclosing.resolve(symbolName);
+		currentScope = enclosing;
 
 		if(previouslyDefined != null){
 			throw new AlreadyDefinedException(previouslyDefined.getName());
@@ -512,8 +511,8 @@ class Var extends Subtree{
 				Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
 				if(nodeType instanceof BasicType){
-					t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new VarSymbol(symbolName, t);
+					type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
+					symbol = new VarSymbol(symbolName, type);
 				}
 				else if(nodeType instanceof Name){
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
@@ -521,8 +520,8 @@ class Var extends Subtree{
 					if(previouslyDefined == null)
 						throw new UndefinedTypeException(children.get(1).token.getName());
 					else{
-						t = (BuiltInTypeSymbol)previouslyDefined.getType();
-						symbol = new VarSymbol(symbolName, t);
+						type = (BuiltInTypeSymbol)previouslyDefined.getType();
+						symbol = new VarSymbol(symbolName, type);
 					}
 				}
 				else if(nodeType instanceof RecordDescriptor){
@@ -530,22 +529,39 @@ class Var extends Subtree{
 					RecordSymbol record = new RecordSymbol(symbolName, enclosing, 
 						nodeType.children.get(0).children);
 
-					t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new VarSymbol(symbolName, t, record);
+					type = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
+					symbol = new VarSymbol(symbolName, type, record);
 				}
-
-				enclosing.define(symbol); 
 			}
 			else if(children.get(1) instanceof Expression){
-				t = null;
-				symbol = new VarSymbol(symbolName, t);
+				//children.get(1).decorateFirst(currentScope);
+				//t = children.get(1).type;
+				type = null; 
+				symbol = new VarSymbol(symbolName, type);
 			}
+			enclosing.define(symbol);
 		}		
 	}
 
-	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException{
+	//actually unnecessary- here's why: Any var that is declared with an expression 
+	//is still given a type (the type of the expression); and we don't actually store 
+	//the value of that expression in the symbol table- just its type. 
+	public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException{;}
+	//When he said the second pass is for initializations, what I think he was 
+	//referring to is this kind of case...
 
-	}
+	//var zoel = 5;		-> zoel.type = int32;  -> still technically a declaration
+	//var john int32;	-> john.type = int32;
+	//john = zoel;		-> verify john.type == zoel.type;
+
+	//the above case is therefore a decoration of an expression, because a line that
+	//starts with a stringIdentifer is not a declaration of any kind. This makes
+	//me realize that I have written very little on this iteration and would like to 
+	//steal some of your work (-:
+
+	//Also this brings up the question: Why have two passes over the subTree?
+	//There would be absolutely no problem with verifying line 556 in the first pass. 
+
 
 	@Override
 	public void print(){
@@ -664,9 +680,9 @@ class Type extends Subtree{
 	}
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
-		Symbol previouslyDefined = enclosing.resolve(children.get(0).token.getName());
 		String symbolName = children.get(0).token.getName();
-		SymbolType t;
+		Symbol previouslyDefined = enclosing.resolve(symbolName);
+		currentScope = enclosing;
 
 		if(previouslyDefined != null){
 			throw new AlreadyDefinedException(previouslyDefined.getName());
@@ -674,8 +690,8 @@ class Type extends Subtree{
 			Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
 			if(nodeType instanceof BasicType){
-				t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				symbol = new TypeSymbol(symbolName, t);
+				type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
+				symbol = new TypeSymbol(symbolName, type);
 			}
 			else if(nodeType instanceof Name){
 				previouslyDefined = enclosing.resolve(nodeType.token.getName());
@@ -683,18 +699,23 @@ class Type extends Subtree{
 				if(previouslyDefined == null)
 					throw new UndefinedTypeException(children.get(1).token.getName());
 				else{
-					t = (BuiltInTypeSymbol)previouslyDefined.getType();
-					symbol = new TypeSymbol(symbolName, t);
+					type = (BuiltInTypeSymbol)previouslyDefined.getType();
+					symbol = new TypeSymbol(symbolName, type);
 				}
 			}
 			else if(nodeType instanceof RecordDescriptor){
 				RecordSymbol record = new RecordSymbol(symbolName, enclosing, 
 					nodeType.children.get(0).children);
-				t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				symbol = new TypeSymbol(symbolName, t, record);
+				type = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
+				symbol = new TypeSymbol(symbolName, type, record);
 			}
 			enclosing.define(symbol); 
 		}	
+	}
+
+	//empty operation 
+	public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException{
+		System.out.println("debugging: type decorateSecond() called");
 	}
 
 	@Override 

@@ -1,4 +1,7 @@
 type john byte;
 type zoll john;
 type fred record a byte, b float64, c int32, other record f byte end end;
-
+var pikachu byte;
+var pokemon pikachu;
+var charmander = 5;
+var charmeleon = charmander;

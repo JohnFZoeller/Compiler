@@ -32,7 +32,7 @@ public class SyntaxParser {
 
 
 		root.beginDecorateFirst(mainTable);
-		//root.decor2(mainTable);
+		root.beginDecorateSecond(mainTable);
 	}
 
 	public void match(){
@@ -58,6 +58,11 @@ public class SyntaxParser {
 			case "static":	root.addChild(new Var(currentTok, i));
 							break;
 			case "const":	root.addChild(new Var(currentTok, i));
+							break;
+			case "StringIdentifier":
+							//root.addChild(new Expression(currentTok, i));
+							//if(nextToken == SEMICOLON)
+								//match("SEMICOLON");
 							break;
 			default:		System.out.println("Bad root token "
 							+ currentTok.getTokenType());
