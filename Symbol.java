@@ -85,6 +85,8 @@ class RefSymbol extends Symbol {
 
 class VarSymbol extends Symbol {
 	RecordSymbol record;
+	Boolean staticLock;			//var available outside of declared block
+	Boolean constLock;			//var unchangeable
 	//add optional dimension member
 
 	VarSymbol(String n, SymbolType t){
