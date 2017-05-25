@@ -75,20 +75,19 @@ class RefSymbol extends Symbol {
 
 class VarSymbol extends Symbol {
 	RecordSymbol record;
-	Boolean staticLock;			//var available outside of declared block
-	Boolean constLock;			//var unchangeable
+	boolean [] locks; //[0] = static, [1] = const;
 	//add optional dimension member
 
-	VarSymbol(String n, SymbolType t){
+	VarSymbol(String n, SymbolType t, boolean[] l){
 		super(n, t);
+		locks = l;
 	}
 
-	VarSymbol(String n, SymbolType t, RecordSymbol r){
+	VarSymbol(String n, SymbolType t, RecordSymbol r, boolean[] l){
 		super(n, t);
+		locks = l;
 		record = r;
 	}
-
-	//commented out because this caused a compile erro
 }
 
 class TypeSymbol extends Symbol {

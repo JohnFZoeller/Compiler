@@ -42,7 +42,7 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 				nodeType.children.get(0).children);
 
 			t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-			return new VarSymbol(sName, t, record);
+			return new VarSymbol(sName, t, record, null);
 		}
 
 		System.out.println("record parse error");

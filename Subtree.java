@@ -469,15 +469,20 @@ class Function extends Subtree {
 }
 
 class Var extends Subtree{
+	public boolean [] locks = new boolean[2];//[0] = static, [1] = const;
 
 	public Var(Token t, Iterator<Token> i){
 		super(t, i);
 
-		if(token.getTokenType().equals("static"))
+		if(token.getTokenType().equals("static")){
 			match("static");
+			locks[0] = true;
+		}
 		
-		if(token.getTokenType().equals("const"))
+		if(token.getTokenType().equals("const")){
 			match("const");
+			locks[1] = true;
+		}
 
 		match("var");
 
@@ -512,7 +517,7 @@ class Var extends Subtree{
 
 				if(nodeType instanceof BasicType){
 					type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new VarSymbol(symbolName, type);
+					symbol = new VarSymbol(symbolName, type, locks);
 				}
 				else if(nodeType instanceof Name){
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
@@ -521,7 +526,7 @@ class Var extends Subtree{
 						throw new UndefinedTypeException(children.get(1).token.getName());
 					else{
 						type = (BuiltInTypeSymbol)previouslyDefined.getType();
-						symbol = new VarSymbol(symbolName, type);
+						symbol = new VarSymbol(symbolName, type, locks);
 					}
 				}
 				else if(nodeType instanceof RecordDescriptor){
@@ -530,14 +535,14 @@ class Var extends Subtree{
 						nodeType.children.get(0).children);
 
 					type = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new VarSymbol(symbolName, type, record);
+					symbol = new VarSymbol(symbolName, type, record, locks);
 				}
 			}
 			else if(children.get(1) instanceof Expression){
 				//children.get(1).decorateFirst(currentScope);
 				//t = children.get(1).type;
 				type = null; 
-				symbol = new VarSymbol(symbolName, type);
+				symbol = new VarSymbol(symbolName, type, locks);
 			}
 			enclosing.define(symbol);
 		}		
