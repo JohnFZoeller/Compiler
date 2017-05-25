@@ -536,9 +536,8 @@ class Var extends Subtree{
 				}
 			}
 			else if(children.get(1) instanceof Expression){
-				//children.get(1).decorateFirst(currentScope);
-				//t = children.get(1).type;
-				type = null; 
+				children.get(1).decorateFirst(currentScope);
+				type = children.get(1).type;
 				symbol = new VarSymbol(symbolName, type, locks);
 			}
 			enclosing.define(symbol);
@@ -1316,8 +1315,19 @@ class Expression extends Subtree {
 	}
 
 	public void decorateFirst(Scope e) throws AlreadyDefinedException, UndefinedTypeException{
+		//expressions type can be:
+		//int32, float64
+		//byte = char;
+
+		//later on bc we dont have arrays implemented
+		//byte[] = string;
 		
-		;
+
+		//temporary
+		type = (BuiltInTypeSymbol)e.resolve("int32");
+
+		//not temporary
+		symbol = new ExpressionSymbol(type);
 	}
 
 

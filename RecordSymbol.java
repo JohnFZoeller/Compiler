@@ -17,6 +17,8 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 			Subtree nodeType = fds.get(i).children.get(1).children.get(0).children.get(0);
 			Symbol temp = fieldDeclType(nodeType, fds.get(i).token.getName());
  			define(temp);
+
+ 			//the following will work, but is technically incorrect
  			temp.name = name + "." + temp.name;
  			enclosing.define(temp);
 		}
