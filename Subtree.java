@@ -3,10 +3,7 @@ import java.util.*;
 
 /*
  *	Look at typeCheck function defined in Subtree and Block class.
- *	Also, should we think about having the Node class's keep track of their
- *	Type? Is resolve the same as lookUp? I am assuming so. I think we will
- *	need a symbol type for any definition type nodes, such as function
- *	definitions (declarations), variable declarations etc. The first pass
+		The first pass
  *	will define the different scopes encountered and create Symbol Tables
  *	for each scope, the second pass will be populating the declared scope's
  *	symbol tables with the identifiers found in that scope.
@@ -1317,6 +1314,12 @@ class Expression extends Subtree {
 		precedence = p;
 		addAllChildren();
 	}
+
+	public void decorateFirst(Scope e) throws AlreadyDefinedException, UndefinedTypeException{
+		
+		;
+	}
+
 
 	private boolean isUnary() {
 		boolean isUnary = false;

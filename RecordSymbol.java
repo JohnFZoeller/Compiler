@@ -15,7 +15,10 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 	public void addDecls(List<Subtree> fds){
 		for(int i = 0; i < fds.size(); i++){
 			Subtree nodeType = fds.get(i).children.get(1).children.get(0).children.get(0);
- 			define(fieldDeclType(nodeType, fds.get(i).token.getName()));
+			Symbol temp = fieldDeclType(nodeType, fds.get(i).token.getName());
+ 			define(temp);
+ 			temp.name = name + "." + temp.name;
+ 			enclosing.define(temp);
 		}
 	}
 

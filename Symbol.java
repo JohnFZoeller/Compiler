@@ -73,6 +73,12 @@ class RefSymbol extends Symbol {
 	}
 }
 
+class ExpressionSymbol extends Symbol{
+	ExpressionSymbol(SymbolType t){
+		super("", t);
+	}
+}
+
 class VarSymbol extends Symbol {
 	RecordSymbol record;
 	boolean [] locks; //[0] = static, [1] = const;
@@ -102,9 +108,6 @@ class TypeSymbol extends Symbol {
 		super(n, t);
 		record = r;
 	}
-
-
-
 }
 
 class FunctionSymbol extends Symbol {
