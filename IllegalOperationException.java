@@ -3,7 +3,7 @@ import java.util.*;
 
 public class IllegalOperationException extends Exception {
 
-	public AlreadyDefinedException(String operation, String tokenType) {
-		super(operation + " Operation not allowed on Tokens of type: " + tokenType);
-	}
+	// public AlreadyDefinedException(String operation, String tokenType) {
+	// 	super(operation + " Operation not allowed on Tokens of type: " + tokenType);
+	// }
 }

@@ -314,24 +314,26 @@ class Else extends Subtree{
 // !----- DECORATE FIRST AND DECORATE SECOND SHOULD BE DONE FOR FUNCTION -------!
 
 class Function extends Subtree {
+	public boolean [] flags = new boolean[2]; //[0] = params, [1] = type;
 
 	Function(Token t, Iterator<Token> i) {
 		super(t, i);								//calls super constructor
 		match("function");							//matches type
-		//creates new FunctionSymbol object unique to this node
-		//first child is now Name node
+
 		addChild(new Name(token));
 		match("StringIdentifier");					//increments Iterator
 		match("OPEN_PARENTHESIS");					//increments Iterator, enter Params
 
 		if(hasParams()) {							//checks if Params are present
 			addChild(new Params(token, it));		//adds child Nodes accordingly
+			flags[0] = true;
 		}
 
 		match("CLOSE_PARENTHESIS");					//increments Iterator
 
 		if(hasTypeDesc()) {							//checks for type descriptor
 			addChild(new TypeDescriptor(token, it));//adds child node accordingly
+			flags[1] = true;
 		}
 
 		addChild(new Block(token, it));				//final child, Block
@@ -342,10 +344,6 @@ class Function extends Subtree {
 	 *	1. All parameters of type var must be pass by reference
 	 *	2. All parameters not of type var must be pass-by-value
 	 *	3. If a formal parameter has a default value, all others must as well
-	 *
-	 *	We want each Function Symbol to hold the id of the function, checking that
-	 *	it has not already been defined in the scope. And to hold the return
-	 *	type of the function, if there is one.
 	 *	
 	 *	We want each parameter to return whether or not it is a var (if so it must
 	 *	be pass by reference), and if the value is initialized. This will be denoted
@@ -355,43 +353,36 @@ class Function extends Subtree {
 
 	@Override
 	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException {
-		//Symbol to check if the name of this function has already been used in
-		//the parent scope. If so throws an AlreadyDefinedException
-		Symbol previouslyDefined = enclosing.resolve(token.getTokenType());
-		if(previouslyDefined != null) {	//name has already been used
+		String funcName = children.get(0).token.getName();
+		Symbol previouslyDefined = enclosing.resolve(funcName);
+		Subtree currentNode;
+		String symType;
+		currentScope = enclosing;
+
+		if(previouslyDefined != null) {
 			throw new AlreadyDefinedException(token.getTokenType());
 		} else {
-			//otherwise, create scope for new function
-			LocalScope functionScope = new LocalScope(enclosing);
-			Subtree currentNode;
-			String typeDescrip = "";
-			//iterate over children until we find the typedescriptor (if it has one)
-			for(int index = 0; index < children.size(); index++) {
-				currentNode = children.get(index);
-				//if the function has a type descriptor (return type), then we want
-				//to call the corresponding function on that node that will return
-				//what the actual descriptor is so we can add it to the Symbol for
-				//this function. We want Symbol = (function id name, return type)
-				if(currentNode instanceof TypeDescriptor) {
-					//now have String representation of return type. This now
-					//needs to be resolved to check that it is a valid return type
-					//that has already been defined in the scope of the program
-					//thus far
-					TypeDescriptor tempDescrip = (TypeDescriptor) currentNode;
-					typeDescrip = tempDescrip.returnType();
-					//if the typeDescrip has been previously defined then previouslyDefined
-					//should not equal null
-					previouslyDefined = enclosing.resolve(typeDescrip);
-					if(previouslyDefined == null) {
-						throw new UndefinedTypeException(typeDescrip);
-					} else {
-						SymbolType symT = (BuiltInTypeSymbol) previouslyDefined;
-						Name name = (Name) children.get(0);
-						symbol = new FunctionSymbol(name.getName(), symT);
-						enclosing.define(symbol);
-					}
+			if(!flags[1]) {
+				type = (BuiltInTypeSymbol)enclosing.resolve("void");
+			} else {
+				if(flags[0])
+					currentNode = children.get(2);
+				else
+					currentNode = children.get(1);
+
+				//wont work for user types yet - only builtins and records
+				symType = ((TypeDescriptor)currentNode).returnType();
+				previouslyDefined = enclosing.resolve(symType);
+
+				if(previouslyDefined == null) {
+					throw new UndefinedTypeException(symType);
+				}else{
+					type = (symType == "record") ? (RecordSymbol)enclosing.resolve(symType) :
+						(BuiltInTypeSymbol)enclosing.resolve(symType);
 				}
 			}
+			symbol = new FunctionSymbol(funcName, type, enclosing);
+			enclosing.define(symbol);
 		}
 	}
 
@@ -1321,7 +1312,7 @@ class Expression extends Subtree {
 
 		//later on bc we dont have arrays implemented
 		//byte[] = string;
-		
+
 
 		//temporary
 		type = (BuiltInTypeSymbol)e.resolve("int32");
