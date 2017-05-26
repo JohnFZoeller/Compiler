@@ -1,14 +1,17 @@
 public class FloatIdentifier extends Token {
-	private float value;
 
 	public FloatIdentifier(float v, int r, int c){
 		super("FloatIdentifier", r, c);
-		this.value = v;
+		setVal(v);
+	}
+
+	@Override
+	public Float getVal() {
+		return (Float)val;
 	}
 
 	@Override
 	public String toString(){
-		
-		return super.toString() + " FLOAT_IDENTIFIER (" + value + ")";
+		return super.toString() + " FLOAT_IDENTIFIER (" + Float.toString((float)val) + ")";
 	}
 }

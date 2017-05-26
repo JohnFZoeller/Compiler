@@ -1,30 +1,26 @@
-//package tokens;
-
 public class Token{
 	protected int row, col;
 	protected String input;
 	protected String name;
-	protected int val;
+	protected Object val;
 
 	public Token(String i, int r, int c){
 	 	this.input = i;
 	 	this.row = r;
 	 	this.col = c;
-	 	name = "";
 	}
 
 	public Token(int r, int c){
 	 	this.row = r;
 	 	this.col = c;
-	 	name = "";
 	}
 	public String getVarName() {
 		return "";
 	}
 
-	public int getVal(){ return val; }
+	public Object getVal(){ return val; }
 
-	public void setVal(int v) { val = v; }
+	public void setVal(Object v) { val = v; }
 
 	public int getRow(){ return row; }
 
