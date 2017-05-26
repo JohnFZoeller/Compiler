@@ -29,6 +29,10 @@ public class Symbol {
 			return '<' + getName() + ": " + type + '>';
 		return getName();
 	}
+
+	public void addParams(List<Subtree> params) throws AlreadyDefinedException, UndefinedTypeException {
+		System.out.println("wrong one");
+	}
 }
 
 class RefConstSymbol extends Symbol {
@@ -83,6 +87,11 @@ class VarSymbol extends Symbol {
 	RecordSymbol record;
 	boolean [] locks; //[0] = static, [1] = const;
 	//add optional dimension member
+
+	VarSymbol(String n, SymbolType t){
+		super(n, t);
+		locks = null;
+	}
 
 	VarSymbol(String n, SymbolType t, boolean[] l){
 		super(n, t);

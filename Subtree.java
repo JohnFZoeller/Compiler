@@ -156,6 +156,9 @@ public class Subtree {
 	public String toPrint() {
 		return "";
 	}
+
+	public void setType(Scope e){;}  //temporary workaround
+
 }
 
 /*------------------------------ Main Node Types ---------------------------------*/
@@ -316,6 +319,8 @@ class Else extends Subtree{
 
 class Function extends Subtree {
 	public boolean [] flags = new boolean[2]; //[0] = params, [1] = type;
+	LocalScope localScope;
+	Block block;
 
 	Function(Token t, Iterator<Token> i) {
 		super(t, i);								//calls super constructor
@@ -381,38 +386,25 @@ class Function extends Subtree {
 						(BuiltInTypeSymbol)enclosing.resolve(symType);
 				}
 			}
-			symbol = (!flags[0]) ? new FunctionSymbol(funcName, type, enclosing):
-				new FunctionSymbol(funcName, type, enclosing, children.get(1).children);
+			symbol = new FunctionSymbol(funcName, type, enclosing);
 			enclosing.define(symbol);
 
-
+			if(flags[0])
+				symbol.addParams(children.get(1).children);
 		}
 	}
 
-
-	/*
-	 *	Second decorate function. The Function symbol has already been added to the
-	 *	enclosing scope. The encompassing scope is passed in to decorate second and
-	 *	a local scope is created. Parameters are added to the local scope, and then
-	 *	the local scope is passed to the Block child, as the Block child requires
-	 *	the creation of a new semantic scope.
-	 *
-	 */
-
 	@Override
 	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
-		LocalScope localScope = new LocalScope(enclosing);
+		localScope = new LocalScope((FunctionSymbol)symbol);
 
-		Subtree currentNode;
-		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
+		if(flags[0] && flags[1])
+			block = (Block)children.get(3);
+		else if((flags[0] && !flags[1]) || (!flags[0] && flags[1]))
+			block = (Block)children.get(2);
+		else block = (Block)children.get(1);
 
-			if(currentNode instanceof Block) {
-				//passes local scope to Block, local scope will become the Block's
-				Block blockNode = (Block) currentNode;
-				blockNode.decorateBlock(localScope);
-			}
-		}
+		block.decorateBlock(localScope);
 	}
 
 	@Override
@@ -490,6 +482,7 @@ class Var extends Subtree{
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		String symbolName = children.get(0).token.getName();
 		Symbol previouslyDefined = enclosing.resolve(symbolName);
+		String symType;
 		currentScope = enclosing;
 
 		if(previouslyDefined != null){
@@ -502,22 +495,24 @@ class Var extends Subtree{
 					type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
 					symbol = new VarSymbol(symbolName, type, locks);
 				}
-				else if(nodeType instanceof Name){
+				else if(nodeType instanceof Name){//fix me to include records
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
+					symType = previouslyDefined.getType().getTypeName();
 
 					if(previouslyDefined == null)
 						throw new UndefinedTypeException(children.get(1).token.getName());
 					else{
-						type = (BuiltInTypeSymbol)previouslyDefined.getType();
+						type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
+						(BuiltInTypeSymbol)previouslyDefined.getType();
+
 						symbol = new VarSymbol(symbolName, type, locks);
 					}
 				}
 				else if(nodeType instanceof RecordDescriptor){
-
 					RecordSymbol record = new RecordSymbol(symbolName, enclosing, 
 						nodeType.children.get(0).children);
 
-					type = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
+					type = (RecordSymbol)enclosing.resolve("record");
 					symbol = new VarSymbol(symbolName, type, record, locks);
 				}
 			}
@@ -546,8 +541,6 @@ class Var extends Subtree{
 	//me realize that I have written very little on this iteration and would like to 
 	//steal some of your work (-:
 
-	//Also this brings up the question: Why have two passes over the subTree?
-	//There would be absolutely no problem with verifying line 556 in the first pass. 
 
 
 	@Override
@@ -668,6 +661,7 @@ class Type extends Subtree{
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		String symbolName = children.get(0).token.getName();
+		String symType;
 		Symbol previouslyDefined = enclosing.resolve(symbolName);
 		currentScope = enclosing;
 
@@ -680,20 +674,24 @@ class Type extends Subtree{
 				type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
 				symbol = new TypeSymbol(symbolName, type);
 			}
-			else if(nodeType instanceof Name){
+			else if(nodeType instanceof Name){//fix me tpo include records
 				previouslyDefined = enclosing.resolve(nodeType.token.getName());
+				symType = previouslyDefined.getType().getTypeName();
 
 				if(previouslyDefined == null)
 					throw new UndefinedTypeException(children.get(1).token.getName());
 				else{
-					type = (BuiltInTypeSymbol)previouslyDefined.getType();
+					type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
+					(BuiltInTypeSymbol)previouslyDefined.getType();
+
 					symbol = new TypeSymbol(symbolName, type);
 				}
 			}
 			else if(nodeType instanceof RecordDescriptor){
 				RecordSymbol record = new RecordSymbol(symbolName, enclosing, 
 					nodeType.children.get(0).children);
-				type = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
+
+				type = (RecordSymbol)enclosing.resolve("record");
 				symbol = new TypeSymbol(symbolName, type, record);
 			}
 			enclosing.define(symbol); 
@@ -781,7 +779,8 @@ class Block extends Subtree {
 
 	public void decorateBlock(Scope encompassing) throws UndefinedTypeException, AlreadyDefinedException {
 		//creates scope local to the block
-		LocalScope localScope = new LocalScope(encompassing);
+		//no need, localScope for block created in function and passed in as "encompassing"
+		//LocalScope localScope = new LocalScope(encompassing);
 
 		//iterates over the children of block and adds them to the local scope if
 		//they are declarations. Or checks if the type is valid in the wider scope
@@ -1062,11 +1061,15 @@ class Params extends Subtree{
 }
 
 class Param extends Subtree{
+	public boolean [] locks = new boolean[2]; //0-> ref, 1->const,
+
 	Param(Token t, Iterator<Token> i){
 		super(t, i);
 		if(token.getTokenType().equals("ref")) {
 			match("ref");
+			locks[0] = true;
 			if(token.getTokenType().equals("const")) {
+				locks[1] = true;
 				match("const");
 				//this.symbol = new RefConstSymbol(token.getVal());
 			} else {
@@ -1076,6 +1079,7 @@ class Param extends Subtree{
 
 		if(token.getTokenType().equals("const")) {
 			match("const");
+			locks[1] = true;
 			//this.symbol = ConstSymbol(token.getVal());
 		}
 
@@ -1297,6 +1301,8 @@ class Expression extends Subtree {
 		precedence = p;
 		addAllChildren();
 	}
+
+	public void setType(Scope e){;}  //temporary workaround
 
 	public void decorateFirst(Scope e) throws AlreadyDefinedException, UndefinedTypeException{
 		//expressions type can be:

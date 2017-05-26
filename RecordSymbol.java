@@ -33,12 +33,17 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 			return new Symbol(sName, t);
 		}
 		else if(nodeType instanceof Name){
-			temp = resolve(sName);
+			temp = resolve(nodeType.token.getName());
+
+			//fix here too 
 
 			if(temp == null)
 				System.out.println("record member undefined");
 			else{
-				t = (BuiltInTypeSymbol)temp.getType();
+				t = (temp.getType().getTypeName() == "record") ? 
+						(RecordSymbol)temp.getType() : 
+						(BuiltInTypeSymbol)temp.getType();
+
 				return new Symbol(sName, t);
 			}
 		}
@@ -55,5 +60,5 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 	}
 
 	@Override
-	public String getTypeName(){ return ""; }
+	public String getTypeName(){ return "record"; }
 }

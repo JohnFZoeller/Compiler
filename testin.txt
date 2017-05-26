@@ -1,4 +1,5 @@
 type john byte;
-function zoeller (fred int32, reed byte, anna float64) john {
+type poop record a byte end;
+function zoeller (fred int32, reed john, anna poop) john {
 	var zoel john;
 }
