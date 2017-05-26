@@ -404,7 +404,7 @@ class Function extends Subtree {
 			block = (Block)children.get(2);
 		else block = (Block)children.get(1);
 
-		block.decorateBlock(localScope);
+		block.decorateFirst(localScope);
 	}
 
 	@Override
@@ -777,17 +777,21 @@ class Block extends Subtree {
 		}
 	}
 
-	public void decorateBlock(Scope encompassing) throws UndefinedTypeException, AlreadyDefinedException {
-		//creates scope local to the block
-		//no need, localScope for block created in function and passed in as "encompassing"
-		//LocalScope localScope = new LocalScope(encompassing);
+	@Override
+	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
+		//String funcName = children.get(0).token.getName();
+		//Symbol previouslyDefined = enclosing.resolve(funcName);
+		//Subtree currentNode;
+		//String symType;
+		//currentScope = enclosing;
+
 
 		//iterates over the children of block and adds them to the local scope if
 		//they are declarations. Or checks if the type is valid in the wider scope
 		//if a type is being used that is not locally defined.
 		//
 		//	STILL NEEDS TO BE COMPLETED
-		//
+		//	
 		Subtree currentNode;
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
@@ -814,6 +818,43 @@ class Block extends Subtree {
 
 			}
 		}
+	}
+
+	@Override
+	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
+		//iterates over the children of block and adds them to the local scope if
+		//they are declarations. Or checks if the type is valid in the wider scope
+		//if a type is being used that is not locally defined.
+		//
+		//	STILL NEEDS TO BE COMPLETED
+		//	
+
+		Subtree currentNode;
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+
+			if(currentNode instanceof For) {				//adds new scope
+
+			} else if(currentNode instanceof While) {		//adds new scope
+
+			} else if(currentNode instanceof If) {			//adds new scope
+
+			} else if(currentNode instanceof Function) {	//adds new scope
+
+			} else if(currentNode instanceof Print) {
+
+			} else if(currentNode instanceof Type){
+
+			} else if(currentNode instanceof Var) {
+
+			} else if(currentNode instanceof Exit) {
+
+			} else if(currentNode instanceof Retur) {
+
+			} else if(currentNode instanceof Expression) {
+
+			}
+		}	
 	}
 
 	@Override
@@ -1292,19 +1333,17 @@ class Expression extends Subtree {
 
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
-		//tokenType = t.getTokenType();
 		addAllChildren();
 	}
 	Expression(Token t, Iterator<Token> i, int p){
 		super(t, i);
-		//System.out.println(t.getTokenType());
 		precedence = p;
 		addAllChildren();
 	}
 
-	public void setType(Scope e){;}  //temporary workaround
+	public void setType(Scope enclosing){;}  //temporary workaround
 
-	public void decorateFirst(Scope e) throws AlreadyDefinedException, UndefinedTypeException{
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException{
 		//expressions type can be:
 		//int32, float64
 		//byte = char;
@@ -1314,7 +1353,7 @@ class Expression extends Subtree {
 
 
 		//temporary
-		type = (BuiltInTypeSymbol)e.resolve("int32");
+		type = (BuiltInTypeSymbol)enclosing.resolve("int32");
 
 		//not temporary
 		symbol = new ExpressionSymbol(type);
@@ -1596,6 +1635,7 @@ class ExprRest extends Subtree {
 	int precedence = 0;		
 
 	ExprRest() {}
+
 	ExprRest(int p) {
 		precedence = p;
 	}
@@ -1608,6 +1648,19 @@ class ExprRest extends Subtree {
 		super(t, i);
 		precedence = p;
 		addAllChildren();
+	}
+
+	/*	Checks first to see if the operand is a valid built-in type. The only types which are included
+	 *	in operations are int32, byte, and float64. We know since we are in the ExprRest node that an
+	 *	operation of some type is going to be performed. Second step is to check whether the operation
+	 *	is valid for the given symboltype provided by the first step.
+	 */
+
+	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+		//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
+		//otherwise we need to resolve the type in the enclosing scope or throw an error
+
+
 	}
 
 	public Iterator<Token> populateExpr(Iterator<Token> i, Token current) {
@@ -1903,43 +1956,41 @@ class ExprRest extends Subtree {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
 				operand = token;
-				//operandType = Integer.toString(token.getVal());
+				operandType = Integer.toString(((IntIdentifier)token).getVal());
 				match("IntIdentifier");
 				break;
 			case "FLOAT_IDENTIFIER":
 				operand = token;
-				//operandType = "Identifier";
-				//operandType = Float.toString(token.getVal());
+				operandType = Float.toString(((FloatIdentifier)token).getVal());
 				match("FLOAT_IDENTIFIER");
 				break;
 			case "BYTE_IDENTIFIER":
 				operand = token;
-				//operandType = "Identifier";
-				//operandType = Integer.toString(token.getVal());
+				operandType = Integer.toString(((IntIdentifier)token).getVal());
 				match("BYTE_IDENTIFIER");
 				break;
 			case "StringIdentifier":
 				operand = token;
-				//operandType = "Identifier";
-				//operandType = token.getName();
+				//operandType = "StringIdentifier";
+				operandType = token.getName();
 				match("StringIdentifier");
 				break;
 			case "KEYWORD_INT32":
 				operand = token;
-				//operandType = "Keyword";
-				operandType = "INT32";
+				operandType = "Keyword int32";
+				//operandType = "INT32";
 				match("KEYWORD_INT32");
 				break;
 			case "KEYWORD_FLOAT":
 				operand = token;
-				//operandType = "Keyword";
-				operandType = "FLOAT";
+				operandType = "Keyword float";
+				//operandType = "FLOAT";
 				match("KEYWORD_FLOAT");
 				break;
 			case "KEYWORD_BYTE":
 				operand = token;
-				//operandType = "Keyword";
-				operandType = "BYTE";
+				operandType = "Keyword byte";
+				//operandType = "BYTE";
 				match("KEYWORD_BYTE");
 				break;
 			default:

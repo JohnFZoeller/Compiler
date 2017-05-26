@@ -20,9 +20,13 @@ public class Symbol {
 		type = null;
 	}
 
-	public String getName(){ return name; }
+	public String getName() {
+		return name;
+	}
 
-	public SymbolType getType() { return type; }
+	public SymbolType getType() {
+		return type; 
+	}
 
 	public String toString(){
 		if(type != null) 
@@ -32,48 +36,6 @@ public class Symbol {
 
 	public void addParams(List<Subtree> params) throws AlreadyDefinedException, UndefinedTypeException {
 		System.out.println("wrong one");
-	}
-}
-
-class RefConstSymbol extends Symbol {
-	RefConstSymbol() {
-		super();
-	}
-
-	RefConstSymbol(String n, SymbolType t) {
-		super(n, t);
-	}
-
-	RefConstSymbol(String n) {
-		super(n);
-	}
-}
-
-class ConstSymbol extends Symbol {
-	ConstSymbol() {
-		super();
-	}
-
-	ConstSymbol(String n, SymbolType t) {
-		super(n, t);
-	}
-
-	ConstSymbol(String n) {
-		super(n);
-	}
-}
-
-class RefSymbol extends Symbol {
-	RefSymbol() {
-		super();
-	}
-	
-	RefSymbol(String n, SymbolType t) {
-		super(n, t);
-	}
-
-	RefSymbol(String n) {
-		super(n);
 	}
 }
 

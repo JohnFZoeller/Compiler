@@ -1,53 +1,80 @@
+StringIdentifier john
+byte null
+SEMICOLON null
+type null
+StringIdentifier poop
+record null
+StringIdentifier a
+byte null
+end null
+SEMICOLON null
+function null
+StringIdentifier zoeller
+OPEN_PARENTHESIS null
+StringIdentifier fred
+int32 null
+COMMA null
+StringIdentifier reed
+StringIdentifier john
+COMMA null
+StringIdentifier anna
+StringIdentifier poop
+CLOSE_PARENTHESIS null
+StringIdentifier john
+OPEN_BRACE null
+var null
+StringIdentifier zoel
+StringIdentifier john
+SEMICOLON null
+CLOSE_BRACE null
+print null
+String_Literal "n\tfib(n)\n"
+SEMICOLON null
+var null
+StringIdentifier x
+int32 null
+SEMICOLON null
+for null
+OPEN_PARENTHESIS null
+StringIdentifier x
+ASSIGNMENT_OPERATOR null
+IntIdentifier null
+SEMICOLON null
+StringIdentifier x
+RELATIONAL_LESS_THAN null
+IntIdentifier null
+SEMICOLON null
+StringIdentifier x
+ASSIGNMENT_OPERATOR null
+StringIdentifier x
+PLUS null
+IntIdentifier null
+CLOSE_PARENTHESIS null
+OPEN_BRACE null
+print null
+StringIdentifier x
+SEMICOLON null
+print null
+Char_Literal null
+SEMICOLON null
+var null
+StringIdentifier result
+ASSIGNMENT_OPERATOR null
 StringIdentifier fib1
-OPEN_PARENTHESIS 
-StringIdentifier n
-int32 
-CLOSE_PARENTHESIS 
-int32 
-OPEN_BRACE 
-var 
-StringIdentifier curr
-ASSIGNMENT_OPERATOR 
-IntIdentifier 
-SEMICOLON 
-var 
-StringIdentifier prev
-ASSIGNMENT_OPERATOR 
-IntIdentifier 
-SEMICOLON 
-while 
-OPEN_PARENTHESIS 
-OPEN_PARENTHESIS 
-StringIdentifier n
-ASSIGNMENT_OPERATOR 
-StringIdentifier n
-MINUS 
-IntIdentifier 
-CLOSE_PARENTHESIS 
-RELATIONAL_GREATER_THAN 
-IntIdentifier 
-CLOSE_PARENTHESIS 
-OPEN_BRACE 
-var 
-StringIdentifier swap
-ASSIGNMENT_OPERATOR 
-StringIdentifier curr
-SEMICOLON 
-StringIdentifier prev
-ASSIGNMENT_OPERATOR 
-StringIdentifier curr
-SEMICOLON 
-StringIdentifier curr
-ASSIGNMENT_OPERATOR 
-StringIdentifier prev
-PLUS 
-StringIdentifier swap
-SEMICOLON 
-CLOSE_BRACE 
-return 
-StringIdentifier curr
-SEMICOLON 
-CLOSE_BRACE 
-print 
-StringIdentifier n
-SEMICOLON 
+OPEN_PARENTHESIS null
+StringIdentifier x
+CLOSE_PARENTHESIS null
+SEMICOLON null
+print null
+StringIdentifier result
+SEMICOLON null
+print null
+Char_Literal null
+SEMICOLON null
+CLOSE_BRACE null
+Exception in thread "main" UndefinedTypeException:  Not Defined in this Scope!
+	at Function.decorateFirst(Subtree.java:383)
+	at Subtree.beginDecorateFirst(Subtree.java:65)
+	at SyntaxParser.decorate(SyntaxParser.java:34)
+	at Main.run(Main.java:21)
+	at Main.main(Main.java:7)
