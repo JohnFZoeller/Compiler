@@ -109,10 +109,14 @@ class Lex implements Iterable<Token> {
 	      	} else if(Character.isDigit(currentChar)) {				//checks if currentChar isDigit
 	      		returnToken = createDigit();					//creates digit identifier
 	      	} else if(Character.isLetter(currentChar)) {		//checks if currentChar isLetter
+
 	      		returnToken = createStringIdentifier();			//either stringIdentifier or keyword
+
 			}
-			else if(currentChar == '"')		
+			else if(currentChar == '"' || currentChar == '\'')	{
+	
 				returnToken = createStringIdentifier();
+			}
 
 		}
 
@@ -237,7 +241,6 @@ class Lex implements Iterable<Token> {
 		
 			switch(cur) {
 				case ' ':	increaseColumn(1);
-				    		//System.out.println("space");
 							break;
 				case '\t':	increaseColumn(tabW);
 							//System.out.println("tab");
@@ -410,8 +413,8 @@ class Lex implements Iterable<Token> {
 
 		if(currentChar == '"'){
 			do{
-				readNextChar();
-				result += currentChar;
+				readNextChar();								//a, b, c
+				result += currentChar;						//"abc"
 			} while(currentChar != '"');
 
 			return new StringLiteral(result, row, tempCol);
@@ -467,6 +470,7 @@ class Lex implements Iterable<Token> {
 			//if true then we must return a new Keyword rather than a new stringIdentifier
 			if(KeywordMap.keywords.containsKey(possibleKeyword)) {
 				isKeyword = true;
+				//readOk = false;
 				return new Keyword(possibleKeyword, kMap.keywords.get(possibleKeyword), row, tempCol);
 			} else {
 				processPending = true;		//indicates that we must process currentChar & nextChar

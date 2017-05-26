@@ -17,6 +17,7 @@ public class SymbolTable { //implements Scope
 		globals.define(new BuiltInTypeSymbol("float64"));
 		globals.define(new BuiltInTypeSymbol("byte"));
 		globals.define(new BuiltInTypeSymbol("int32"));
+		globals.define(new BuiltInTypeSymbol("void"));
 		globals.define(new RecordSymbol("record", globals));
 	}
 

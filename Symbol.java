@@ -109,10 +109,3 @@ class TypeSymbol extends Symbol {
 		record = r;
 	}
 }
-
-class FunctionSymbol extends Symbol {
-	FunctionSymbol(String n, SymbolType t){
-		super(n, t);
-	}
-
-}
