@@ -152,6 +152,7 @@ public class Subtree {
 		return !token.getTokenType().equals("OPEN_BRACE");
 		//collapse
 	}
+
 	public String toPrint() {
 		return "";
 	}
@@ -362,30 +363,31 @@ class Function extends Subtree {
 		if(previouslyDefined != null) {
 			throw new AlreadyDefinedException(token.getTokenType());
 		} else {
-			if(!flags[1]) {
-				type = (BuiltInTypeSymbol)enclosing.resolve("void");
-			} else {
-				if(flags[0])
-					currentNode = children.get(2);
-				else
-					currentNode = children.get(1);
+			if(!flags[1]) {														//no type
+				type = (BuiltInTypeSymbol)enclosing.resolve("void");			//type = void
+				currentNode = (flags[0]) ? children.get(1) : null;				//cur = params
+			} else {															//is a type
+				currentNode = (flags[0]) ? children.get(2) : children.get(1);	//cur = params
+				symType = ((TypeDescriptor)currentNode).returnType();			//type
+				previouslyDefined = enclosing.resolve(symType);					//ref type
 
-				//wont work for user types yet - only builtins and records
-				symType = ((TypeDescriptor)currentNode).returnType();
-				previouslyDefined = enclosing.resolve(symType);
+				if(previouslyDefined instanceof TypeSymbol)						//user type?
+					symType = previouslyDefined.type.getTypeName();				//get type Name
 
-				if(previouslyDefined == null) {
+				if(previouslyDefined == null) {									//not defined
 					throw new UndefinedTypeException(symType);
 				}else{
 					type = (symType == "record") ? (RecordSymbol)enclosing.resolve(symType) :
 						(BuiltInTypeSymbol)enclosing.resolve(symType);
 				}
 			}
-			symbol = new FunctionSymbol(funcName, type, enclosing);
+			symbol = (!flags[0]) ? new FunctionSymbol(funcName, type, enclosing):
+				new FunctionSymbol(funcName, type, enclosing, children.get(1).children);
 			enclosing.define(symbol);
+
+
 		}
 	}
-
 
 
 	/*
@@ -399,21 +401,14 @@ class Function extends Subtree {
 
 	@Override
 	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
-		//creates scope local to the function
 		LocalScope localScope = new LocalScope(enclosing);
 
-		//iterates over children. When a child of type Params is encountered
-		//the decorateSecond() function is called on that child and the localScope
-		//is passed in so that the parameters can be added to the function's scope
 		Subtree currentNode;
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
-			if(currentNode instanceof Params) {
-				//adds Params to localScope symbol table
-				currentNode.decorateSecond(localScope);
-			} else if(currentNode instanceof Block) {
+
+			if(currentNode instanceof Block) {
 				//passes local scope to Block, local scope will become the Block's
-				//encompassing scope
 				Block blockNode = (Block) currentNode;
 				blockNode.decorateBlock(localScope);
 			}
@@ -1032,14 +1027,12 @@ class Params extends Subtree{
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException{
 		Subtree currentNode = null;
-		//iterate over children and if the node is a Param, we will call
+
 		//decorateFirst and pass in the enclosing scope for the Param
 		//to add itself to the enclosing scope's symbol table
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
-			if(currentNode instanceof Param) {
-				currentNode.decorateFirst(enclosing);
-			}
+			currentNode.decorateFirst(enclosing);
 		}
 	}
 
@@ -1487,17 +1480,17 @@ class Expression extends Subtree {
 	private void matchOperand() {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
-				tokenType = Integer.toString(token.getVal());
+				//tokenType = Integer.toString(token.getVal());
 				tokenDescrip = "Integer";
 				match("IntIdentifier");
 				break;
 			case "FLOAT_IDENTIFIER":
-				tokenType = Float.toString(token.getVal());
+				//tokenType = Float.toString(token.getVal());
 				tokenDescrip = "Float";
 				match("FLOAT_IDENTIFIER");
 				break;
 			case "BYTE_IDENTIFIER":
-				tokenType = Integer.toString(token.getVal());
+				//tokenType = Integer.toString(token.getVal());
 				tokenDescrip = "Byte";
 				match("BYTE_IDENTIFIER");
 				break;
@@ -1904,25 +1897,25 @@ class ExprRest extends Subtree {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
 				operand = token;
-				operandType = Integer.toString(token.getVal());
+				//operandType = Integer.toString(token.getVal());
 				match("IntIdentifier");
 				break;
 			case "FLOAT_IDENTIFIER":
 				operand = token;
 				//operandType = "Identifier";
-				operandType = Float.toString(token.getVal());
+				//operandType = Float.toString(token.getVal());
 				match("FLOAT_IDENTIFIER");
 				break;
 			case "BYTE_IDENTIFIER":
 				operand = token;
 				//operandType = "Identifier";
-				operandType = Integer.toString(token.getVal());
+				//operandType = Integer.toString(token.getVal());
 				match("BYTE_IDENTIFIER");
 				break;
 			case "StringIdentifier":
 				operand = token;
 				//operandType = "Identifier";
-				operandType = token.getName();
+				//operandType = token.getName();
 				match("StringIdentifier");
 				break;
 			case "KEYWORD_INT32":

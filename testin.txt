@@ -1,4 +1,4 @@
 type john byte;
-function zoeller () int32 {
+function zoeller (fred int32, reed byte, anna float64) john {
 	var zoel john;
 }
