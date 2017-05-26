@@ -1,5 +1,3 @@
-//package tokens;
-
 public class Keyword extends Token{
 	String input;
 
