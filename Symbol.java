@@ -21,9 +21,6 @@ public class Symbol {
 		type = null;
 	}
 
-	public String getName() {
-		return name;
-	}
 	public void setVar(){ isVar = true; }
 
 	public boolean getVar(){ return isVar; }
