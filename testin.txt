@@ -3,13 +3,6 @@ type poop record a byte end;
 function zoeller (fred int32, reed john, anna poop) john {
 	var zoel john;
 }
-
-print "n\tfib(n)\n";
-var x int32;
-for (x = 0; x < 10; x = x + 1) {
-  print x;
-  print '\t';
-  var result = fib1(x);
-  print result;
-  print '\n';
+function s(ed byte, edd = 5, eddy int32) byte{
+	var mom byte;
 }

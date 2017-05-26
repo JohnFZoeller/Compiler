@@ -4,6 +4,7 @@ import java.util.*;
 public class Symbol {
 	public String name;
 	public SymbolType type;			//for built in types
+	public boolean isVar = false;
 
 	Symbol(){
 		name = "";
@@ -23,6 +24,11 @@ public class Symbol {
 	public String getName() {
 		return name;
 	}
+	public void setVar(){ isVar = true; }
+
+	public boolean getVar(){ return isVar; }
+
+	public String getName(){ return name; }
 
 	public SymbolType getType() {
 		return type; 
@@ -53,17 +59,20 @@ class VarSymbol extends Symbol {
 	VarSymbol(String n, SymbolType t){
 		super(n, t);
 		locks = null;
+		setVar();
 	}
 
 	VarSymbol(String n, SymbolType t, boolean[] l){
 		super(n, t);
 		locks = l;
+		setVar();
 	}
 
 	VarSymbol(String n, SymbolType t, RecordSymbol r, boolean[] l){
 		super(n, t);
 		locks = l;
 		record = r;
+		setVar();
 	}
 }
 

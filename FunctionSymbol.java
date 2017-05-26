@@ -10,9 +10,26 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 		super(n, t, e);
 	}
 
-	public void addParams(List<Subtree> params)throws AlreadyDefinedException, UndefinedTypeException{		
+	public void addParams(List<Subtree> params)throws AlreadyDefinedException, UndefinedTypeException{
+		boolean defaultValuesLocked = false;
+
 		for(int i = 0; i < params.size(); i++){
 			Subtree nodeType = params.get(i).children.get(1);
+
+			if(nodeType instanceof Expression){
+				defaultValuesLocked = true;
+				
+				// if(!params.get(i).locks[0]){ //params that are vars (expressions declared as var) must be ref locked
+				// 	//still working on this part
+				// }
+			}
+			else if(nodeType instanceof NaTypeDescriptor){
+				if(defaultValuesLocked){
+					System.out.println("Parameter Syntax Error-> If a formal parameter is assigned a default value, all parameters to its right must also have default values.");
+					break;
+				}
+			}
+
 			Symbol temp = paramType(nodeType, params.get(i).children.get(0).token.getName());
 			define(temp);
 		}
@@ -52,7 +69,6 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 			}
 		}
 		else if(nodeType instanceof Expression) {
-			//handle ref lock here
 			nodeType.decorateFirst(this);
 			t = nodeType.type;
 			return new VarSymbol(sName, t);
