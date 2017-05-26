@@ -3,3 +3,6 @@ type poop record a byte end;
 function zoeller (fred int32, reed john, anna poop) john {
 	var zoel john;
 }
+function s(ed byte, edd = 5, eddy int32) byte{
+	var mom byte;
+}

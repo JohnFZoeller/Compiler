@@ -347,9 +347,8 @@ class Function extends Subtree {
 
 	/*
 	 *	Semantic Rules for Parameters:
-	 *	1. All parameters of type var must be pass by reference
+	 *	1. Formal parameters declared var shall be passed by reference
 	 *	2. All parameters not of type var must be pass-by-value
-	 *	3. If a formal parameter has a default value, all others must as well
 	 *	
 	 *	We want each parameter to return whether or not it is a var (if so it must
 	 *	be pass by reference), and if the value is initialized. This will be denoted
