@@ -1634,30 +1634,30 @@ class Expression extends Subtree {
 }
 
 class ExprRest extends Subtree {
-	public Token operator = null;		//holds operator
-	public Token unaryOp = null;
-	public Token operand = null;		//holds operand
-	Subtree oper;
-	public String uOperator = "";
-	public String opType = "";			//descriptor for operation type
-	public String operandType = "";		//descriptor for operand
-	int precedence = 0;		
+	//public Token operator = null;		//holds operator
+	//public Token unaryOp = null;
+	//public Token operand = null;		//holds operand
+	//Subtree oper;
+	//public String uOperator = "";
+	//public String opType = "";			//descriptor for operation type
+	//public String operandType = "";		//descriptor for operand
+	//int precedence = 0;		
 
 	ExprRest() {}
 
-	ExprRest(int p) {
-		precedence = p;
-	}
+	// ExprRest(int p) {
+	// 	precedence = p;
+	// }
 
 	ExprRest(Token t, Iterator<Token> i){
 		super(t, i);
 		addAllChildren();
 	}
-	ExprRest(Token t, Iterator<Token> i, int p){
-		super(t, i);
-		precedence = p;
-		addAllChildren();
-	}
+	// ExprRest(Token t, Iterator<Token> i, int p){
+	// 	super(t, i);
+	// 	//precedence = p;
+	// 	addAllChildren();
+	// }
 
 	/*	Checks first to see if the operand is a valid built-in type. The only types which are included
 	 *	in operations are int32, byte, and float64. We know since we are in the ExprRest node that an
@@ -1668,7 +1668,7 @@ class ExprRest extends Subtree {
 	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
 		//otherwise we need to resolve the type in the enclosing scope or throw an error
-		Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
+		//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
 
 	}
 
@@ -1798,7 +1798,7 @@ class ExprRest extends Subtree {
 		if(isUnary(token)) {
 			matchOperator();
 		}
-		matchOperand();
+		//matchOperand();
 	}
 
 	private boolean keepReading(Token current) {
@@ -1829,120 +1829,104 @@ class ExprRest extends Subtree {
 	private void matchOperator() {
 		switch(token.getTokenType()) {
 			case "PLUS":
-				// operator = token;
-				// opType = "+";
 				match("PLUS");
 				addChild(new Addition(token));
 				match(token.getTokenType());
 				break;
 			case "MINUS":
-				//operator = token;
-				//opType = "-";
 				match("MINUS");
 				addChild(new Subtraction(token));
 				match(token.getTokenType());
 				break;
 			case "ASTERISK":
-				//operator = token;
-				//opType = "*";
 				match("ASTERISK");
 				addChild(new Multiplication(token));
 				match(token.getTokenType());
 				break;
 			case "BACKSLASH":
-				//operator = token;
-				//opType = "/";
 				match("BACKSLASH");
 				addChild(new Division(token));
 				match(token.getTokenType());
 				break;
 			case "TILDE":
-				//operator = token;
-				//opType = "~";
 				match("TILDE");
 				addChild(new Tilde(token));
 				match(token.getTokenType());
 				break;
 			case "ASSIGNMENT_OPERATOR":
-				//operator = token;
-				//opType = "=";
 				match("ASSIGNMENT_OPERATOR");
 				addChild(new Assignment(token));
 				match(token.getTokenType());
 				break;
 			case "RELATIONAL_GREATER_THAN":
-				//operator = token;
-				//opType = ">";
 				match("RELATIONAL_GREATER_THAN");
 				addChild(new GreaterThan(token));
 				match(token.getTokenType());
 				break;
 			case "RELATIONAL_GREATER_EQUALTO":
-				//operator = token;
-				//opType = ">=";
 				match("RELATIONAL_GREATER_EQUALTO");
 				addChild(new GreaterThanEqual(token));
 				match(token.getTokenType());
 				break;
 			case "RELATIONAL_LESS_THAN":
-				operator = token;
-				opType = "<";
 				match("RELATIONAL_LESS_THAN");
+				addChild(new LessThan(token));
+				match(token.getTokenType());
 				break;
 			case "RELATIONAL_LESS_EQUALTO":
-				operator = token;
-				opType = "<=";
 				match("RELATIONAL_LESS_EQUALTO");
+				addChild(new LessThanEqual(token));
+				match(token.getTokenType());
 				break;
 			case "BITWISE_AND":
-				operator = token;
-				opType = "&";
 				match("BITWISE_AND");
+				addChild(new BitwiseAnd(token));
+				match(token.getTokenType());
 				break;
 			case "LOGICAL_AND":
-				operator = token;
-				opType = "&&";
 				match("LOGICAL_AND");
+				addChild(new LogicalAnd(token));
+				match(token.getTokenType());
 				break;
 			case "BITWISE_OR":
-				operator = token;
-				opType = "|";
 				match("BITWISE_OR");
+				addChild(new BitwiseOr(token));
+				match(token.getTokenType());
 				break;
 			case "LOGICAL_OR":
-				operator = token;
-				opType = "||";
 				match("LOGICAL_OR");
+				addChild(new LogicalOr(token));
+				match(token.getTokenType());
 				break;
 			case "EXCLAMATION_POINT":
-				operator = token;
-				opType = "!";
 				match("EXCLAMATION_POINT");
+				addChild(new Not(token));
+				match(token.getTokenType());
 				break;
 			case "BITWISE_XOR":
-				operator = token;
-				opType = "^";
 				match("BITWISE_XOR");
+				addChild(new XoR(token));
+				match(token.getTokenType());
 				break;
 			case "LOGICAL_NOT":
-				operator = token;
-				opType = "!=";
 				match("LOGICAL_NOT");
+				addChild(new Inequality(token));
+				match(token.getTokenType());
 				break;
 			case "OUTPUT":
-				operator = token;
-				opType = "<<";
 				match("OUTPUT");
+				addChild(new LeftShift(token));
+				match(token.getTokenType());
 				break;
 			case "INPUT":
-				operator = token;
-				opType = ">>";
 				match("INPUT");
+				addChild(new RightShift(token));
+				match(token.getTokenType());
 				break;
 			case "EQUALITY":
-				operator = token;
-				opType = "==";
 				match("EQUALITY");
+				addChild(new Equality(token));
+				match(token.getTokenType());
 				break;
 			default:
 				break;
@@ -1951,55 +1935,55 @@ class ExprRest extends Subtree {
 
 	private boolean isUnary(Token current) {
 		boolean isUnary = false;
-		switch(current.getTokenType()) {
-			case "TILDE":
-				uOperator = "~";
-				isUnary = true;
-				break;
-			case "EXCLAMATION_POINT":
-				uOperator = "!";
-				isUnary = true;
-				break;
-			case "MINUS":
-				uOperator = "-";
-				isUnary = true;
-				break;
-			default:
-				break;
-		}
+		// switch(current.getTokenType()) {
+		// 	case "TILDE":
+		// 		uOperator = "~";
+		// 		isUnary = true;
+		// 		break;
+		// 	case "EXCLAMATION_POINT":
+		// 		uOperator = "!";
+		// 		isUnary = true;
+		// 		break;
+		// 	case "MINUS":
+		// 		uOperator = "-";
+		// 		isUnary = true;
+		// 		break;
+		// 	default:
+		// 		break;
+		// }
 		return isUnary;
 	}
 
 	
-	private String getOpType() {
-		String retVal = "";
-		switch(operand.getTokenType()) {
-			case "IntIdentifier":
-				retVal = "int32";
-				break;
-			case "FLOAT_IDENTIFIER":
-				retVal = "float64";
-				break;
-			case "BYTE_IDENTIFIER":
-				retVal = "byte";
-				break;
-			case "StringIdentifier":
-				retVal = operand.getName();
-				break;
-			case "KEYWORD_INT32":
-				retVal = operand.getTokenType();
-				break;
-			case "KEYWORD_FLOAT":
-				retVal = operand.getTokenType();
-				break;
-			case "KEYWORD_BYTE":
-				retVal = operand.getTokenType();
-				break;
-			default:
-				break;
-		}
-		return retVal;	
-	}
+	// private String getOpType() {
+	// 	String retVal = "";
+	// 	switch(operand.getTokenType()) {
+	// 		case "IntIdentifier":
+	// 			retVal = "int32";
+	// 			break;
+	// 		case "FLOAT_IDENTIFIER":
+	// 			retVal = "float64";
+	// 			break;
+	// 		case "BYTE_IDENTIFIER":
+	// 			retVal = "byte";
+	// 			break;
+	// 		case "StringIdentifier":
+	// 			retVal = operand.getName();
+	// 			break;
+	// 		case "KEYWORD_INT32":
+	// 			retVal = operand.getTokenType();
+	// 			break;
+	// 		case "KEYWORD_FLOAT":
+	// 			retVal = operand.getTokenType();
+	// 			break;
+	// 		case "KEYWORD_BYTE":
+	// 			retVal = operand.getTokenType();
+	// 			break;
+	// 		default:
+	// 			break;
+	// 	}
+	// 	return retVal;	
+	// }
 
 	/*
 	 *	Matches the operand in the expression statement. matchOperator() must be called
@@ -2008,51 +1992,51 @@ class ExprRest extends Subtree {
 	 *
 	 */
 
-	private void matchOperand() {
-		switch(token.getTokenType()) {
-			case "IntIdentifier":
-				operand = token;
-				operandType = Integer.toString(((IntIdentifier)token).getVal());
-				match("IntIdentifier");
-				break;
-			case "FLOAT_IDENTIFIER":
-				operand = token;
-				operandType = Float.toString(((FloatIdentifier)token).getVal());
-				match("FLOAT_IDENTIFIER");
-				break;
-			case "BYTE_IDENTIFIER":
-				operand = token;
-				operandType = Integer.toString(((IntIdentifier)token).getVal());
-				match("BYTE_IDENTIFIER");
-				break;
-			case "StringIdentifier":
-				operand = token;
-				//operandType = "StringIdentifier";
-				operandType = token.getName();
-				match("StringIdentifier");
-				break;
-			case "KEYWORD_INT32":
-				operand = token;
-				operandType = "Keyword int32";
-				//operandType = "INT32";
-				match("KEYWORD_INT32");
-				break;
-			case "KEYWORD_FLOAT":
-				operand = token;
-				operandType = "Keyword float";
-				//operandType = "FLOAT";
-				match("KEYWORD_FLOAT");
-				break;
-			case "KEYWORD_BYTE":
-				operand = token;
-				operandType = "Keyword byte";
-				//operandType = "BYTE";
-				match("KEYWORD_BYTE");
-				break;
-			default:
-				break;
-		}
-	}
+	// private void matchOperand() {
+	// 	switch(token.getTokenType()) {
+	// 		case "IntIdentifier":
+	// 			operand = token;
+	// 			operandType = Integer.toString(((IntIdentifier)token).getVal());
+	// 			match("IntIdentifier");
+	// 			break;
+	// 		case "FLOAT_IDENTIFIER":
+	// 			operand = token;
+	// 			operandType = Float.toString(((FloatIdentifier)token).getVal());
+	// 			match("FLOAT_IDENTIFIER");
+	// 			break;
+	// 		case "BYTE_IDENTIFIER":
+	// 			operand = token;
+	// 			operandType = Integer.toString(((IntIdentifier)token).getVal());
+	// 			match("BYTE_IDENTIFIER");
+	// 			break;
+	// 		case "StringIdentifier":
+	// 			operand = token;
+	// 			//operandType = "StringIdentifier";
+	// 			operandType = token.getName();
+	// 			match("StringIdentifier");
+	// 			break;
+	// 		case "KEYWORD_INT32":
+	// 			operand = token;
+	// 			operandType = "Keyword int32";
+	// 			//operandType = "INT32";
+	// 			match("KEYWORD_INT32");
+	// 			break;
+	// 		case "KEYWORD_FLOAT":
+	// 			operand = token;
+	// 			operandType = "Keyword float";
+	// 			//operandType = "FLOAT";
+	// 			match("KEYWORD_FLOAT");
+	// 			break;
+	// 		case "KEYWORD_BYTE":
+	// 			operand = token;
+	// 			operandType = "Keyword byte";
+	// 			//operandType = "BYTE";
+	// 			match("KEYWORD_BYTE");
+	// 			break;
+	// 		default:
+	// 			break;
+	// 	}
+	// }
 
 	/*
 	 *	Function overriden from parent class. Prints the information
@@ -2062,16 +2046,16 @@ class ExprRest extends Subtree {
 
 	@Override
 	public void print(){
-		if(operand == null) {
-			return;
-		}
-		printUp("+---");
-		System.out.print(print + "" + opType + " " + uOperator + operandType + "");
+		//if(operand == null) {
+			//return;
+		//}
+		//printUp("+---");
+		//System.out.print(print + "" + opType + " " + uOperator + operandType + "");
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "" + opType + " " + uOperator + operandType + "";
+		String retVal = ""; //+ opType + " " + uOperator + operandType + "";
 
 		if(children != null) {
 			for(int index = 0; index < children.size(); index++) {
