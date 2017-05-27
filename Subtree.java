@@ -2083,6 +2083,21 @@ class Addition extends Subtree {
 		retVal += "+ " + token.getVal(); 
 		return retVal;
 	}
+
+	/*	First thing to check for an expression is that the operand is valid
+	 *	for the expression type. Mathematical operations can only be performed
+	 *	on int32 and float64 types.
+	 */
+
+	public void decorateExpr(Scope enclosing) throws IllegalOperationException {
+		if(token instanceof IntIdentifier) {
+		
+		} else if(token instanceof FloatIdentifier) {
+
+		} else {
+			throw new IllegalOperationException("+", token.getTokenType());
+		}
+	}
 }
 
 class Subtraction extends Subtree {
@@ -2097,6 +2112,16 @@ class Subtraction extends Subtree {
 		String retVal = "";
 		retVal += "- " + token.getVal(); 
 		return retVal;
+	}
+
+	public void decorateExpr(Scope enclosing) throws IllegalOperationException {
+		if(token instanceof IntIdentifier) {
+		
+		} else if(token instanceof FloatIdentifier) {
+
+		} else {
+			throw new IllegalOperationException("+", token.getTokenType());
+		}
 	}
 }
 
@@ -2113,6 +2138,16 @@ class Multiplication extends Subtree {
 		retVal += "* " + token.getVal(); 
 		return retVal;
 	}
+
+	public void decorateExpr(Scope enclosing) throws IllegalOperationException {
+		if(token instanceof IntIdentifier) {
+		
+		} else if(token instanceof FloatIdentifier) {
+
+		} else {
+			throw new IllegalOperationException("+", token.getTokenType());
+		}
+	}
 }
 
 class Division extends Subtree {
@@ -2127,6 +2162,16 @@ class Division extends Subtree {
 		String retVal = "";
 		retVal += "/ " + token.getVal(); 
 		return retVal;
+	}
+
+	public void decorateExpr(Scope enclosing) throws IllegalOperationException {
+		if(token instanceof IntIdentifier) {
+		
+		} else if(token instanceof FloatIdentifier) {
+
+		} else {
+			throw new IllegalOperationException("+", token.getTokenType());
+		}
 	}
 }
 
