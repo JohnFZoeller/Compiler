@@ -66,7 +66,7 @@ public class Subtree {
 		}
 	}
 
-	public void beginDecorateSecond(SymbolTable mainTable)throws AlreadyDefinedException, UndefinedTypeException{
+	public void beginDecorateSecond(SymbolTable mainTable)throws AlreadyDefinedException, UndefinedTypeException {
 
 		for(int i = 0; i < children.size(); i++){
 			 children.get(i).decorateSecond(null);
@@ -698,7 +698,7 @@ class Type extends Subtree{
 	}
 
 	//empty operation 
-	public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException{
+	public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException {
 		System.out.println("debugging: type decorateSecond() called");
 	}
 
@@ -1064,7 +1064,7 @@ class Params extends Subtree{
 		x();
 	}
 
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException{
+	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		Subtree currentNode = null;
 
 		//decorateFirst and pass in the enclosing scope for the Param
@@ -1342,7 +1342,8 @@ class Expression extends Subtree {
 
 	public void setType(Scope enclosing){;}  //temporary workaround
 
-	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException{
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException {
 		//expressions type can be:
 		//int32, float64
 		//byte = char;
@@ -1356,6 +1357,14 @@ class Expression extends Subtree {
 
 		//not temporary
 		symbol = new ExpressionSymbol(type);
+		if(children != null){
+			for(int index = 0; index < children.size(); index++) {
+				if(children.get(index) instanceof ExprRest) {
+					ExprRest tt = (ExprRest) children.get(index);
+					tt.decorateExpr(enclosing);
+				}
+			}
+		}
 	}
 
 
@@ -1628,6 +1637,7 @@ class ExprRest extends Subtree {
 	public Token operator = null;		//holds operator
 	public Token unaryOp = null;
 	public Token operand = null;		//holds operand
+	Subtree oper;
 	public String uOperator = "";
 	public String opType = "";			//descriptor for operation type
 	public String operandType = "";		//descriptor for operand
@@ -1655,10 +1665,10 @@ class ExprRest extends Subtree {
 	 *	is valid for the given symboltype provided by the first step.
 	 */
 
-	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
 		//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
 		//otherwise we need to resolve the type in the enclosing scope or throw an error
-
+		Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
 
 	}
 
@@ -1819,44 +1829,60 @@ class ExprRest extends Subtree {
 	private void matchOperator() {
 		switch(token.getTokenType()) {
 			case "PLUS":
-				operator = token;
-				opType = "+";
+				// operator = token;
+				// opType = "+";
 				match("PLUS");
+				addChild(new Addition(token));
+				match(token.getTokenType());
 				break;
 			case "MINUS":
-				operator = token;
-				opType = "-";
+				//operator = token;
+				//opType = "-";
 				match("MINUS");
+				addChild(new Subtraction(token));
+				match(token.getTokenType());
 				break;
 			case "ASTERISK":
-				operator = token;
-				opType = "*";
+				//operator = token;
+				//opType = "*";
 				match("ASTERISK");
+				addChild(new Multiplication(token));
+				match(token.getTokenType());
 				break;
 			case "BACKSLASH":
-				operator = token;
-				opType = "/";
+				//operator = token;
+				//opType = "/";
 				match("BACKSLASH");
+				addChild(new Division(token));
+				match(token.getTokenType());
 				break;
 			case "TILDE":
-				operator = token;
-				opType = "~";
+				//operator = token;
+				//opType = "~";
 				match("TILDE");
+				addChild(new Tilde(token));
+				match(token.getTokenType());
 				break;
 			case "ASSIGNMENT_OPERATOR":
-				operator = token;
-				opType = "=";
+				//operator = token;
+				//opType = "=";
 				match("ASSIGNMENT_OPERATOR");
+				addChild(new Assignment(token));
+				match(token.getTokenType());
 				break;
 			case "RELATIONAL_GREATER_THAN":
-				operator = token;
-				opType = ">";
+				//operator = token;
+				//opType = ">";
 				match("RELATIONAL_GREATER_THAN");
+				addChild(new GreaterThan(token));
+				match(token.getTokenType());
 				break;
 			case "RELATIONAL_GREATER_EQUALTO":
-				operator = token;
-				opType = ">=";
+				//operator = token;
+				//opType = ">=";
 				match("RELATIONAL_GREATER_EQUALTO");
+				addChild(new GreaterThanEqual(token));
+				match(token.getTokenType());
 				break;
 			case "RELATIONAL_LESS_THAN":
 				operator = token;
@@ -1944,6 +1970,37 @@ class ExprRest extends Subtree {
 		return isUnary;
 	}
 
+	
+	private String getOpType() {
+		String retVal = "";
+		switch(operand.getTokenType()) {
+			case "IntIdentifier":
+				retVal = "int32";
+				break;
+			case "FLOAT_IDENTIFIER":
+				retVal = "float64";
+				break;
+			case "BYTE_IDENTIFIER":
+				retVal = "byte";
+				break;
+			case "StringIdentifier":
+				retVal = operand.getName();
+				break;
+			case "KEYWORD_INT32":
+				retVal = operand.getTokenType();
+				break;
+			case "KEYWORD_FLOAT":
+				retVal = operand.getTokenType();
+				break;
+			case "KEYWORD_BYTE":
+				retVal = operand.getTokenType();
+				break;
+			default:
+				break;
+		}
+		return retVal;	
+	}
+
 	/*
 	 *	Matches the operand in the expression statement. matchOperator() must be called
 	 *	before matchOperand is called. Function sets the operand to the current token
@@ -2029,4 +2086,302 @@ class ExprRest extends Subtree {
 		return retVal;
 	}
 		
+}
+
+class Addition extends Subtree {
+	Addition(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "+ " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class Subtraction extends Subtree {
+	Token unaryOperator = null;
+
+	Subtraction(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "- " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class Multiplication extends Subtree {
+	Token unaryOperator = null;
+
+	Multiplication(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "* " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class Division extends Subtree {
+	Token unaryOperator = null;
+
+	Division(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "/ " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class Tilde extends Subtree {
+	Token unaryOperator = null;
+
+	Tilde(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "~ " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class Assignment extends Subtree {
+	Token unaryOperator = null;
+
+	Assignment(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "= " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class GreaterThan extends Subtree {
+	Token unaryOperator = null;
+
+	GreaterThan(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "> " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class GreaterThanEqual extends Subtree {
+	Token unaryOperator = null;
+
+	GreaterThanEqual(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += ">= " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class LessThan extends Subtree {
+	Token unaryOperator = null;
+
+	LessThan(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "< " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class LessThanEqual extends Subtree {
+	Token unaryOperator = null;
+
+	LessThanEqual(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "<= " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class BitwiseAnd extends Subtree {
+	Token unaryOperator = null;
+
+	BitwiseAnd(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "& " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class LogicalAnd extends Subtree {
+	Token unaryOperator = null;
+
+	LogicalAnd(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "&& " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class BitwiseOr extends Subtree {
+	Token unaryOperator = null;
+
+	BitwiseOr(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "| " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class LogicalOr extends Subtree {
+	Token unaryOperator = null;
+
+	LogicalOr(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "|| " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class Not extends Subtree {
+	Token unaryOperator = null;
+
+	Not(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "! " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class XoR extends Subtree {
+	Token unaryOperator = null;
+
+	XoR(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "^ " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class Inequality extends Subtree {
+	Token unaryOperator = null;
+
+	Inequality(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "!= " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class LeftShift extends Subtree {
+	Token unaryOperator = null;
+
+	LeftShift(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "<< " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class RightShift extends Subtree {
+	Token unaryOperator = null;
+
+	RightShift(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += ">> " + token.getVal(); 
+		return retVal;
+	}
+}
+
+class Equality extends Subtree {
+	Token unaryOperator = null;
+
+	Equality(Token t){
+		token = t;
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		retVal += "== " + token.getVal(); 
+		return retVal;
+	}
 }

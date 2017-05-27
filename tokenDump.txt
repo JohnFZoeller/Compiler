@@ -42,9 +42,15 @@ int32 null
 CLOSE_PARENTHESIS null
 byte null
 OPEN_BRACE null
-var null
-StringIdentifier mom
-byte null
+StringIdentifier x
+ASSIGNMENT_OPERATOR null
+IntIdentifier null
+MINUS null
+IntIdentifier null
+MINUS null
+IntIdentifier null
+ASTERISK null
+IntIdentifier null
 SEMICOLON null
 CLOSE_BRACE null
 Exception in thread "main" UndefinedTypeException:  Not Defined in this Scope!
