@@ -1633,31 +1633,14 @@ class Expression extends Subtree {
 
 }
 
-class ExprRest extends Subtree {
-	//public Token operator = null;		//holds operator
-	//public Token unaryOp = null;
-	//public Token operand = null;		//holds operand
-	//Subtree oper;
-	//public String uOperator = "";
-	//public String opType = "";			//descriptor for operation type
-	//public String operandType = "";		//descriptor for operand
-	//int precedence = 0;		
+class ExprRest extends Subtree {	
 
 	ExprRest() {}
-
-	// ExprRest(int p) {
-	// 	precedence = p;
-	// }
 
 	ExprRest(Token t, Iterator<Token> i){
 		super(t, i);
 		addAllChildren();
 	}
-	// ExprRest(Token t, Iterator<Token> i, int p){
-	// 	super(t, i);
-	// 	//precedence = p;
-	// 	addAllChildren();
-	// }
 
 	/*	Checks first to see if the operand is a valid built-in type. The only types which are included
 	 *	in operations are int32, byte, and float64. We know since we are in the ExprRest node that an
@@ -1713,92 +1696,8 @@ class ExprRest extends Subtree {
 		return isEndChar;
 	}
 
-	/*
-	 *	Method creates a subexpression if an open paranthesis is the current token.
-	 *	Otherwise the next operator and operand are read from the expression
-	 *	statement.
-	 *
-	 */
-	private int precedence(Token tok) {
-		int precedence = 0;
-		switch(tok.getTokenType()) {
-			case "PLUS":
-				precedence = 10;
-				break;
-			case "MINUS":
-				precedence = 10;
-				break;
-			case "ASTERISK":
-				precedence = 11;
-				break;
-			case "BACKSLASH":
-				precedence = 11;
-				break;
-			case "TILDE":
-				precedence = 12;
-				break;
-			case "ASSIGNMENT_OPERATOR":
-				precedence = 1;
-				break;
-			case "RELATIONAL_GREATER_THAN":
-				precedence = 8;
-				break;
-			case "RELATIONAL_GREATER_EQUALTO":
-				precedence = 8;
-				break;
-			case "RELATIONAL_LESS_THAN":
-				precedence = 8;
-				break;
-			case "RELATIONAL_LESS_EQUALTO":
-				precedence = 8;
-				break;
-			case "BITWISE_AND":
-				precedence = 6;
-				break;
-			case "LOGICAL_AND":
-				precedence = 3;
-				break;
-			case "BITWISE_OR":
-				precedence = 4;
-				break;
-			case "LOGICAL_OR":
-				precedence = 2;
-				break;
-			case "EXCLAMATION_POINT":
-				precedence = 12;
-				break;
-			case "BITWISE_XOR":
-				precedence = 5;
-				break;
-			case "LOGICAL_NOT":
-				precedence = 7;
-				break;
-			case "OUTPUT":
-				precedence = 9;
-				break;
-			case "INPUT":
-				precedence = 9;
-				break;
-			case "EQUALITY":
-				precedence = 7;
-				break;
-			case "OPEN_PARENTHESIS":
-				precedence = 13;
-				break;
-			case "CLOSE_PARENTHESIS":
-				precedence = 0;
-				break;
-			default:
-				break;
-		}
-		return precedence;
-	}
 	private void populate() {
 		matchOperator();
-		if(isUnary(token)) {
-			matchOperator();
-		}
-		//matchOperand();
 	}
 
 	private boolean keepReading(Token current) {
@@ -1932,117 +1831,6 @@ class ExprRest extends Subtree {
 				break;
 		}
 	}
-
-	private boolean isUnary(Token current) {
-		boolean isUnary = false;
-		// switch(current.getTokenType()) {
-		// 	case "TILDE":
-		// 		uOperator = "~";
-		// 		isUnary = true;
-		// 		break;
-		// 	case "EXCLAMATION_POINT":
-		// 		uOperator = "!";
-		// 		isUnary = true;
-		// 		break;
-		// 	case "MINUS":
-		// 		uOperator = "-";
-		// 		isUnary = true;
-		// 		break;
-		// 	default:
-		// 		break;
-		// }
-		return isUnary;
-	}
-
-	
-	// private String getOpType() {
-	// 	String retVal = "";
-	// 	switch(operand.getTokenType()) {
-	// 		case "IntIdentifier":
-	// 			retVal = "int32";
-	// 			break;
-	// 		case "FLOAT_IDENTIFIER":
-	// 			retVal = "float64";
-	// 			break;
-	// 		case "BYTE_IDENTIFIER":
-	// 			retVal = "byte";
-	// 			break;
-	// 		case "StringIdentifier":
-	// 			retVal = operand.getName();
-	// 			break;
-	// 		case "KEYWORD_INT32":
-	// 			retVal = operand.getTokenType();
-	// 			break;
-	// 		case "KEYWORD_FLOAT":
-	// 			retVal = operand.getTokenType();
-	// 			break;
-	// 		case "KEYWORD_BYTE":
-	// 			retVal = operand.getTokenType();
-	// 			break;
-	// 		default:
-	// 			break;
-	// 	}
-	// 	return retVal;	
-	// }
-
-	/*
-	 *	Matches the operand in the expression statement. matchOperator() must be called
-	 *	before matchOperand is called. Function sets the operand to the current token
-	 *	and operandType to the name of the token for later printing.
-	 *
-	 */
-
-	// private void matchOperand() {
-	// 	switch(token.getTokenType()) {
-	// 		case "IntIdentifier":
-	// 			operand = token;
-	// 			operandType = Integer.toString(((IntIdentifier)token).getVal());
-	// 			match("IntIdentifier");
-	// 			break;
-	// 		case "FLOAT_IDENTIFIER":
-	// 			operand = token;
-	// 			operandType = Float.toString(((FloatIdentifier)token).getVal());
-	// 			match("FLOAT_IDENTIFIER");
-	// 			break;
-	// 		case "BYTE_IDENTIFIER":
-	// 			operand = token;
-	// 			operandType = Integer.toString(((IntIdentifier)token).getVal());
-	// 			match("BYTE_IDENTIFIER");
-	// 			break;
-	// 		case "StringIdentifier":
-	// 			operand = token;
-	// 			//operandType = "StringIdentifier";
-	// 			operandType = token.getName();
-	// 			match("StringIdentifier");
-	// 			break;
-	// 		case "KEYWORD_INT32":
-	// 			operand = token;
-	// 			operandType = "Keyword int32";
-	// 			//operandType = "INT32";
-	// 			match("KEYWORD_INT32");
-	// 			break;
-	// 		case "KEYWORD_FLOAT":
-	// 			operand = token;
-	// 			operandType = "Keyword float";
-	// 			//operandType = "FLOAT";
-	// 			match("KEYWORD_FLOAT");
-	// 			break;
-	// 		case "KEYWORD_BYTE":
-	// 			operand = token;
-	// 			operandType = "Keyword byte";
-	// 			//operandType = "BYTE";
-	// 			match("KEYWORD_BYTE");
-	// 			break;
-	// 		default:
-	// 			break;
-	// 	}
-	// }
-
-	/*
-	 *	Function overriden from parent class. Prints the information
-	 *	for the current node as well as any of then node's children.
-	 *
-	 */
 
 	@Override
 	public void print(){
