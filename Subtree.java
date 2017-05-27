@@ -1344,6 +1344,7 @@ class Expression extends Subtree {
 
 	@Override
 	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException {
+		System.out.println("decorateFirst entered");
 		//expressions type can be:
 		//int32, float64
 		//byte = char;
@@ -1353,7 +1354,7 @@ class Expression extends Subtree {
 
 
 		//temporary
-		type = (BuiltInTypeSymbol)enclosing.resolve("int32");
+		//type = (BuiltInTypeSymbol)enclosing.resolve("int32");
 
 		//not temporary
 		symbol = new ExpressionSymbol(type);
@@ -1523,10 +1524,8 @@ class Expression extends Subtree {
 		toPrint = "";
 		if(children != null) {
 			for(int i = 0; i < children.size(); i++){
-				//children.get(i).printUp("+---+---+---");
 				toPrint += "" + children.get(i).toPrint() + "";
 			}
-			//System.out.println(toPrint);
 		}
 	}
 
@@ -1537,10 +1536,10 @@ class Expression extends Subtree {
 				tokenDescrip = "Integer";
 				match("IntIdentifier");
 				break;
-			case "FLOAT_IDENTIFIER":
+			case "FloatIdentifier":
 				//tokenType = Float.toString(token.getVal());
 				tokenDescrip = "Float";
-				match("FLOAT_IDENTIFIER");
+				match("FloatIdentifier");
 				break;
 			case "BYTE_IDENTIFIER":
 				//tokenType = Integer.toString(token.getVal());
@@ -1595,6 +1594,7 @@ class Expression extends Subtree {
 				break;
 		}
 	}
+
 	private boolean isUnary(Token current) {
 		boolean isUnary = false;
 		switch(current.getTokenType()) {
