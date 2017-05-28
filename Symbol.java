@@ -5,6 +5,7 @@ public class Symbol {
 	public String name;
 	public SymbolType type;			//for built in types
 	public boolean isVar = false;
+	public boolean isTypeSymbol = false;
 
 	Symbol(){
 		name = "";
@@ -25,11 +26,13 @@ public class Symbol {
 
 	public boolean getVar(){ return isVar; }
 
+	public void setTypeSymbol(){ isType = true; }
+
+	public boolean getTypeSymbol() { return isTypeSymbol; }
+
 	public String getName(){ return name; }
 
-	public SymbolType getType() {
-		return type; 
-	}
+	public SymbolType getType() { return type; }
 
 	public String toString(){
 		if(type != null) 
@@ -79,10 +82,12 @@ class TypeSymbol extends Symbol {
 	//add optional dimension member
 	TypeSymbol(String n, SymbolType t) {
 		super(n, t);
+		setTypeSymbol();
 	}
 
 	TypeSymbol(String n, SymbolType t, RecordSymbol r){
 		super(n, t);
 		record = r;
+		setTypeSymbol();
 	}
 }

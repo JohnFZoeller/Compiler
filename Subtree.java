@@ -126,6 +126,8 @@ public class Subtree {
 		return col;
 	}
 
+
+	//this eventually needs to be changed to an actual condition
 	public boolean isExpresh(){ return true; }
 
 	public boolean hasWilds(){
@@ -644,6 +646,7 @@ class Exit extends Subtree{
 // !------------------- DECORATE FIRST SHOULD BE DONE FOR TYPE ---------------------!
 // !--------------------- DOES NOT REQUIRE DECORATE SECOND -------------------------!
 
+//need to mark types as such so that a var can be typed as a type
 class Type extends Subtree{
 	Type(Token t, Iterator<Token> i){
 		super(t, i);

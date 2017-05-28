@@ -35,6 +35,8 @@ public class SyntaxParser {
 		root.beginDecorateSecond(mainTable);
 	}
 
+	//the string identifier case (along with a new byte identifier case) 
+	//needs to be commented back in	
 	public void match(){
 		switch(currentTok.getTokenType()) {
 			case "for":		root.addChild(new For(currentTok, i));
