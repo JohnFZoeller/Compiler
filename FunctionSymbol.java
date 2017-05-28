@@ -10,7 +10,7 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 		super(n, t, e);
 	}
 
-	public void addParams(List<Subtree> params)throws AlreadyDefinedException, UndefinedTypeException{
+	public void addParams(List<Subtree> params)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
 		boolean defaultValuesLocked = false;
 
 		for(int i = 0; i < params.size(); i++){
@@ -36,7 +36,7 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 
 	}
 
-	public Symbol paramType(Subtree nodeType, String sName)throws AlreadyDefinedException, UndefinedTypeException{
+	public Symbol paramType(Subtree nodeType, String sName)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
 		SymbolType t;
 		Symbol temp;
 
