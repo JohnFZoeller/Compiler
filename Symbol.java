@@ -26,7 +26,7 @@ public class Symbol {
 
 	public boolean getVar(){ return isVar; }
 
-	public void setTypeSymbol(){ isType = true; }
+	public void setTypeSymbol(){ isTypeSymbol = true; }
 
 	public boolean getTypeSymbol() { return isTypeSymbol; }
 

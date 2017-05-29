@@ -406,6 +406,7 @@ class Function extends Subtree {
 		else block = (Block)children.get(1);
 
 		block.decorateFirst(localScope);
+		block.decorateSecond(localScope);
 	}
 
 	@Override
@@ -780,83 +781,21 @@ class Block extends Subtree {
 	}
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-		//String funcName = children.get(0).token.getName();
-		//Symbol previouslyDefined = enclosing.resolve(funcName);
-		//Subtree currentNode;
-		//String symType;
-		//currentScope = enclosing;
+	public void decorateFirst(Scope functionLocal) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+		currentScope = functionLocal;
 
-
-		//iterates over the children of block and adds them to the local scope if
-		//they are declarations. Or checks if the type is valid in the wider scope
-		//if a type is being used that is not locally defined.
-		//
-		//	STILL NEEDS TO BE COMPLETED
-		//	
-		Subtree currentNode;
 		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
-
-			if(currentNode instanceof For) {				//adds new scope
-
-			} else if(currentNode instanceof While) {		//adds new scope
-
-			} else if(currentNode instanceof If) {			//adds new scope
-
-			} else if(currentNode instanceof Function) {	//adds new scope
-
-			} else if(currentNode instanceof Print) {
-
-			} else if(currentNode instanceof Type){
-
-			} else if(currentNode instanceof Var) {
-
-			} else if(currentNode instanceof Exit) {
-
-			} else if(currentNode instanceof Retur) {
-
-			} else if(currentNode instanceof Expression) {
-
-			}
+			children.get(index).decorateFirst(functionLocal);
 		}
 	}
 
 	@Override
-	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
-		//iterates over the children of block and adds them to the local scope if
-		//they are declarations. Or checks if the type is valid in the wider scope
-		//if a type is being used that is not locally defined.
-		//
-		//	STILL NEEDS TO BE COMPLETED
-		//	
+	public void decorateSecond(Scope functionLocal) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+		currentScope = functionLocal;
 
-		Subtree currentNode;
 		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
-
-			if(currentNode instanceof For) {				//adds new scope
-
-			} else if(currentNode instanceof While) {		//adds new scope
-
-			} else if(currentNode instanceof If) {			//adds new scope
-
-			} else if(currentNode instanceof Function) {	//adds new scope
-
-			} else if(currentNode instanceof Print) {
-
-			} else if(currentNode instanceof Type){
-
-			} else if(currentNode instanceof Var) {
-
-			} else if(currentNode instanceof Exit) {
-
-			} else if(currentNode instanceof Retur) {
-
-			} else if(currentNode instanceof Expression) {
-
-			}
-		}	
+			children.get(index).decorateSecond(functionLocal);
+		}
 	}
 
 	@Override
@@ -1655,11 +1594,11 @@ class ExprRest extends Subtree {
 		//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
 		//otherwise we need to resolve the type in the enclosing scope or throw an error
 		//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
-		MathOp currentNode = null;
+		//MathOp currentNode = null;
 		if(children != null) {
 			for(int index = 0; index < children.size(); index++) {
-				currentNode = (MathOp)children.get(index);
-				currentNode.decorateExpr(enclosing);
+				//currentNode = (MathOp)children.get(index);
+				//currentNode.decorateExpr(enclosing);
 			}
 		}
 
