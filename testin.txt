@@ -1,6 +1,6 @@
+type john byte;
+
 function fib1(n int32) int32 {
   type curr int32;
-  var prev curr;
+  var prev john;
 }
-
-var eric curr;

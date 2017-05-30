@@ -26,13 +26,14 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 				}
 			}
 
-			Symbol temp = paramType(nodeType, params.get(i).children.get(0).token.getName());
+			ParamSymbol temp = paramType(nodeType, 
+				params.get(i).children.get(0).token.getName(), ((Param)params.get(i)).locks);
 			define(temp);
 		}
 
 	}
 
-	public Symbol paramType(Subtree nodeType, String sName)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public ParamSymbol paramType(Subtree nodeType, String sName, boolean [] pLocks)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
 		SymbolType t;
 		Symbol temp;
 
@@ -41,7 +42,7 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 
 			if(nodeType instanceof BasicType){
 				t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				return new Symbol(sName, t);
+				return new ParamSymbol(sName, t, pLocks);
 			}
 			else if(nodeType instanceof Name){
 				temp = resolve(nodeType.token.getName());
@@ -53,7 +54,7 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 						(RecordSymbol)temp.getType() : 
 						(BuiltInTypeSymbol)temp.getType();
 
-					return new Symbol(sName, t);
+					return new ParamSymbol(sName, t, pLocks);
 				}
 			}
 			else if(nodeType instanceof RecordDescriptor){
@@ -61,13 +62,13 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 					nodeType.children.get(0).children);
 
 				t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				return new VarSymbol(sName, t, record, null);
+				return new ParamSymbol(sName, t, record, pLocks);
 			}
 		}
 		else if(nodeType instanceof Expression) {
 			nodeType.decorateFirst(this);
 			t = nodeType.type;
-			return new VarSymbol(sName, t);
+			return new ParamSymbol(sName, t, pLocks);
 		}
 
 		System.out.println("parse params error");

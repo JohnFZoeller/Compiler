@@ -51,6 +51,22 @@ class ExpressionSymbol extends Symbol{
 	}
 }
 
+class ParamSymbol extends Symbol {
+	public boolean [] locks; //[0] = ref, [1] = const
+	RecordSymbol record;
+
+	ParamSymbol(String n, SymbolType t, boolean [] l){
+		super(n, t);
+		locks = l;
+	}
+
+	ParamSymbol(String n, SymbolType t, RecordSymbol r, boolean [] l){
+		super(n, t);
+		locks = l;
+		record = r;
+	}
+}
+
 class VarSymbol extends Symbol {
 	RecordSymbol record;
 	boolean [] locks; //[0] = static, [1] = const;

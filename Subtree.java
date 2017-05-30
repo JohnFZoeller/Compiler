@@ -165,8 +165,11 @@ public class Subtree {
 }
 
 /*------------------------------ Main Node Types ---------------------------------*/
+/*------------------------------Nodes with Blocks---------------------------------*/
 
 class For extends Subtree{
+	Block block;
+
 	For(Token t, Iterator<Token> i){
 		super(t, i);
 
@@ -183,6 +186,15 @@ class For extends Subtree{
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
+	}
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = new LocalScope(enclosing);
+		block = (Block)children.get(3);
+		block.decorateFirst(currentScope);
+		block.decorateSecond(currentScope);
+		currentScope = currentScope.getEnclosingScope();
 	}
 
 	@Override
@@ -213,6 +225,8 @@ class For extends Subtree{
 }
 
 class While extends Subtree{
+	Block block;
+
 	While(Token t, Iterator<Token> i){
 		super(t, i);
 
@@ -224,6 +238,15 @@ class While extends Subtree{
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
+	}
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = new LocalScope(enclosing);
+		block = (Block)children.get(1);
+		block.decorateFirst(currentScope);
+		block.decorateSecond(currentScope);
+		currentScope = currentScope.getEnclosingScope();
 	}
 
 	@Override
@@ -246,6 +269,8 @@ class While extends Subtree{
 }
 
 class If extends Subtree{
+	Block block;
+
 	If(Token t, Iterator<Token> i){
 		super(t, i);
 
@@ -260,6 +285,15 @@ class If extends Subtree{
 
 		if(isElse())
 			addChild(new Else(token, it));
+	}
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = new LocalScope(enclosing);
+		block = (Block)children.get(1);
+		block.decorateFirst(currentScope);
+		block.decorateSecond(currentScope);
+		currentScope = currentScope.getEnclosingScope();
 	}
 
 	@Override
@@ -289,10 +323,21 @@ class If extends Subtree{
 }
 
 class Else extends Subtree{
+	Block block;
+
 	Else(Token t, Iterator<Token> i){
 		super(t, i);
 		match("else");
 		addChild(new Block(token, it));
+	}
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = new LocalScope(enclosing);
+		block = (Block)children.get(0);
+		block.decorateFirst(currentScope);
+		block.decorateSecond(currentScope);
+		currentScope = currentScope.getEnclosingScope();
 	}
 
 	@Override
@@ -779,20 +824,20 @@ class Block extends Subtree {
 	}
 
 	@Override
-	public void decorateFirst(Scope functionLocal) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-		currentScope = functionLocal;
+	public void decorateFirst(Scope local) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+		currentScope = local;
 
 		for(int index = 0; index < children.size(); index++) {
-			children.get(index).decorateFirst(functionLocal);
+			children.get(index).decorateFirst(local);
 		}
 	}
 
 	@Override
-	public void decorateSecond(Scope functionLocal) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-		currentScope = functionLocal;
+	public void decorateSecond(Scope local) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+		currentScope = local;
 
 		for(int index = 0; index < children.size(); index++) {
-			children.get(index).decorateSecond(functionLocal);
+			children.get(index).decorateSecond(local);
 		}
 	}
 
@@ -1074,23 +1119,6 @@ class Param extends Subtree{
 		}
 	}
 
-
-	/*
-	 *	All variables must be pass by reference. All other parameters are pass by
-	 *	value. If a formal parameter has a default value, all others must as well.
-	 *	Decorate first should have ref, 
-	 *
-	 */
-
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-		Subtree currentNode = null;
-		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
-			if(currentNode instanceof NaTypeDescriptor) {
-				currentNode.decorateFirst(enclosing);
-			}
-		}
-	}
 
 	@Override
 	public void print(){
