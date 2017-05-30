@@ -3,4 +3,4 @@ function fib1(n int32) int32 {
   var prev curr;
 }
 
-var eric int32;
+var eric curr;

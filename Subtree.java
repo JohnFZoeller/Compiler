@@ -37,9 +37,9 @@ public class Subtree {
 		it = i;
 	}
 
-
 	public SymbolType getSymType(){
 		return type;
+		//collapse
 	}
 
 	public void addChild(Subtree subtree) {
@@ -67,6 +67,7 @@ public class Subtree {
 	}
 
 	public void beginDecorateSecond(SymbolTable mainTable)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = mainTable.globals;
 
 		for(int i = 0; i < children.size(); i++){
 			 children.get(i).decorateSecond(null);
@@ -348,14 +349,9 @@ class Function extends Subtree {
 	}
 
 	/*
-	 *	Semantic Rules for Parameters:
-	 *	1. Formal parameters declared var shall be passed by reference
+	 *	Remaining Semantic Rules for Parameters:
+	 *	1. Formal parameters declared ref shall be passed by reference
 	 *	2. All parameters not of type var must be pass-by-value
-	 *	
-	 *	We want each parameter to return whether or not it is a var (if so it must
-	 *	be pass by reference), and if the value is initialized. This will be denoted
-	 *	by whether or not the pattern id value is followed.
-	 *
 	 */
 
 	@Override
@@ -407,6 +403,8 @@ class Function extends Subtree {
 
 		block.decorateFirst(localScope);
 		block.decorateSecond(localScope);
+
+		currentScope = ((FunctionSymbol)symbol).getEnclosingScope();
 	}
 
 	@Override
@@ -499,13 +497,13 @@ class Var extends Subtree{
 				}
 				else if(nodeType instanceof Name){//fix me to include records
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
-					symType = previouslyDefined.getType().getTypeName();
 
 					if(previouslyDefined == null)
-						throw new UndefinedTypeException(children.get(1).token.getName());
+						throw new UndefinedTypeException(((Name)nodeType).token.getName());
 					else{
+						symType = previouslyDefined.getType().getTypeName();
 						type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
-						(BuiltInTypeSymbol)previouslyDefined.getType();
+							(BuiltInTypeSymbol)previouslyDefined.getType();
 
 						symbol = new VarSymbol(symbolName, type, locks);
 					}
@@ -1047,22 +1045,15 @@ class Param extends Subtree{
 
 	Param(Token t, Iterator<Token> i){
 		super(t, i);
+		
 		if(token.getTokenType().equals("ref")) {
 			match("ref");
 			locks[0] = true;
-			if(token.getTokenType().equals("const")) {
-				locks[1] = true;
-				match("const");
-				//this.symbol = new RefConstSymbol(token.getVal());
-			} else {
-				//this.symbol = RefSymbol(token.getVal());
-			}
 		}
 
 		if(token.getTokenType().equals("const")) {
 			match("const");
 			locks[1] = true;
-			//this.symbol = ConstSymbol(token.getVal());
 		}
 
 		addChild(new Name(token));
@@ -1082,6 +1073,7 @@ class Param extends Subtree{
 			}
 		}
 	}
+
 
 	/*
 	 *	All variables must be pass by reference. All other parameters are pass by

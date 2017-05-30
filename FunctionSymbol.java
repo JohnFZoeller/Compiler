@@ -18,10 +18,6 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 
 			if(nodeType instanceof Expression){
 				defaultValuesLocked = true;
-				
-				// if(!params.get(i).locks[0]){ //params that are vars (expressions declared as var) must be ref locked
-				// 	//still working on this part
-				// }
 			}
 			else if(nodeType instanceof NaTypeDescriptor){
 				if(defaultValuesLocked){
