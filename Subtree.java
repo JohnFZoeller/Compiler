@@ -162,6 +162,19 @@ public class Subtree {
 
 	public void setType(Scope e){;}  //temporary workaround
 
+	public Symbol makeArray(String n, SymbolType t, boolean [] l, int s){
+		ArraySymbol arr = new ArraySymbol(n, s, t);
+		SymbolType type = (ArraySymbol)currentScope.resolve("array");
+
+		if(l != null){
+			return new VarSymbol(n, type, l, arr);
+		}
+		else{
+			System.out.println("wtf");
+			return null;
+		}
+	}
+
 }
 
 /*------------------------------ Main Node Types ---------------------------------*/
@@ -418,10 +431,13 @@ class Function extends Subtree {
 				symType = ((TypeDescriptor)currentNode).returnType();			//type
 				previouslyDefined = enclosing.resolve(symType);					//ref type
 
-				if(previouslyDefined instanceof TypeSymbol)						//user type?
+				if(previouslyDefined instanceof TypeSymbol)	{					//user type?
 					symType = previouslyDefined.type.getTypeName();				//get type Name
+					if(!previouslyDefined.getTypeSymbol())						//not TypeNode?
+						throw new UndefinedTypeException(symType);
+				}
 
-				if(previouslyDefined == null || !previouslyDefined.getTypeSymbol()) {	
+				if(previouslyDefined == null) {	
 					throw new UndefinedTypeException(symType);
 				} else {
 					type = (symType == "record") ? (RecordSymbol)enclosing.resolve(symType) :
@@ -524,6 +540,7 @@ class Var extends Subtree{
 	 *  that second one should check in the other decorateFirsts as well
 	 */
 
+
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
 		String symbolName = children.get(0).token.getName();
 		Symbol previouslyDefined = enclosing.resolve(symbolName);
@@ -535,16 +552,17 @@ class Var extends Subtree{
 		} else {
 			if(children.get(1) instanceof TypeDescriptor){
 				Subtree nodeType = children.get(1).children.get(0).children.get(0);
+				boolean isArray = ((TypeDescriptor)children.get(1)).array;
 
 				if(nodeType instanceof BasicType){
-
 					type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new VarSymbol(symbolName, type, locks);
+					
+					symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4) :
+						new VarSymbol(symbolName, type, locks);
 				}
 				else if(nodeType instanceof Name){//fix me to include records
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
-					//if null or not a type symbol
 					if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
 						throw new UndefinedTypeException(((Name)nodeType).token.getName());
 					else{
@@ -552,7 +570,8 @@ class Var extends Subtree{
 						type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
 							(BuiltInTypeSymbol)previouslyDefined.getType();
 
-						symbol = new VarSymbol(symbolName, type, locks);
+						symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4) : 
+							new VarSymbol(symbolName, type, locks);
 					}
 				}
 				else if(nodeType instanceof RecordDescriptor){
@@ -561,6 +580,7 @@ class Var extends Subtree{
 
 					type = (RecordSymbol)enclosing.resolve("record");
 					symbol = new VarSymbol(symbolName, type, record, locks);
+					//symbol = (VarSymbol)makeRecord(symbolName, type, locks, enclosing, <list>);
 				}
 			}
 			else if(children.get(1) instanceof Expression){
@@ -863,13 +883,17 @@ class Block extends Subtree {
 // !------------------- TYPE DESCRIPTOR SHOULD BE FINISHED ------------------------!
 
 class TypeDescriptor extends Subtree{
+	boolean array = false;
+
 	TypeDescriptor(Token t, Iterator<Token> i){
 		super(t, i);
 
 		addChild(new NaTypeDescriptor(token, it));
 
-		if(isDimensh())
+		if(isDimensh()){
 			addChild(new Dimension(token, it));	
+			array = true;
+		}
 	}
 
 	public String returnType() {
@@ -1025,6 +1049,7 @@ class FieldDeclaration extends Subtree{
 	}
 }
 
+//not working with expressions, temporarily using expression instead.  
 class Dimension extends Subtree{
 	Dimension(Token t, Iterator<Token> i){
 		super(t, i);
@@ -1253,6 +1278,13 @@ class Expressions extends Subtree {
 		}
 	}
 
+	//had to add the closebracket case to make arrays work.
+	//technically i think its incorrect tho... bc for something like this
+	//var array int32[4];
+	//array[2] = 4;
+	//var john = array[2] + 6;
+	//it would parse incorrectly
+	//then again... i dont know expressions so well, so maybe it does work 
 	private boolean keepReading(Token current) {
 		boolean keepReading = true;
 		switch(current.getTokenType()) {
@@ -1260,6 +1292,9 @@ class Expressions extends Subtree {
 				keepReading = false;
 				break;
 			case "SEMICOLON":
+				keepReading = false;
+				break;
+			case "CLOSE_BRACKET":
 				keepReading = false;
 				break;
 			default:
@@ -1299,6 +1334,7 @@ class Expression extends Subtree {
 		super(t, i);
 		addAllChildren();
 	}
+
 	Expression(Token t, Iterator<Token> i, int p){
 		super(t, i);
 		precedence = p;
@@ -1382,6 +1418,13 @@ class Expression extends Subtree {
 		return it;
 	}
 
+	//had to add the closebracket case to make arrays work.
+	//technically i think its incorrect tho... bc for something like this
+	//var array int32[4];
+	//array[2] = 4;
+	//var john = array[2] + 6;
+	//it would parse incorrectly
+	//then again... i dont know expressions so well, so maybe it does work 
 	private boolean keepReading(Token current) {
 		boolean isEndChar = true;
 		switch(current.getTokenType()) {
@@ -1392,6 +1435,9 @@ class Expression extends Subtree {
 				isEndChar = false;
 				break;
 			case "SEMICOLON":
+				isEndChar = false;
+				break;
+			case "CLOSE_BRACKET":
 				isEndChar = false;
 				break;
 			default:

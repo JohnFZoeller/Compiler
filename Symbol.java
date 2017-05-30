@@ -54,6 +54,7 @@ class ExpressionSymbol extends Symbol{
 class ParamSymbol extends Symbol {
 	public boolean [] locks; //[0] = ref, [1] = const
 	RecordSymbol record;
+	ArraySymbol array;
 
 	ParamSymbol(String n, SymbolType t, boolean [] l){
 		super(n, t);
@@ -70,7 +71,7 @@ class ParamSymbol extends Symbol {
 class VarSymbol extends Symbol {
 	RecordSymbol record;
 	boolean [] locks; //[0] = static, [1] = const;
-	//add optional dimension member
+	ArraySymbol array;
 
 	VarSymbol(String n, SymbolType t){
 		super(n, t);
@@ -88,6 +89,13 @@ class VarSymbol extends Symbol {
 		super(n, t);
 		locks = l;
 		record = r;
+		setVar();
+	}
+
+	VarSymbol(String n, SymbolType t, boolean [] l, ArraySymbol a){
+		super(n, t);
+		locks = l;
+		array = a;
 		setVar();
 	}
 }

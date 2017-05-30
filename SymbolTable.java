@@ -15,6 +15,7 @@ public class SymbolTable {
 		globals.define(new BuiltInTypeSymbol("int32"));
 		globals.define(new BuiltInTypeSymbol("void"));
 		globals.define(new RecordSymbol("record", globals));
+		globals.define(new ArraySymbol("array"));
 	}
 
 	public String toString() {

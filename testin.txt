@@ -1,6 +1,10 @@
-var john byte;
+type john byte;
+
+var poop int32[2];
 
 function fib1(n int32) int32 {
   type curr int32;
   var prev john;
 }
+
+var lala john[2];

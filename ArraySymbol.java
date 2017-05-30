@@ -10,6 +10,10 @@ public class ArraySymbol extends Symbol implements SymbolType {
 		size = s;
 	}
 
+	ArraySymbol(String n){
+		super(n);
+	}
+
 	@Override
 	public String getName(){ return name; }	
 
