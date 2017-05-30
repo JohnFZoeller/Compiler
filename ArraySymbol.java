@@ -8,6 +8,7 @@ public class ArraySymbol extends Symbol implements SymbolType {
 	ArraySymbol(String n, int s, SymbolType t){
 		super(n, t);
 		size = s;
+		
 	}
 
 	ArraySymbol(String n){

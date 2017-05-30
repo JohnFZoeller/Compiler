@@ -102,6 +102,7 @@ class VarSymbol extends Symbol {
 
 class TypeSymbol extends Symbol {
 	RecordSymbol record;
+	ArraySymbol array;
 
 	//add optional dimension member
 	TypeSymbol(String n, SymbolType t) {
@@ -113,5 +114,11 @@ class TypeSymbol extends Symbol {
 		super(n, t);
 		record = r;
 		setTypeSymbol();
+	}
+
+	TypeSymbol(String n, SymbolType t, ArraySymbol a){
+		super(n, t);
+		setTypeSymbol();
+		array = a;
 	}
 }

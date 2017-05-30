@@ -27,6 +27,7 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 	public Symbol fieldDeclType(Subtree nodeType, String sName){
 		SymbolType t;
 		Symbol temp;
+		boolean isArray = false;
 
 		if(nodeType instanceof BasicType){
 			t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());

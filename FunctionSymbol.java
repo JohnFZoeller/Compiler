@@ -2,12 +2,19 @@ import java.util.*;
 import java.io.*;
 
 class FunctionSymbol extends ScopedSymbol implements Scope {
+	ArraySymbol array;
+
 	FunctionSymbol(String n, SymbolType t, Scope e){
 		super(n, t, e);
 	}
 
 	FunctionSymbol(String n, SymbolType t, Scope e, List<Subtree> p){
 		super(n, t, e);
+	}
+
+	FunctionSymbol(String n, SymbolType t, Scope e, ArraySymbol a){
+		super(n, t, e);
+		array = a;
 	}
 
 	public void addParams(List<Subtree> params)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
