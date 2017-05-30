@@ -1,4 +1,4 @@
-public class Token{
+public class Token {
 	protected int row, col;
 	protected String input;
 	protected String name;

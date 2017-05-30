@@ -1344,25 +1344,20 @@ class Expression extends Subtree {
 
 	@Override
 	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
-		System.out.println("decorateFirst entered");
-		//expressions type can be:
-		//int32, float64
-		//byte = char;
-
-		//later on bc we dont have arrays implemented
-		//byte[] = string;
-
-
-		//temporary
-		//type = (BuiltInTypeSymbol)enclosing.resolve("int32");
-
-		//not temporary
 		symbol = new ExpressionSymbol(type);
+		
+		Subtree currentNode = null;
 		if(children != null){
 			for(int index = 0; index < children.size(); index++) {
-				if(children.get(index) instanceof ExprRest) {
+				currentNode = children.get(index);
+
+				//System.out.println(currentNode.getClass());
+				if(currentNode instanceof ExprRest) {
+					System.out.println("decorateFirst() entered in Expression");
 					ExprRest tt = (ExprRest) children.get(index);
 					tt.decorateExpr(enclosing);
+				} else if(currentNode instanceof Expression) {
+					currentNode.decorateFirst(enclosing);
 				}
 			}
 		}
@@ -1386,12 +1381,10 @@ class Expression extends Subtree {
 			int currPrec = precedence(token);
 			if(currPrec > this.precedence) {
 				this.precedence = currPrec;
-				//System.out.println(precedence);
 				Expression subexpression = new Expression(token, it,currPrec);
 				addChild(subexpression);
 			} else {
 				ExprRest toAdd = new ExprRest(token, it);
-				//System.out.println("back in Expression");
 				addChild(toAdd);
 			}
 		}
@@ -1653,8 +1646,10 @@ class ExprRest extends Subtree {
 		//otherwise we need to resolve the type in the enclosing scope or throw an error
 		//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
 		MathOp currentNode = null;
+		System.out.println(children.size());
 		if(children != null) {
 			for(int index = 0; index < children.size(); index++) {
+				System.out.println("decorateExpr entered in ExprRest");
 				currentNode = (MathOp)children.get(index);
 				currentNode.decorateExpr(enclosing);
 			}
@@ -1840,13 +1835,7 @@ class ExprRest extends Subtree {
 	}
 
 	@Override
-	public void print(){
-		//if(operand == null) {
-			//return;
-		//}
-		//printUp("+---");
-		//System.out.print(print + "" + opType + " " + uOperator + operandType + "");
-	}
+	public void print() {}
 
 	@Override
 	public String toPrint() {
@@ -1867,7 +1856,13 @@ class ExprRest extends Subtree {
 		
 }
 
-class Addition extends Subtree {
+class MathOp extends Subtree {
+
+	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {}
+
+}
+
+class Addition extends MathOp {
 	Addition(Token t){
 		token = t;
 	}
@@ -1884,16 +1879,28 @@ class Addition extends Subtree {
 	 *	on int32 and float64 types.
 	 */
 
-	public void decorateExpr(Scope enclosing) throws IllegalOperationException {
-		if(token instanceof IntIdentifier) {
+	@Override
+	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
+		//throw new IllegalOperationException();
+		//throw new RuntimeException();
+		// System.out.println("decorateExpr entered in Addition");
+		// //System.out.println(token.getClass());
+		// if(token instanceof IntIdentifier) {
 		
-		} else if(token instanceof FloatIdentifier) {
+		// } else if(token instanceof FloatIdentifier) {
 
-		} else {
-			
+		// } else if(token instanceof StringIdentifier) {
+		// 	Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+		// 	//System.out.println("previouslyDefined is " + previouslyDefined);
+		// 	if(previouslyDefined == null) {
+		// 		throw new UndefinedTypeException(token.getName());
+		// 	}
+		// 	type = previouslyDefined.getType();
+		// } else {
+		// 	System.out.println(token.getClass());
+		// 	throw new IllegalOperationException("+", token.getTokenType());
+		// }
 
-			throw new IllegalOperationException("+", token.getTokenType());
-		}
 	}
 }
 
@@ -1907,7 +1914,7 @@ class Subtraction extends Subtree {
 	@Override
 	public String toPrint() {
 		String retVal = "";
-		retVal += "- " + token.getVal(); 
+		retVal += "-" + token.getVal(); 
 		return retVal;
 	}
 
@@ -1918,13 +1925,14 @@ class Subtraction extends Subtree {
 
 		} else if(token instanceof StringIdentifier) {
 			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-
 			if(previouslyDefined == null) {
 				throw new UndefinedTypeException(token.getName());
 			}
+			type = previouslyDefined.getType();
 		} else {
 			throw new IllegalOperationException("-", token.getTokenType());
 		}
+
 	}
 }
 
@@ -1938,18 +1946,25 @@ class Multiplication extends Subtree {
 	@Override
 	public String toPrint() {
 		String retVal = "";
-		retVal += "* " + token.getVal(); 
+		retVal += "*" + token.getVal(); 
 		return retVal;
 	}
 
-	public void decorateExpr(Scope enclosing) throws IllegalOperationException {
+	public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
 		if(token instanceof IntIdentifier) {
 		
 		} else if(token instanceof FloatIdentifier) {
 
+		} else if(token instanceof StringIdentifier) {
+			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+			if(previouslyDefined == null) {
+				throw new UndefinedTypeException(token.getName());
+			}
+			type = previouslyDefined.getType();
 		} else {
-			throw new IllegalOperationException("+", token.getTokenType());
+			throw new IllegalOperationException("*", token.getTokenType());
 		}
+
 	}
 }
 
@@ -1974,10 +1989,10 @@ class Division extends Subtree {
 
 		} else if(token instanceof StringIdentifier) {
 			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-
 			if(previouslyDefined == null) {
 				throw new UndefinedTypeException(token.getName());
 			}
+			type = previouslyDefined.getType();
 		} else {
 			throw new IllegalOperationException("/", token.getTokenType());
 		}
@@ -2014,11 +2029,35 @@ class Assignment extends Subtree {
 	}
 }
 
+/*	Class: GreaterThan	
+ *	Operation Type: boolean
+ *	
+ *	Semantic Rules:
+ *	1.	A compile-time error shall be issued if the operand to a boolean
+ *		operator is of floating-point type.
+ *		(aka only int32 types are accepted)
+ */
+
 class GreaterThan extends Subtree {
 	Token unaryOperator = null;
 
 	GreaterThan(Token t){
 		token = t;
+	}
+
+	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
+		if(token instanceof IntIdentifier) {
+		
+		} else if(token instanceof StringIdentifier) {
+			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+			if(previouslyDefined == null) {
+				throw new UndefinedTypeException(token.getName());
+			} else if(previouslyDefined != null)
+			type = previouslyDefined.getType();
+		} else {
+			throw new IllegalOperationException("+", token.getTokenType());
+		}
+
 	}
 
 	@Override

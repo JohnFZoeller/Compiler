@@ -30,7 +30,7 @@ public class SyntaxParser {
 		//2nd pass = initializers, statements, function bodies
 			//these would by symbols -> ie. use define()
 
-
+		//throw new Error("terminated");
 		root.beginDecorateFirst(mainTable);
 		root.beginDecorateSecond(mainTable);
 	}
