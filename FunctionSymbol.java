@@ -47,7 +47,7 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 			else if(nodeType instanceof Name){
 				temp = resolve(nodeType.token.getName());
 
-				if(temp == null)
+				if(temp == null || !temp.getTypeSymbol())
 					System.out.println("param type undefined");
 				else{
 					t = (temp.getType().getTypeName() == "record") ? 

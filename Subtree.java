@@ -421,9 +421,9 @@ class Function extends Subtree {
 				if(previouslyDefined instanceof TypeSymbol)						//user type?
 					symType = previouslyDefined.type.getTypeName();				//get type Name
 
-				if(previouslyDefined == null) {									//not defined
+				if(previouslyDefined == null || !previouslyDefined.getTypeSymbol()) {	
 					throw new UndefinedTypeException(symType);
-				}else{
+				} else {
 					type = (symType == "record") ? (RecordSymbol)enclosing.resolve(symType) :
 						(BuiltInTypeSymbol)enclosing.resolve(symType);
 				}
@@ -520,8 +520,8 @@ class Var extends Subtree{
 	}
 
 	/*
-	 *	or we want to store the identifier and the type descriptor of the
-	 *	expression, as the initializing will be done in the second pass
+	 *	Var todo:  arrays, checking these:  var john type1; to make sure type1 is not a var
+	 *  that second one should check in the other decorateFirsts as well
 	 */
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
@@ -537,13 +537,15 @@ class Var extends Subtree{
 				Subtree nodeType = children.get(1).children.get(0).children.get(0);
 
 				if(nodeType instanceof BasicType){
+
 					type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
 					symbol = new VarSymbol(symbolName, type, locks);
 				}
 				else if(nodeType instanceof Name){//fix me to include records
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
-					if(previouslyDefined == null)
+					//if null or not a type symbol
+					if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
 						throw new UndefinedTypeException(((Name)nodeType).token.getName());
 					else{
 						symType = previouslyDefined.getType().getTypeName();
@@ -570,16 +572,17 @@ class Var extends Subtree{
 		}		
 	}
 
+
 	//actually unnecessary- here's why: Any var that is declared with an expression 
 	//is still given a type (the type of the expression); and we don't actually store 
 	//the value of that expression in the symbol table- just its type. 
-	public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {;}
+	//public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {;}
 	//When he said the second pass is for initializations, what I think he was 
 	//referring to is this kind of case...
 
 	//var zoel = 5;		-> zoel.type = int32;  -> still technically a declaration
 	//var john int32;	-> john.type = int32;
-	//john = zoel;		-> verify john.type == zoel.type;
+	//john = zoel;		-> verify john.type == zoel.type; 
 
 	//the above case is therefore a decoration of an expression, because a line that
 	//starts with a stringIdentifer is not a declaration of any kind. This makes
@@ -724,7 +727,7 @@ class Type extends Subtree{
 				previouslyDefined = enclosing.resolve(nodeType.token.getName());
 				symType = previouslyDefined.getType().getTypeName();
 
-				if(previouslyDefined == null)
+				if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
 					throw new UndefinedTypeException(children.get(1).token.getName());
 				else{
 					type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
@@ -865,7 +868,7 @@ class TypeDescriptor extends Subtree{
 
 		addChild(new NaTypeDescriptor(token, it));
 
-		if(isDimensh())								//optional expression next?
+		if(isDimensh())
 			addChild(new Dimension(token, it));	
 	}
 

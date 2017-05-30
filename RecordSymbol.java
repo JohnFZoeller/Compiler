@@ -35,7 +35,7 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 		else if(nodeType instanceof Name){
 			temp = resolve(nodeType.token.getName());
 
-			if(temp == null)
+			if(temp == null || !temp.getTypeSymbol())
 				System.out.println("record member undefined");
 			else{
 				t = (temp.getType().getTypeName() == "record") ? 
