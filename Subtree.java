@@ -162,8 +162,8 @@ public class Subtree {
 
 	public void setType(Scope e){;}  //temporary workaround
 
-	public Symbol makeArray(String n, SymbolType t, boolean [] l, int s){
-		ArraySymbol arr = new ArraySymbol(n, s, t);
+	public Symbol makeArray(String n, SymbolType t, boolean [] l, int s, RecordSymbol r){
+		ArraySymbol arr = (r == null) ? new ArraySymbol(n, s, t) : new ArraySymbol(n, s, t, r);
 		SymbolType typ = (ArraySymbol)currentScope.resolve("array");
 
 		if(this instanceof Function) 
@@ -391,6 +391,7 @@ class Else extends Subtree{
 
 //function todo: function john(a byte[*], b record c byte end[*]) record z float64 end{}
 																//record z byte end[3]{}
+//general todo: feild decl arrays
 class Function extends Subtree {
 	public boolean [] flags = new boolean[2]; //[0] = params, [1] = type;
 	LocalScope localScope;
@@ -419,15 +420,6 @@ class Function extends Subtree {
 		addChild(new Block(token, it));				//final child, Block
 	}
 
-	/*
-	 *	Remaining Semantic Rules for Parameters:
-	 *	1. Formal parameters declared ref shall be passed by reference
-	 *	2. All parameters not of type var must be pass-by-value
-	 */
-
-	//a functions return type can be a record descriptor (or even an array of record descriptors)
-	//function john(a byte) record b int32 end[3] {}
-
 	@Override
 	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
 		String funcName = children.get(0).token.getName();
@@ -449,6 +441,8 @@ class Function extends Subtree {
 				symType = ((TypeDescriptor)currentNode).returnType();			//type
 				previouslyDefined = enclosing.resolve(symType);					//ref type
 
+				
+
 				if(previouslyDefined instanceof TypeSymbol)	{					//user type?
 					symType = previouslyDefined.type.getTypeName();				//get type Name
 					if(!previouslyDefined.getTypeSymbol())						//not TypeNode?
@@ -462,7 +456,7 @@ class Function extends Subtree {
 						(BuiltInTypeSymbol)enclosing.resolve(symType);
 				}
 			}
-			symbol = (isArray) ? (FunctionSymbol)makeArray(funcName, type, null, 4) : 
+			symbol = (isArray) ? (FunctionSymbol)makeArray(funcName, type, null, 4, null) : 
 				new FunctionSymbol(funcName, type, enclosing);
 			enclosing.define(symbol);
 
@@ -523,8 +517,6 @@ class Function extends Subtree {
 	}
 }
 
-//Var todo : arrays of records... speaking of records, make sure they're feild decls
-//can also handle arrays
 class Var extends Subtree{
 	public boolean [] locks = new boolean[2];//[0] = static, [1] = const;
 
@@ -571,7 +563,7 @@ class Var extends Subtree{
 
 				if(nodeType instanceof BasicType){
 					type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4) :
+					symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4, null) :
 						new VarSymbol(symbolName, type, locks);
 				}
 				else if(nodeType instanceof Name){//fix me to include records
@@ -582,22 +574,21 @@ class Var extends Subtree{
 					else{
 						symType = previouslyDefined.getType().getTypeName();
 
-						//could now also be an array
+						//could now also be an array...
 						type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
 							(BuiltInTypeSymbol)previouslyDefined.getType();
 
-						symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4) : 
+						symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4, null) : 
 							new VarSymbol(symbolName, type, locks);
 					}
 				}
 				else if(nodeType instanceof RecordDescriptor){
-					symbol = (VarSymbol)makeRecord(symbolName, locks, enclosing, nodeType.children.get(0).children);
+					RecordSymbol rec = new RecordSymbol(symbolName, enclosing, nodeType.children.get(0).children);
+					type = (RecordSymbol)enclosing.resolve("record");
 
-					//confusing
-					// if(isArray)
-					// 	symbol = (VarSymbol)makeArray(symbolName, type, locks, 4);
-					//  symbol.attachRecord();
-
+					symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4, rec) : 
+						new VarSymbol(symbolName, type, rec, locks);
+					
 				}
 			}
 			else if(children.get(1) instanceof Expression){
@@ -732,7 +723,6 @@ class Exit extends Subtree{
 // !------------------- DECORATE FIRST SHOULD BE DONE FOR TYPE ---------------------!
 // !--------------------- DOES NOT REQUIRE DECORATE SECOND -------------------------!
 
-//type todo: arrays of records
 class Type extends Subtree{
 	Type(Token t, Iterator<Token> i){
 		super(t, i);
@@ -761,7 +751,7 @@ class Type extends Subtree{
 
 			if(nodeType instanceof BasicType){
 				type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4) :
+				symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4, null) :
 					new TypeSymbol(symbolName, type);
 			}
 			else if(nodeType instanceof Name){//fix me tpo include records
@@ -775,14 +765,16 @@ class Type extends Subtree{
 					type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
 					(BuiltInTypeSymbol)previouslyDefined.getType();
 
-					symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4) : 
+					symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4, null) : 
 						new TypeSymbol(symbolName, type);
 				}
 			}
 			else if(nodeType instanceof RecordDescriptor){
-				symbol = (TypeSymbol)makeRecord(symbolName, null, enclosing, nodeType.children.get(0).children);
-				//array check 
+				RecordSymbol rec = new RecordSymbol(symbolName, enclosing, nodeType.children.get(0).children);
+				type = (RecordSymbol)enclosing.resolve("record");
 
+				symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4, rec) : 
+					new TypeSymbol(symbolName, type, rec);
 			}
 			enclosing.define(symbol); 
 		}	
