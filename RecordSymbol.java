@@ -27,6 +27,7 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 	public Symbol fieldDeclType(Subtree nodeType, String sName){
 		SymbolType t;
 		Symbol temp;
+		boolean isArray = false;
 
 		if(nodeType instanceof BasicType){
 			t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
@@ -35,9 +36,7 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 		else if(nodeType instanceof Name){
 			temp = resolve(nodeType.token.getName());
 
-			//fix here too 
-
-			if(temp == null)
+			if(temp == null || !temp.getTypeSymbol())
 				System.out.println("record member undefined");
 			else{
 				t = (temp.getType().getTypeName() == "record") ? 

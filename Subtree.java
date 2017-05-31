@@ -37,9 +37,9 @@ public class Subtree {
 		it = i;
 	}
 
-
 	public SymbolType getSymType(){
 		return type;
+		//collapse
 	}
 
 	public void addChild(Subtree subtree) {
@@ -67,6 +67,7 @@ public class Subtree {
 	}
 
 	public void beginDecorateSecond(SymbolTable mainTable)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = mainTable.globals;
 
 		for(int i = 0; i < children.size(); i++){
 			 children.get(i).decorateSecond(null);
@@ -126,6 +127,8 @@ public class Subtree {
 		return col;
 	}
 
+
+	//this eventually needs to be changed to an actual condition
 	public boolean isExpresh(){ return true; }
 
 	public boolean hasWilds(){
@@ -159,11 +162,38 @@ public class Subtree {
 
 	public void setType(Scope e){;}  //temporary workaround
 
+	public Symbol makeArray(String n, SymbolType t, boolean [] l, int s){
+		ArraySymbol arr = new ArraySymbol(n, s, t);
+		SymbolType typ = (ArraySymbol)currentScope.resolve("array");
+
+		if(this instanceof Function) 
+			return new FunctionSymbol(n, typ, currentScope, arr);
+		//else if(this instanceof Var) return new VarS....
+		if(l != null){
+			return new VarSymbol(n, typ, l, arr);
+		}
+		else{
+			return new TypeSymbol(n, typ, arr);
+		}
+	}
+
+	public Symbol makeRecord(String n, boolean [] locs, Scope cur, List<Subtree> fds){
+		RecordSymbol rec = new RecordSymbol(n, cur, fds);
+		type = (RecordSymbol)cur.resolve("record");
+
+		if(locs != null)
+			return new VarSymbol(n, type, rec, locs);
+		else return new TypeSymbol(n, type, rec);
+	}
+
 }
 
 /*------------------------------ Main Node Types ---------------------------------*/
+/*------------------------------Nodes with Blocks---------------------------------*/
 
 class For extends Subtree{
+	Block block;
+
 	For(Token t, Iterator<Token> i){
 		super(t, i);
 
@@ -180,6 +210,15 @@ class For extends Subtree{
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
+	}
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = new LocalScope(enclosing);
+		block = (Block)children.get(3);
+		block.decorateFirst(currentScope);
+		block.decorateSecond(currentScope);
+		currentScope = currentScope.getEnclosingScope();
 	}
 
 	@Override
@@ -210,6 +249,8 @@ class For extends Subtree{
 }
 
 class While extends Subtree{
+	Block block;
+
 	While(Token t, Iterator<Token> i){
 		super(t, i);
 
@@ -221,6 +262,15 @@ class While extends Subtree{
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
+	}
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = new LocalScope(enclosing);
+		block = (Block)children.get(1);
+		block.decorateFirst(currentScope);
+		block.decorateSecond(currentScope);
+		currentScope = currentScope.getEnclosingScope();
 	}
 
 	@Override
@@ -243,6 +293,8 @@ class While extends Subtree{
 }
 
 class If extends Subtree{
+	Block block;
+
 	If(Token t, Iterator<Token> i){
 		super(t, i);
 
@@ -257,6 +309,15 @@ class If extends Subtree{
 
 		if(isElse())
 			addChild(new Else(token, it));
+	}
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = new LocalScope(enclosing);
+		block = (Block)children.get(1);
+		block.decorateFirst(currentScope);
+		block.decorateSecond(currentScope);
+		currentScope = currentScope.getEnclosingScope();
 	}
 
 	@Override
@@ -286,10 +347,21 @@ class If extends Subtree{
 }
 
 class Else extends Subtree{
+	Block block;
+
 	Else(Token t, Iterator<Token> i){
 		super(t, i);
 		match("else");
 		addChild(new Block(token, it));
+	}
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+		currentScope = new LocalScope(enclosing);
+		block = (Block)children.get(0);
+		block.decorateFirst(currentScope);
+		block.decorateSecond(currentScope);
+		currentScope = currentScope.getEnclosingScope();
 	}
 
 	@Override
@@ -317,6 +389,8 @@ class Else extends Subtree{
 
 // !----- DECORATE FIRST AND DECORATE SECOND SHOULD BE DONE FOR FUNCTION -------!
 
+//function todo: function john(a byte[*], b record c byte end[*]) record z float64 end{}
+																//record z byte end[3]{}
 class Function extends Subtree {
 	public boolean [] flags = new boolean[2]; //[0] = params, [1] = type;
 	LocalScope localScope;
@@ -346,15 +420,13 @@ class Function extends Subtree {
 	}
 
 	/*
-	 *	Semantic Rules for Parameters:
-	 *	1. Formal parameters declared var shall be passed by reference
+	 *	Remaining Semantic Rules for Parameters:
+	 *	1. Formal parameters declared ref shall be passed by reference
 	 *	2. All parameters not of type var must be pass-by-value
-	 *	
-	 *	We want each parameter to return whether or not it is a var (if so it must
-	 *	be pass by reference), and if the value is initialized. This will be denoted
-	 *	by whether or not the pattern id value is followed.
-	 *
 	 */
+
+	//a functions return type can be a record descriptor (or even an array of record descriptors)
+	//function john(a byte) record b int32 end[3] {}
 
 	@Override
 	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
@@ -363,6 +435,7 @@ class Function extends Subtree {
 		Subtree currentNode;
 		String symType;
 		currentScope = enclosing;
+		boolean isArray = false;
 
 		if(previouslyDefined != null) {
 			throw new AlreadyDefinedException(token.getTokenType());
@@ -371,21 +444,26 @@ class Function extends Subtree {
 				type = (BuiltInTypeSymbol)enclosing.resolve("void");			//type = void
 				currentNode = (flags[0]) ? children.get(1) : null;				//cur = params
 			} else {															//is a type
-				currentNode = (flags[0]) ? children.get(2) : children.get(1);	//cur = params
+				currentNode = (flags[0]) ? children.get(2) : children.get(1);	//cur = Type
+				isArray = ((TypeDescriptor)currentNode).array;
 				symType = ((TypeDescriptor)currentNode).returnType();			//type
 				previouslyDefined = enclosing.resolve(symType);					//ref type
 
-				if(previouslyDefined instanceof TypeSymbol)						//user type?
+				if(previouslyDefined instanceof TypeSymbol)	{					//user type?
 					symType = previouslyDefined.type.getTypeName();				//get type Name
+					if(!previouslyDefined.getTypeSymbol())						//not TypeNode?
+						throw new UndefinedTypeException(symType);
+				}
 
-				if(previouslyDefined == null) {									//not defined
+				if(previouslyDefined == null) {	
 					throw new UndefinedTypeException(symType);
-				}else{
+				} else {
 					type = (symType == "record") ? (RecordSymbol)enclosing.resolve(symType) :
 						(BuiltInTypeSymbol)enclosing.resolve(symType);
 				}
 			}
-			symbol = new FunctionSymbol(funcName, type, enclosing);
+			symbol = (isArray) ? (FunctionSymbol)makeArray(funcName, type, null, 4) : 
+				new FunctionSymbol(funcName, type, enclosing);
 			enclosing.define(symbol);
 
 			if(flags[0])
@@ -404,6 +482,9 @@ class Function extends Subtree {
 		else block = (Block)children.get(1);
 
 		block.decorateFirst(localScope);
+		block.decorateSecond(localScope);
+
+		currentScope = ((FunctionSymbol)symbol).getEnclosingScope();
 	}
 
 	@Override
@@ -442,6 +523,8 @@ class Function extends Subtree {
 	}
 }
 
+//Var todo : arrays of records... speaking of records, make sure they're feild decls
+//can also handle arrays
 class Var extends Subtree{
 	public boolean [] locks = new boolean[2];//[0] = static, [1] = const;
 
@@ -473,11 +556,6 @@ class Var extends Subtree{
 		match("SEMICOLON");
 	}
 
-	/*
-	 *	or we want to store the identifier and the type descriptor of the
-	 *	expression, as the initializing will be done in the second pass
-	 */
-
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
 		String symbolName = children.get(0).token.getName();
 		Symbol previouslyDefined = enclosing.resolve(symbolName);
@@ -489,30 +567,37 @@ class Var extends Subtree{
 		} else {
 			if(children.get(1) instanceof TypeDescriptor){
 				Subtree nodeType = children.get(1).children.get(0).children.get(0);
+				boolean isArray = ((TypeDescriptor)children.get(1)).array;
 
 				if(nodeType instanceof BasicType){
 					type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-					symbol = new VarSymbol(symbolName, type, locks);
+					symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4) :
+						new VarSymbol(symbolName, type, locks);
 				}
 				else if(nodeType instanceof Name){//fix me to include records
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
-					symType = previouslyDefined.getType().getTypeName();
 
-					if(previouslyDefined == null)
-						throw new UndefinedTypeException(children.get(1).token.getName());
+					if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
+						throw new UndefinedTypeException(((Name)nodeType).token.getName());
 					else{
-						type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
-						(BuiltInTypeSymbol)previouslyDefined.getType();
+						symType = previouslyDefined.getType().getTypeName();
 
-						symbol = new VarSymbol(symbolName, type, locks);
+						//could now also be an array
+						type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
+							(BuiltInTypeSymbol)previouslyDefined.getType();
+
+						symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4) : 
+							new VarSymbol(symbolName, type, locks);
 					}
 				}
 				else if(nodeType instanceof RecordDescriptor){
-					RecordSymbol record = new RecordSymbol(symbolName, enclosing, 
-						nodeType.children.get(0).children);
+					symbol = (VarSymbol)makeRecord(symbolName, locks, enclosing, nodeType.children.get(0).children);
 
-					type = (RecordSymbol)enclosing.resolve("record");
-					symbol = new VarSymbol(symbolName, type, record, locks);
+					//confusing
+					// if(isArray)
+					// 	symbol = (VarSymbol)makeArray(symbolName, type, locks, 4);
+					//  symbol.attachRecord();
+
 				}
 			}
 			else if(children.get(1) instanceof Expression){
@@ -524,16 +609,19 @@ class Var extends Subtree{
 		}		
 	}
 
+	//var john int32[2];
+
+
 	//actually unnecessary- here's why: Any var that is declared with an expression 
 	//is still given a type (the type of the expression); and we don't actually store 
 	//the value of that expression in the symbol table- just its type. 
-	public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {;}
+	//public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {;}
 	//When he said the second pass is for initializations, what I think he was 
 	//referring to is this kind of case...
 
 	//var zoel = 5;		-> zoel.type = int32;  -> still technically a declaration
 	//var john int32;	-> john.type = int32;
-	//john = zoel;		-> verify john.type == zoel.type;
+	//john = zoel;		-> verify john.type == zoel.type; 
 
 	//the above case is therefore a decoration of an expression, because a line that
 	//starts with a stringIdentifer is not a declaration of any kind. This makes
@@ -644,6 +732,7 @@ class Exit extends Subtree{
 // !------------------- DECORATE FIRST SHOULD BE DONE FOR TYPE ---------------------!
 // !--------------------- DOES NOT REQUIRE DECORATE SECOND -------------------------!
 
+//type todo: arrays of records
 class Type extends Subtree{
 	Type(Token t, Iterator<Token> i){
 		super(t, i);
@@ -668,30 +757,32 @@ class Type extends Subtree{
 			throw new AlreadyDefinedException(previouslyDefined.getName());
 		} else {
 			Subtree nodeType = children.get(1).children.get(0).children.get(0);
+			boolean isArray = ((TypeDescriptor)children.get(1)).array;
 
 			if(nodeType instanceof BasicType){
 				type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				symbol = new TypeSymbol(symbolName, type);
+				symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4) :
+					new TypeSymbol(symbolName, type);
 			}
 			else if(nodeType instanceof Name){//fix me tpo include records
 				previouslyDefined = enclosing.resolve(nodeType.token.getName());
 				symType = previouslyDefined.getType().getTypeName();
 
-				if(previouslyDefined == null)
+				if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
 					throw new UndefinedTypeException(children.get(1).token.getName());
 				else{
+					//could now also be and array... :(
 					type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
 					(BuiltInTypeSymbol)previouslyDefined.getType();
 
-					symbol = new TypeSymbol(symbolName, type);
+					symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4) : 
+						new TypeSymbol(symbolName, type);
 				}
 			}
 			else if(nodeType instanceof RecordDescriptor){
-				RecordSymbol record = new RecordSymbol(symbolName, enclosing, 
-					nodeType.children.get(0).children);
+				symbol = (TypeSymbol)makeRecord(symbolName, null, enclosing, nodeType.children.get(0).children);
+				//array check 
 
-				type = (RecordSymbol)enclosing.resolve("record");
-				symbol = new TypeSymbol(symbolName, type, record);
 			}
 			enclosing.define(symbol); 
 		}	
@@ -777,83 +868,21 @@ class Block extends Subtree {
 	}
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-		//String funcName = children.get(0).token.getName();
-		//Symbol previouslyDefined = enclosing.resolve(funcName);
-		//Subtree currentNode;
-		//String symType;
-		//currentScope = enclosing;
+	public void decorateFirst(Scope local) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+		currentScope = local;
 
-
-		//iterates over the children of block and adds them to the local scope if
-		//they are declarations. Or checks if the type is valid in the wider scope
-		//if a type is being used that is not locally defined.
-		//
-		//	STILL NEEDS TO BE COMPLETED
-		//	
-		Subtree currentNode;
 		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
-
-			if(currentNode instanceof For) {				//adds new scope
-
-			} else if(currentNode instanceof While) {		//adds new scope
-
-			} else if(currentNode instanceof If) {			//adds new scope
-
-			} else if(currentNode instanceof Function) {	//adds new scope
-
-			} else if(currentNode instanceof Print) {
-
-			} else if(currentNode instanceof Type){
-
-			} else if(currentNode instanceof Var) {
-
-			} else if(currentNode instanceof Exit) {
-
-			} else if(currentNode instanceof Retur) {
-
-			} else if(currentNode instanceof Expression) {
-
-			}
+			children.get(index).decorateFirst(local);
 		}
 	}
 
 	@Override
-	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException {
-		//iterates over the children of block and adds them to the local scope if
-		//they are declarations. Or checks if the type is valid in the wider scope
-		//if a type is being used that is not locally defined.
-		//
-		//	STILL NEEDS TO BE COMPLETED
-		//	
+	public void decorateSecond(Scope local) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+		currentScope = local;
 
-		Subtree currentNode;
 		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
-
-			if(currentNode instanceof For) {				//adds new scope
-
-			} else if(currentNode instanceof While) {		//adds new scope
-
-			} else if(currentNode instanceof If) {			//adds new scope
-
-			} else if(currentNode instanceof Function) {	//adds new scope
-
-			} else if(currentNode instanceof Print) {
-
-			} else if(currentNode instanceof Type){
-
-			} else if(currentNode instanceof Var) {
-
-			} else if(currentNode instanceof Exit) {
-
-			} else if(currentNode instanceof Retur) {
-
-			} else if(currentNode instanceof Expression) {
-
-			}
-		}	
+			children.get(index).decorateSecond(local);
+		}
 	}
 
 	@Override
@@ -875,13 +904,17 @@ class Block extends Subtree {
 // !------------------- TYPE DESCRIPTOR SHOULD BE FINISHED ------------------------!
 
 class TypeDescriptor extends Subtree{
+	boolean array = false;
+
 	TypeDescriptor(Token t, Iterator<Token> i){
 		super(t, i);
 
 		addChild(new NaTypeDescriptor(token, it));
 
-		if(isDimensh())								//optional expression next?
+		if(isDimensh()){
 			addChild(new Dimension(token, it));	
+			array = true;
+		}
 	}
 
 	public String returnType() {
@@ -1037,6 +1070,7 @@ class FieldDeclaration extends Subtree{
 	}
 }
 
+//not working with expressions, temporarily using expression instead.  
 class Dimension extends Subtree{
 	Dimension(Token t, Iterator<Token> i){
 		super(t, i);
@@ -1105,22 +1139,15 @@ class Param extends Subtree{
 
 	Param(Token t, Iterator<Token> i){
 		super(t, i);
+		
 		if(token.getTokenType().equals("ref")) {
 			match("ref");
 			locks[0] = true;
-			if(token.getTokenType().equals("const")) {
-				locks[1] = true;
-				match("const");
-				//this.symbol = new RefConstSymbol(token.getVal());
-			} else {
-				//this.symbol = RefSymbol(token.getVal());
-			}
 		}
 
 		if(token.getTokenType().equals("const")) {
 			match("const");
 			locks[1] = true;
-			//this.symbol = ConstSymbol(token.getVal());
 		}
 
 		addChild(new Name(token));
@@ -1141,22 +1168,6 @@ class Param extends Subtree{
 		}
 	}
 
-	/*
-	 *	All variables must be pass by reference. All other parameters are pass by
-	 *	value. If a formal parameter has a default value, all others must as well.
-	 *	Decorate first should have ref, 
-	 *
-	 */
-
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-		Subtree currentNode = null;
-		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
-			if(currentNode instanceof NaTypeDescriptor) {
-				currentNode.decorateFirst(enclosing);
-			}
-		}
-	}
 
 	@Override
 	public void print(){
@@ -1288,6 +1299,13 @@ class Expressions extends Subtree {
 		}
 	}
 
+	//had to add the closebracket case to make arrays work.
+	//technically i think its incorrect tho... bc for something like this
+	//var array int32[4];
+	//array[2] = 4;
+	//var john = array[2] + 6;
+	//it would parse incorrectly
+	//then again... i dont know expressions so well, so maybe it does work 
 	private boolean keepReading(Token current) {
 		boolean keepReading = true;
 		switch(current.getTokenType()) {
@@ -1295,6 +1313,9 @@ class Expressions extends Subtree {
 				keepReading = false;
 				break;
 			case "SEMICOLON":
+				keepReading = false;
+				break;
+			case "CLOSE_BRACKET":
 				keepReading = false;
 				break;
 			default:
@@ -1334,6 +1355,7 @@ class Expression extends Subtree {
 		super(t, i);
 		addAllChildren();
 	}
+
 	Expression(Token t, Iterator<Token> i, int p){
 		super(t, i);
 		precedence = p;
@@ -1410,6 +1432,13 @@ class Expression extends Subtree {
 		return it;
 	}
 
+	//had to add the closebracket case to make arrays work.
+	//technically i think its incorrect tho... bc for something like this
+	//var array int32[4];
+	//array[2] = 4;
+	//var john = array[2] + 6;
+	//it would parse incorrectly
+	//then again... i dont know expressions so well, so maybe it does work 
 	private boolean keepReading(Token current) {
 		boolean isEndChar = true;
 		switch(current.getTokenType()) {
@@ -1420,6 +1449,9 @@ class Expression extends Subtree {
 				isEndChar = false;
 				break;
 			case "SEMICOLON":
+				isEndChar = false;
+				break;
+			case "CLOSE_BRACKET":
 				isEndChar = false;
 				break;
 			default:
@@ -1645,6 +1677,7 @@ class ExprRest extends Subtree {
 		//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
 		//otherwise we need to resolve the type in the enclosing scope or throw an error
 		//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
+
 		MathOp currentNode = null;
 		System.out.println(children.size());
 		if(children != null) {
@@ -1652,6 +1685,11 @@ class ExprRest extends Subtree {
 				System.out.println("decorateExpr entered in ExprRest");
 				currentNode = (MathOp)children.get(index);
 				currentNode.decorateExpr(enclosing);
+		//MathOp currentNode = null;
+		if(children != null) {
+			for(int index = 0; index < children.size(); index++) {
+				//currentNode = (MathOp)children.get(index);
+				//currentNode.decorateExpr(enclosing);
 			}
 		}
 

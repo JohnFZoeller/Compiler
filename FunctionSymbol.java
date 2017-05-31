@@ -2,12 +2,19 @@ import java.util.*;
 import java.io.*;
 
 class FunctionSymbol extends ScopedSymbol implements Scope {
+	ArraySymbol array;
+
 	FunctionSymbol(String n, SymbolType t, Scope e){
 		super(n, t, e);
 	}
 
 	FunctionSymbol(String n, SymbolType t, Scope e, List<Subtree> p){
 		super(n, t, e);
+	}
+
+	FunctionSymbol(String n, SymbolType t, Scope e, ArraySymbol a){
+		super(n, t, e);
+		array = a;
 	}
 
 	public void addParams(List<Subtree> params)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
@@ -18,10 +25,6 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 
 			if(nodeType instanceof Expression){
 				defaultValuesLocked = true;
-				
-				// if(!params.get(i).locks[0]){ //params that are vars (expressions declared as var) must be ref locked
-				// 	//still working on this part
-				// }
 			}
 			else if(nodeType instanceof NaTypeDescriptor){
 				if(defaultValuesLocked){
@@ -30,13 +33,14 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 				}
 			}
 
-			Symbol temp = paramType(nodeType, params.get(i).children.get(0).token.getName());
+			ParamSymbol temp = paramType(nodeType, 
+				params.get(i).children.get(0).token.getName(), ((Param)params.get(i)).locks);
 			define(temp);
 		}
 
 	}
 
-	public Symbol paramType(Subtree nodeType, String sName)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public ParamSymbol paramType(Subtree nodeType, String sName, boolean [] pLocks)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
 		SymbolType t;
 		Symbol temp;
 
@@ -45,19 +49,19 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 
 			if(nodeType instanceof BasicType){
 				t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				return new Symbol(sName, t);
+				return new ParamSymbol(sName, t, pLocks);
 			}
 			else if(nodeType instanceof Name){
 				temp = resolve(nodeType.token.getName());
 
-				if(temp == null)
+				if(temp == null || !temp.getTypeSymbol())
 					System.out.println("param type undefined");
 				else{
 					t = (temp.getType().getTypeName() == "record") ? 
 						(RecordSymbol)temp.getType() : 
 						(BuiltInTypeSymbol)temp.getType();
 
-					return new Symbol(sName, t);
+					return new ParamSymbol(sName, t, pLocks);
 				}
 			}
 			else if(nodeType instanceof RecordDescriptor){
@@ -65,13 +69,13 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 					nodeType.children.get(0).children);
 
 				t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				return new VarSymbol(sName, t, record, null);
+				return new ParamSymbol(sName, t, record, pLocks);
 			}
 		}
 		else if(nodeType instanceof Expression) {
 			nodeType.decorateFirst(this);
 			t = nodeType.type;
-			return new VarSymbol(sName, t);
+			return new ParamSymbol(sName, t, pLocks);
 		}
 
 		System.out.println("parse params error");

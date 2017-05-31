@@ -5,6 +5,7 @@ public class Symbol {
 	public String name;
 	public SymbolType type;			//for built in types
 	public boolean isVar = false;
+	public boolean isTypeSymbol = false;
 
 	Symbol(){
 		name = "";
@@ -25,11 +26,13 @@ public class Symbol {
 
 	public boolean getVar(){ return isVar; }
 
+	public void setTypeSymbol(){ isTypeSymbol = true; }
+
+	public boolean getTypeSymbol() { return isTypeSymbol; }
+
 	public String getName(){ return name; }
 
-	public SymbolType getType() {
-		return type; 
-	}
+	public SymbolType getType() { return type; }
 
 	public String toString(){
 		if(type != null) 
@@ -48,10 +51,27 @@ class ExpressionSymbol extends Symbol{
 	}
 }
 
+class ParamSymbol extends Symbol {
+	public boolean [] locks; //[0] = ref, [1] = const
+	RecordSymbol record;
+	ArraySymbol array;
+
+	ParamSymbol(String n, SymbolType t, boolean [] l){
+		super(n, t);
+		locks = l;
+	}
+
+	ParamSymbol(String n, SymbolType t, RecordSymbol r, boolean [] l){
+		super(n, t);
+		locks = l;
+		record = r;
+	}
+}
+
 class VarSymbol extends Symbol {
 	RecordSymbol record;
 	boolean [] locks; //[0] = static, [1] = const;
-	//add optional dimension member
+	ArraySymbol array;
 
 	VarSymbol(String n, SymbolType t){
 		super(n, t);
@@ -71,18 +91,34 @@ class VarSymbol extends Symbol {
 		record = r;
 		setVar();
 	}
+
+	VarSymbol(String n, SymbolType t, boolean [] l, ArraySymbol a){
+		super(n, t);
+		locks = l;
+		array = a;
+		setVar();
+	}
 }
 
 class TypeSymbol extends Symbol {
 	RecordSymbol record;
+	ArraySymbol array;
 
 	//add optional dimension member
 	TypeSymbol(String n, SymbolType t) {
 		super(n, t);
+		setTypeSymbol();
 	}
 
 	TypeSymbol(String n, SymbolType t, RecordSymbol r){
 		super(n, t);
 		record = r;
+		setTypeSymbol();
+	}
+
+	TypeSymbol(String n, SymbolType t, ArraySymbol a){
+		super(n, t);
+		setTypeSymbol();
+		array = a;
 	}
 }
