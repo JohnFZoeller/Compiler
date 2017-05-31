@@ -33,6 +33,7 @@ public class SyntaxParser {
 		//throw new Error("terminated");
 		root.beginDecorateFirst(mainTable);
 		root.beginDecorateSecond(mainTable);
+		root.emitAssemblyCode();
 	}
 
 	//the string identifier case (along with a new byte identifier case) 

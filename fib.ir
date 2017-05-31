@@ -1,0 +1,50 @@
+        # prev = 0
+        load0
+
+        # curr = 1
+        load1
+
+        # n = number of iterations
+        load_label n
+        load_mem_int
+
+loop:
+        # if n == 0, done
+        load_label done
+        branch_zero
+
+        # print current
+        dup
+        print_int
+        load_label newline
+        load_mem_int
+        print_byte
+
+        # next = curr + prev
+        # and drop old prev
+        dup2
+        add
+        rotate
+        drop
+
+        # decrement n & save, leaving copy on stack
+        # so the top of loop can check if done.
+        load_label n
+        load_mem_int
+        load1
+        sub
+        dup
+        load_label n
+        store_mem_int
+
+        load_label loop
+        branch
+
+done:
+        load0
+        exit
+
+newline:
+        int_literal 10
+n:
+        int_literal 10

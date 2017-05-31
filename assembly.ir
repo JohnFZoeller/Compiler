@@ -1,0 +1,6 @@
+#var john = 1 + 2
+
+load_label i
+
+i:
+        int_literal 1

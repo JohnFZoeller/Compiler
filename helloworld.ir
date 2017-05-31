@@ -1,0 +1,61 @@
+        # load address of string
+        load_label hello
+
+loop:
+        # copy address and load character pointed
+        dup
+        load_mem_int
+
+        # done if character is 0 (string terminator)
+        dup
+        load_label done
+        branch_zero
+
+        # otherwise, print charcter
+        print_byte
+
+        # increment the string pointer to get next character
+        load1
+        add
+
+        # and repeat
+        load_label loop
+        branch
+
+done:
+        load0
+        exit
+
+hello:
+        # hello world
+	int_literal 104
+        int_literal 101
+        int_literal 108
+        int_literal 108
+        int_literal 111
+        int_literal 32
+        int_literal 119
+        int_literal 111
+        int_literal 114
+        int_literal 108
+        int_literal 100
+
+        # space
+        int_literal 32
+
+        # something
+	int_literal 115
+	int_literal 111
+	int_literal 109
+	int_literal 101
+	int_literal 116
+	int_literal 104
+	int_literal 105
+	int_literal 110
+	int_literal 103
+
+        # newline
+	int_literal 10
+
+        # nul ('\0') byte: string terminator
+	int_literal 0
