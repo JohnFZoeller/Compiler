@@ -791,12 +791,6 @@ class Type extends Subtree{
 		addChild(new Name(token));
 		match("StringIdentifier");
 
-		//eventually gonna add these in everywhere
-		if(token.getTokenType().equals("DOT")){
-			match("DOT");
-			match("StringIdentifier");
-		}
-
 		addChild(new TypeDescriptor(token, it));
 
 		match("SEMICOLON");
@@ -831,6 +825,8 @@ class Type extends Subtree{
 						type = (ArraySymbol)previouslyDefined.getType();
 					} else if(symType == "record"){
 						type = (RecordSymbol)previouslyDefined.getType();
+						//add dot stuff here
+						//need to keep resolving other children if there are some
 					} else {
 						type = (BuiltInTypeSymbol)previouslyDefined.getType();
 					}
@@ -1017,6 +1013,13 @@ class NaTypeDescriptor extends Subtree {
 			symbolType = temp.getVarName();
 			addChild(new Name(token));
 			match("StringIdentifier");
+
+			while(token.getTokenType().equals("DOT")){
+				match("DOT");
+				addChild(new Name(token));
+				match("StringIdentifier");
+			}
+
 		} else {
 			addChild(new BasicType(token));
 			switch(token.getTokenType()){
