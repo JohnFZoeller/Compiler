@@ -1,6 +1,6 @@
-StringIdentifier x
-ASSIGNMENT_OPERATOR null
+StringIdentifier john
+byte null
+OPEN_BRACKET null
 IntIdentifier null
-PLUS null
-String_Literal "String"
+CLOSE_BRACKET null
 SEMICOLON null
