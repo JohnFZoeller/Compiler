@@ -1967,9 +1967,6 @@ class IntTypeCast extends TypeCast {
 	}
 }
 
-
-
-
 class Negative extends Subtree {
 	Negative(Token t, Iterator<Token> i){
 		super(t, i);
