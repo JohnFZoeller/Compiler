@@ -424,8 +424,8 @@ class Lex implements Iterable<Token> {
 			char cResult = currentChar;
 			readNextChar();
 			while (currentChar != '\'') {
+				cResult = currentChar;
 				readNextChar();
-				cResult += currentChar;
 			}
 
 			return new CharLiteral(cResult, row, tempCol);
