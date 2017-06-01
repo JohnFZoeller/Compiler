@@ -14,24 +14,23 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 
 	public void addDecls(List<Subtree> fds){
 		for(int i = 0; i < fds.size(); i++){
-			Subtree nodeType = fds.get(i).children.get(1).children.get(0).children.get(0);
+			Subtree nodeType = fds.get(i).children.get(1);
 			Symbol temp = fieldDeclType(nodeType, fds.get(i).token.getName());
  			define(temp);
-
- 			//the following will work, but is technically incorrect
- 			temp.name = name + "." + temp.name;
- 			enclosing.define(temp);
 		}
 	}
 
 	public Symbol fieldDeclType(Subtree nodeType, String sName){
 		SymbolType t;
 		Symbol temp;
-		boolean isArray = false;
+		boolean isArray = ((TypeDescriptor)nodeType).array;
+		String symType = "";
+		nodeType = nodeType.children.get(0).children.get(0);
 
 		if(nodeType instanceof BasicType){
 			t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-			return new Symbol(sName, t);
+			//getSize
+			return (isArray) ? makeArray(sName, t, 4, null) : new Symbol(sName, t);
 		}
 		else if(nodeType instanceof Name){
 			temp = resolve(nodeType.token.getName());
@@ -39,11 +38,16 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 			if(temp == null || !temp.getTypeSymbol())
 				System.out.println("record member undefined");
 			else{
-				t = (temp.getType().getTypeName() == "record") ? 
-						(RecordSymbol)temp.getType() : 
-						(BuiltInTypeSymbol)temp.getType();
+				symType = temp.getType().getTypeName();
 
-				return new Symbol(sName, t);
+				if(symType == "array")
+					t = (ArraySymbol)temp.getType();
+				else if(symType == "record")
+					t = (RecordSymbol)temp.getType();
+				else 
+					t = (BuiltInTypeSymbol)temp.getType();
+
+				return (isArray) ? makeArray(sName, t, 4, null) : new Symbol(sName, t);
 			}
 		}
 		else if(nodeType instanceof RecordDescriptor){
@@ -51,11 +55,27 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 				nodeType.children.get(0).children);
 
 			t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-			return new VarSymbol(sName, t, record, null);
+
+			return (isArray) ? makeArray(sName, t, 4, record) : new VarSymbol(sName, t, record, null);
 		}
 
 		System.out.println("record parse error");
 		return null;
+	}
+
+	public Symbol makeArray(String n, SymbolType t, int s, RecordSymbol r){
+		ArraySymbol arr = (r == null) ? new ArraySymbol(n, s, t) : new ArraySymbol(n, s, t, r);
+		SymbolType typ = (ArraySymbol)enclosing.resolve("array");
+
+		return new VarSymbol(n, typ, null, arr);
+	}
+
+	//context:  var john record a int32 end;
+	//john.a = 3;
+	//reference john; call getDecl("a"); 
+	//will reference "a" and return its symbol object
+	public Symbol getDecl(String declName){
+		return resolve(declName);
 	}
 
 	@Override

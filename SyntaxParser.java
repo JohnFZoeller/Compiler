@@ -8,6 +8,8 @@ public class SyntaxParser {
 	private String indent;
 	private int row, col;
 	private Subtree root;
+	List<String> constantValues = new ArrayList<String>();
+
 
 	public SyntaxParser(Lex lex){
 		currentTok = null;
@@ -33,6 +35,7 @@ public class SyntaxParser {
 		//throw new Error("terminated");
 		root.beginDecorateFirst(mainTable);
 		root.beginDecorateSecond(mainTable);
+		root.emitAssemblyCode(constantValues);
 	}
 
 	//the string identifier case (along with a new byte identifier case) 

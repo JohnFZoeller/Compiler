@@ -23,6 +23,8 @@ public class Subtree {
 	Symbol symbol = null;
 	SymbolType type = null;
 
+	String defaultInt = "-2147483648", defaultFloat = "-123456789.123456789";
+
 	public Subtree(){}
 
 	public Subtree(Iterator<Token> i){ 
@@ -79,6 +81,25 @@ public class Subtree {
 		}
 	}
 
+	public void emitAssemblyCode(List<String> consts){
+		System.out.println("ASSEMBLY CODE");
+
+		for(int i = 0; i < children.size(); i++){
+			children.get(i).emit(consts);
+		}
+
+		printConstants(consts);
+	}
+
+	public void printConstants(List<String> consts){
+
+		for(int i = 0; i < consts.size(); i++){
+			System.out.println(consts.get(i));
+		}
+	}
+
+	public void emit(List<String> c){}
+
 	public void print(){;}
 
 	public void print(int a){;}
@@ -131,7 +152,6 @@ public class Subtree {
 	public int runningCol(){
 		return col;
 	}
-
 
 	//this eventually needs to be changed to an actual condition
 	public boolean isExpresh(){ return true; }
@@ -394,12 +414,10 @@ class Else extends Subtree{
 
 // !----- DECORATE FIRST AND DECORATE SECOND SHOULD BE DONE FOR FUNCTION -------!
 
-//function todo: function john(a byte[*], b record c byte end[*]) record z float64 end{}
-																//record z byte end[3]{}
-//general todo: feild decl arrays
+																
 class Function extends Subtree {
 	public boolean [] flags = new boolean[2]; //[0] = params, [1] = type;
-	LocalScope localScope;
+	LocalScope localScope;				
 	Block block;
 
 	Function(Token t, Iterator<Token> i) {
@@ -439,34 +457,50 @@ class Function extends Subtree {
 		} else {
 			if(!flags[1]) {														//no type
 				type = (BuiltInTypeSymbol)enclosing.resolve("void");			//type = void
-				currentNode = (flags[0]) ? children.get(1) : null;				//cur = params
-			} else {															//is a type
-				currentNode = (flags[0]) ? children.get(2) : children.get(1);	//cur = Type
-				isArray = ((TypeDescriptor)currentNode).array;
-				symType = ((TypeDescriptor)currentNode).returnType();			//type
-				previouslyDefined = enclosing.resolve(symType);					//ref type
+				currentNode = (flags[0]) ? children.get(1) : null;				//cur = PARAMS HERE
+			} else {															//has a type
+				currentNode = (flags[0]) ? children.get(2) : children.get(1);	//cur = TYPE HERE
+				Subtree nodeType = currentNode.children.get(0).children.get(0);	//nodeType
+				isArray = ((TypeDescriptor)currentNode).array;					//array?
 
-				
-
-				if(previouslyDefined instanceof TypeSymbol)	{					//user type?
-					symType = previouslyDefined.type.getTypeName();				//get type Name
-					if(!previouslyDefined.getTypeSymbol())						//not TypeNode?
-						throw new UndefinedTypeException(symType);
+				if(nodeType instanceof BasicType){
+					type = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
+					symbol = (isArray) ? (FunctionSymbol)makeArray(funcName, type, null, 4, null) :
+						new FunctionSymbol(funcName, type, enclosing);
 				}
+				else if(nodeType instanceof Name){
+					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
-				if(previouslyDefined == null) {	
-					throw new UndefinedTypeException(symType);
-				} else {
-					type = (symType == "record") ? (RecordSymbol)enclosing.resolve(symType) :
-						(BuiltInTypeSymbol)enclosing.resolve(symType);
+					if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
+						throw new UndefinedTypeException(((Name)nodeType).token.getName());
+					else{
+						symType = previouslyDefined.getType().getTypeName();
+
+						if(symType == "array"){
+							type = (ArraySymbol)previouslyDefined.getType();
+						} else if(symType == "record"){
+							type = (RecordSymbol)previouslyDefined.getType();
+						} else {
+							type = (BuiltInTypeSymbol)previouslyDefined.getType();
+						}
+
+						symbol = (isArray) ? (FunctionSymbol)makeArray(funcName, type, null, 4, null) : 
+							new FunctionSymbol(funcName, type, enclosing);
+					}
+				}
+				else if(nodeType instanceof RecordDescriptor){
+					RecordSymbol rec = new RecordSymbol(funcName, enclosing, nodeType.children.get(0).children);
+					type = (RecordSymbol)enclosing.resolve("record");
+
+					symbol = (isArray) ? (FunctionSymbol)makeArray(funcName, type, null, 4, rec) : 
+						new FunctionSymbol(funcName, type, enclosing, rec);
 				}
 			}
-			symbol = (isArray) ? (FunctionSymbol)makeArray(funcName, type, null, 4, null) : 
-				new FunctionSymbol(funcName, type, enclosing);
-			enclosing.define(symbol);
 
 			if(flags[0])
 				symbol.addParams(children.get(1).children);
+
+			currentScope.define(symbol);
 		}
 	}
 
@@ -484,6 +518,21 @@ class Function extends Subtree {
 		block.decorateSecond(localScope);
 
 		currentScope = ((FunctionSymbol)symbol).getEnclosingScope();
+	}
+
+	@Override
+	public void emit(List<String> consts){
+		String instruction = children.get(0).token.getName() + ":\n\t";
+		String symType = symbol.getType().getTypeName();
+
+		if(symType == "int32" || symType == "byte"){
+				instruction += "int_literal " + defaultInt;
+		} else {
+				instruction += "float_literal " + defaultFloat;
+		}
+
+		consts.add(instruction);
+		block.emit(consts);
 	}
 
 	@Override
@@ -579,9 +628,13 @@ class Var extends Subtree{
 					else{
 						symType = previouslyDefined.getType().getTypeName();
 
-						//could now also be an array...
-						type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
-							(BuiltInTypeSymbol)previouslyDefined.getType();
+						if(symType == "array"){
+							type = (ArraySymbol)previouslyDefined.getType();
+						} else if(symType == "record"){
+							type = (RecordSymbol)previouslyDefined.getType();
+						} else {
+							type = (BuiltInTypeSymbol)previouslyDefined.getType();
+						}
 
 						symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4, null) : 
 							new VarSymbol(symbolName, type, locks);
@@ -605,26 +658,27 @@ class Var extends Subtree{
 		}		
 	}
 
-	//var john int32[2];
+	@Override
+	public void emit(List<String> consts){
+		Subtree emitType = children.get(1);
+		String instruction = children.get(0).token.getName() + ":\n\t";
+		String symType = symbol.getType().getTypeName();
 
+		if(emitType instanceof Expression){
+			//getExpressionType();
+			//instruction += expressionType + default<>
+			;
+		} else {
+			if(symType == "int32" || symType == "byte"){
+				instruction += "int_literal " + defaultInt;
+			} else {
+				instruction += "float_literal " + defaultFloat;
+			}
+			//System.out.println(instruction);
 
-	//actually unnecessary- here's why: Any var that is declared with an expression 
-	//is still given a type (the type of the expression); and we don't actually store 
-	//the value of that expression in the symbol table- just its type. 
-	//public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {;}
-	//When he said the second pass is for initializations, what I think he was 
-	//referring to is this kind of case...
-
-	//var zoel = 5;		-> zoel.type = int32;  -> still technically a declaration
-	//var john int32;	-> john.type = int32;
-	//john = zoel;		-> verify john.type == zoel.type; 
-
-	//the above case is therefore a decoration of an expression, because a line that
-	//starts with a stringIdentifer is not a declaration of any kind. This makes
-	//me realize that I have written very little on this iteration and would like to 
-	//steal some of your work (-:
-
-
+		}
+		consts.add(instruction);
+	}
 
 	@Override
 	public void print(){
@@ -737,6 +791,12 @@ class Type extends Subtree{
 		addChild(new Name(token));
 		match("StringIdentifier");
 
+		//eventually gonna add these in everywhere
+		if(token.getTokenType().equals("DOT")){
+			match("DOT");
+			match("StringIdentifier");
+		}
+
 		addChild(new TypeDescriptor(token, it));
 
 		match("SEMICOLON");
@@ -759,16 +819,21 @@ class Type extends Subtree{
 				symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4, null) :
 					new TypeSymbol(symbolName, type);
 			}
-			else if(nodeType instanceof Name){//fix me tpo include records
+			else if(nodeType instanceof Name){
 				previouslyDefined = enclosing.resolve(nodeType.token.getName());
-				symType = previouslyDefined.getType().getTypeName();
 
 				if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
 					throw new UndefinedTypeException(children.get(1).token.getName());
 				else{
-					//could now also be and array... :(
-					type = (symType == "record") ? (RecordSymbol)previouslyDefined.getType() :
-					(BuiltInTypeSymbol)previouslyDefined.getType();
+					symType = previouslyDefined.getType().getTypeName();
+
+					if(symType == "array"){
+						type = (ArraySymbol)previouslyDefined.getType();
+					} else if(symType == "record"){
+						type = (RecordSymbol)previouslyDefined.getType();
+					} else {
+						type = (BuiltInTypeSymbol)previouslyDefined.getType();
+					}
 
 					symbol = (isArray) ? (TypeSymbol)makeArray(symbolName, type, null, 4, null) : 
 						new TypeSymbol(symbolName, type);
@@ -880,6 +945,11 @@ class Block extends Subtree {
 		for(int index = 0; index < children.size(); index++) {
 			children.get(index).decorateSecond(local);
 		}
+	}
+
+	@Override
+	public void emit(List<String> consts){
+
 	}
 
 	@Override
@@ -1067,7 +1137,6 @@ class FieldDeclaration extends Subtree{
 	}
 }
 
-//not working with expressions, temporarily using expression instead.  
 class Dimension extends Subtree{
 	Dimension(Token t, Iterator<Token> i){
 		super(t, i);
@@ -1138,7 +1207,7 @@ class Params extends Subtree{
 }
 
 class Param extends Subtree{
-	public boolean [] locks = new boolean[2]; //0-> ref, 1->const,
+	public boolean [] locks = new boolean[3]; //0-> ref, 1->const, 2-> wilds
 
 	Param(Token t, Iterator<Token> i){
 		super(t, i);
@@ -1164,6 +1233,7 @@ class Param extends Subtree{
 			addChild(new NaTypeDescriptor(token, it));
 
 			if(hasWilds()){
+				locks[2] = true;
 				match("OPEN_BRACKET");
 				addChild(new DimWilds(token, it));
 				match("CLOSE_BRACKET");
@@ -1809,6 +1879,30 @@ class IntLiteral extends Operand {
 	@Override
 	public String toPrint() {
 		return Integer.toString((Integer)token.getVal());
+	}
+
+	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+		//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
+		//otherwise we need to resolve the type in the enclosing scope or throw an error
+		//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
+
+		MathOp currentNode = null;
+		System.out.println(children.size());
+		if(children != null) {
+			for(int index = 0; index < children.size(); index++) {
+				System.out.println("decorateExpr entered in ExprRest");
+				currentNode = (MathOp)children.get(index);
+				currentNode.decorateExpr(enclosing);
+			}
+		}
+		//MathOp currentNode = null;
+		if(children != null) {
+			for(int index = 0; index < children.size(); index++) {
+				//currentNode = (MathOp)children.get(index);
+				//currentNode.decorateExpr(enclosing);
+			}
+		}
+
 	}
 }
 

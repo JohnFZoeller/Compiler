@@ -50,6 +50,7 @@ public final class OperatorMap {
                 put("!=", "LOGICAL_NOT");
                 put("<<", "OUTPUT");
                 put(">>", "INPUT");
+                put(".", "DOT");
         
 	}};
 }

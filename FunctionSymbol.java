@@ -3,6 +3,7 @@ import java.io.*;
 
 class FunctionSymbol extends ScopedSymbol implements Scope {
 	ArraySymbol array;
+	RecordSymbol record;
 
 	FunctionSymbol(String n, SymbolType t, Scope e){
 		super(n, t, e);
@@ -15,6 +16,11 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 	FunctionSymbol(String n, SymbolType t, Scope e, ArraySymbol a){
 		super(n, t, e);
 		array = a;
+	}
+
+	FunctionSymbol(String n, SymbolType t, Scope e, RecordSymbol r){
+		super(n, t, e);
+		record = r;
 	}
 
 	public void addParams(List<Subtree> params)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
@@ -43,13 +49,15 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 	public ParamSymbol paramType(Subtree nodeType, String sName, boolean [] pLocks)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
 		SymbolType t;
 		Symbol temp;
+		int db = 373592855; //default size of an int 
+		String symType = "";
 
 		if(nodeType instanceof NaTypeDescriptor){
 			nodeType = nodeType.children.get(0);
 
 			if(nodeType instanceof BasicType){
 				t = (BuiltInTypeSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				return new ParamSymbol(sName, t, pLocks);
+				return (pLocks[2]) ? makeArray(sName, t, db, null, pLocks) : new ParamSymbol(sName, t, pLocks);
 			}
 			else if(nodeType instanceof Name){
 				temp = resolve(nodeType.token.getName());
@@ -57,11 +65,17 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 				if(temp == null || !temp.getTypeSymbol())
 					System.out.println("param type undefined");
 				else{
-					t = (temp.getType().getTypeName() == "record") ? 
-						(RecordSymbol)temp.getType() : 
-						(BuiltInTypeSymbol)temp.getType();
+					symType = temp.getType().getTypeName();
 
-					return new ParamSymbol(sName, t, pLocks);
+					if(symType == "array")
+						t = (ArraySymbol)temp.getType();
+					else if(symType == "record")
+						t = (RecordSymbol)temp.getType();
+					else 
+						t = (BuiltInTypeSymbol)temp.getType();
+
+					return (pLocks[2]) ? makeArray(sName, t, db, null, pLocks) : 
+						new ParamSymbol(sName, t, pLocks);
 				}
 			}
 			else if(nodeType instanceof RecordDescriptor){
@@ -69,7 +83,8 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 					nodeType.children.get(0).children);
 
 				t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
-				return new ParamSymbol(sName, t, record, pLocks);
+				return (pLocks[2]) ? makeArray(sName, t, db, record, pLocks) : 
+					new ParamSymbol(sName, t, record, pLocks);
 			}
 		}
 		else if(nodeType instanceof Expression) {
@@ -80,6 +95,13 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 
 		System.out.println("parse params error");
 		return null;
+	}
+
+	public ParamSymbol makeArray(String n, SymbolType t, int s, RecordSymbol r, boolean [] l){
+		ArraySymbol arr = (r == null) ? new ArraySymbol(n, s, t) : new ArraySymbol(n, s, t, r);
+		SymbolType typ = (ArraySymbol)enclosing.resolve("array");
+
+		return new ParamSymbol(n, typ, arr, l);
 	}
 
 }
