@@ -37,6 +37,11 @@ public class Subtree {
 		it = i;
 	}
 
+	public Subtree(Subtree toCopy) {
+		this.token = new Token(toCopy.token);
+		this.it = toCopy.it;
+	}
+
 	public SymbolType getSymType(){
 		return type;
 		//collapse
@@ -677,7 +682,7 @@ class Print extends Subtree{
 	public Print(Token t, Iterator<Token> i){
 		super(t, i);
 		match("print");
-		System.out.println(token.getName());
+		//System.out.println(token.getName());
 		addChild(new Expression(token, it));
 		this.symbol = new Symbol("Print Statement");
 		match("SEMICOLON");
@@ -1068,6 +1073,12 @@ class Dimension extends Subtree{
 		super(t, i);
 
 		match("OPEN_BRACKET");
+
+
+
+
+
+
 		addChild(new Expressions(token, it));
 		match("CLOSE_BRACKET");
 	}
@@ -1282,8 +1293,7 @@ class Expressions extends Subtree {
 
 	private void addAllChildren() {
 		while(keepReading(token)) {
-			Expression child = new Expression();
-			child.populate(it, token);
+			Expression child = new Expression(token, it);
 			addChild(child);
 			if(token.getTokenType().equals("COMMA")) {
 				match("COMMA");
@@ -1334,197 +1344,340 @@ class Expressions extends Subtree {
 }
 
 class Expression extends Subtree {
-	Expression operand = null;
-	String unaryOp = "";
-	String tokenType = "";
-	String tokenDescrip = "";
-	double tokenNum;
-	int precedence = 0;
-
-	Expression() {}
 
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
-		addAllChildren();
+		this.token = t;
+		this.it = i;
+		readExpression();
 	}
 
-	Expression(Token t, Iterator<Token> i, int p){
+	Expression(Subtree leftHand, Subtree operator, Token t, Iterator<Token> i) {
 		super(t, i);
-		precedence = p;
-		addAllChildren();
+		addOperandChild(new Token(leftHand.token), true);
+		addOperatorChild(new Token(operator.token), true);
+		this.token = t;
+		this.it = i;
+		if(continueReading())
+			readExpression();
 	}
 
-	public void setType(Scope enclosing){;}  //temporary workaround
-
-	@Override
-	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
-		symbol = new ExpressionSymbol(type);
-		
-		Subtree currentNode = null;
-		if(children != null){
-			for(int index = 0; index < children.size(); index++) {
-				currentNode = children.get(index);
-
-				//System.out.println(currentNode.getClass());
-				if(currentNode instanceof ExprRest) {
-					System.out.println("decorateFirst() entered in Expression");
-					ExprRest tt = (ExprRest) children.get(index);
-					tt.decorateExpr(enclosing);
-				} else if(currentNode instanceof Expression) {
-					currentNode.decorateFirst(enclosing);
-				}
-			}
-		}
+	protected void readExpression() {
+		if(isUnary())
+			addChild(new UnaryExpression(token, it));
+		else
+			addOperandChild(token);
+		if(continueReading())
+			readRemainingExpr();
 	}
 
-
-	private boolean isUnary() {
+	protected boolean isUnary() {
 		boolean isUnary = false;
-		if(token.getTokenType().equals("MINUS") ||
-			token.getTokenType().equals("EXCLAMATION_POINT") ||
-			token.getTokenType().equals("TILDE")) {
-			isUnary = true;
-		}
-		return isUnary;
-	}
-
-	private void addAllChildren() {
-		matchOperand();
-
-		while(keepReading(token)) {
-			int currPrec = precedence(token);
-			if(currPrec > this.precedence) {
-				this.precedence = currPrec;
-				Expression subexpression = new Expression(token, it,currPrec);
-				addChild(subexpression);
-			} else {
-				ExprRest toAdd = new ExprRest(token, it);
-				addChild(toAdd);
-			}
-		}
-	}
-
-	public Iterator<Token> populate(Iterator<Token> i, Token current) {
-		it = i;					//sets Node's iterator to i
-		token = current;		//sets Node's token to current
-
-		if(isUnary(token)) {				//checks if expression is unary
-			match(token.getTokenType());	//moves the iterator forward
-		}
-		matchOperand();						//matches the operands
-
-		//special cases (i.e. assignment, changes in operator precedence etc.)
-
-		while(keepReading(token)) {
-			ExprRest child = new ExprRest();
-			it = child.populateExpr(it, token);
-			addChild(child);
-		}
-
-		return it;
-	}
-
-	//had to add the closebracket case to make arrays work.
-	//technically i think its incorrect tho... bc for something like this
-	//var array int32[4];
-	//array[2] = 4;
-	//var john = array[2] + 6;
-	//it would parse incorrectly
-	//then again... i dont know expressions so well, so maybe it does work 
-	private boolean keepReading(Token current) {
-		boolean isEndChar = true;
-		switch(current.getTokenType()) {
-			case "COMMA":
-				isEndChar = false;
+		switch(token.getTokenType()) {
+			case "TILDE":
+				isUnary = true;
 				break;
-			case "CLOSE_PARENTHESIS":
-				isEndChar = false;
+			case "EXCLAMATION_POINT":
+				isUnary = true;
 				break;
-			case "SEMICOLON":
-				isEndChar = false;
-				break;
-			case "CLOSE_BRACKET":
-				isEndChar = false;
+			case "MINUS":
+				isUnary = true;
 				break;
 			default:
 				break;
 		}
-		return isEndChar;
+		return isUnary;
 	}
 
-	private int precedence(Token tok) {
+	protected void addOperandChild(Token current) {
+		switch(current.getTokenType()) {
+			case "IntIdentifier":
+				addChild(new IntLiteral(current, it)); 
+				match("IntIdentifier");
+				break;
+			case "FloatIdentifier":
+				addChild(new FloatLiteral(current, it));
+				match("FloatIdentifier");
+				break;
+			case "StringIdentifier":
+				addChild(new Identifier(current, it));
+				match("StringIdentifier");
+				break;
+			case "OPEN_PARENTHESIS":
+				match("OPEN_PARENTHESIS");
+				Expression sub = new Expression(token, it);
+				addChild(sub);
+				match("CLOSE_PARENTHESIS");
+				break;
+			case "String_Literal":
+				addChild(new StringLit(current, it));
+				match("String_Literal");
+				break;
+			case "Char_Literal":
+				addChild(new CharLit(current, it));
+				match("Char_Literal");
+				break;
+			default:
+				break;
+		}
+	}
+
+	protected int addOperatorChild(Token current) {
 		int precedence = 0;
-		switch(tok.getTokenType()) {
+		switch(current.getTokenType()) {
 			case "PLUS":
-				precedence = 10;
+				precedence = 10; 
+				addChild(new Addition(current, it));
+				match("PLUS");
 				break;
 			case "MINUS":
 				precedence = 10;
+				match("MINUS");
+				addChild(new Subtraction(current, it));
 				break;
 			case "ASTERISK":
 				precedence = 11;
+				addChild(new Multiplication(current, it));
+				match("ASTERISK");
 				break;
 			case "BACKSLASH":
 				precedence = 11;
-				break;
-			case "TILDE":
-				precedence = 12;
+				addChild(new Division(current, it));
+				match("BACKSLASH");
 				break;
 			case "ASSIGNMENT_OPERATOR":
 				precedence = 1;
+				addChild(new Assignment(current, it));
+				match("ASSIGNMENT_OPERATOR");
 				break;
 			case "RELATIONAL_GREATER_THAN":
 				precedence = 8;
+				addChild(new GreaterThan(current, it));
+				match("RELATIONAL_GREATER_THAN");
 				break;
 			case "RELATIONAL_GREATER_EQUALTO":
 				precedence = 8;
+				addChild(new GreaterThanEqual(current, it));
+				match("RELATIONAL_GREATER_EQUALTO");
 				break;
 			case "RELATIONAL_LESS_THAN":
 				precedence = 8;
+				addChild(new LessThan(current, it));
+				match("RELATIONAL_LESS_THAN");
 				break;
 			case "RELATIONAL_LESS_EQUALTO":
 				precedence = 8;
+				addChild(new LessThanEqual(current, it));
+				match("RELATIONAL_LESS_EQUALTO");
 				break;
 			case "BITWISE_AND":
 				precedence = 6;
+				addChild(new BitwiseAnd(current, it));
+				match("BITWISE_AND");
 				break;
 			case "LOGICAL_AND":
 				precedence = 3;
+				addChild(new LogicalAnd(current, it));
+				match("LOGICAL_AND");
 				break;
 			case "BITWISE_OR":
 				precedence = 4;
+				addChild(new BitwiseOr(current, it));
+				match("BITWISE_OR");
 				break;
 			case "LOGICAL_OR":
 				precedence = 2;
-				break;
-			case "EXCLAMATION_POINT":
-				precedence = 12;
+				addChild(new LogicalOr(current, it));
+				match("LOGICAL_OR");
 				break;
 			case "BITWISE_XOR":
 				precedence = 5;
+				addChild(new XoR(current, it));
+				match("BITWISE_XOR");
 				break;
 			case "LOGICAL_NOT":
 				precedence = 7;
+				addChild(new Inequality(current, it));
+				match("LOGICAL_NOT");
 				break;
 			case "OUTPUT":
 				precedence = 9;
+				addChild(new LeftShift(current, it));
+				match("OUTPUT");
 				break;
 			case "INPUT":
 				precedence = 9;
+				addChild(new RightShift(current, it));
+				match("INPUT");
 				break;
 			case "EQUALITY":
 				precedence = 7;
-				break;
-			case "OPEN_PARENTHESIS":
-				precedence = 13;
-				break;
-			case "CLOSE_PARENTHESIS":
-				precedence = 0;
+				addChild(new Equality(current, it));
+				match("EQUALITY");
 				break;
 			default:
 				break;
 		}
 		return precedence;
+	}
+
+	private void addOperandChild(Token current, boolean match) {
+		switch(current.getTokenType()) {
+			case "IntIdentifier":
+				addChild(new IntLiteral((Integer)current.getVal())); 
+				break;
+			case "FloatIdentifier":
+				addChild(new FloatLiteral(current, it));
+				break;
+			case "StringIdentifier":
+				addChild(new Identifier(current, it));
+				break;
+			case "OPEN_PARENTHESIS":
+				match("OPEN_PARENTHESIS");
+				addChild(new Expression(current, it));
+				break;
+			case "String_Literal":
+				addChild(new StringLit(current, it));
+				break;
+			case "Char_Literal":
+				addChild(new CharLit(current, it));
+				break;
+			default:
+				break;
+		}
+	}
+
+	private int addOperatorChild(Token current, boolean match) {
+		int precedence = 0;
+		switch(current.getTokenType()) {
+			case "PLUS":
+				precedence = 10; 
+				addChild(new Addition(current, it));
+				break;
+			case "MINUS":
+				precedence = 10;
+				addChild(new Subtraction(current, it));
+				break;
+			case "ASTERISK":
+				precedence = 11;
+				addChild(new Multiplication(current, it));
+				break;
+			case "BACKSLASH":
+				precedence = 11;
+				addChild(new Division(current, it));
+				break;
+			case "ASSIGNMENT_OPERATOR":
+				precedence = 1;
+				addChild(new Assignment(current, it));
+				break;
+			case "RELATIONAL_GREATER_THAN":
+				precedence = 8;
+				addChild(new GreaterThan(current, it));
+				break;
+			case "RELATIONAL_GREATER_EQUALTO":
+				precedence = 8;
+				addChild(new GreaterThanEqual(current, it));
+				break;
+			case "RELATIONAL_LESS_THAN":
+				precedence = 8;
+				addChild(new LessThan(current, it));
+				break;
+			case "RELATIONAL_LESS_EQUALTO":
+				precedence = 8;
+				addChild(new LessThanEqual(current, it));
+				break;
+			case "BITWISE_AND":
+				precedence = 6;
+				addChild(new BitwiseAnd(current, it));
+				break;
+			case "LOGICAL_AND":
+				precedence = 3;
+				addChild(new LogicalAnd(current, it));
+				break;
+			case "BITWISE_OR":
+				precedence = 4;
+				addChild(new BitwiseOr(current, it));
+				break;
+			case "LOGICAL_OR":
+				precedence = 2;
+				addChild(new LogicalOr(current, it));
+				break;
+			case "BITWISE_XOR":
+				precedence = 5;
+				addChild(new XoR(current, it));
+				break;
+			case "LOGICAL_NOT":
+				precedence = 7;
+				addChild(new Inequality(current, it));
+				break;
+			case "OUTPUT":
+				precedence = 9;
+				addChild(new LeftShift(current, it));
+				break;
+			case "INPUT":
+				precedence = 9;
+				addChild(new RightShift(current, it));
+				break;
+			case "EQUALITY":
+				precedence = 7;
+				addChild(new Equality(current, it));
+				break;
+			default:
+				break;
+		}
+		return precedence;
+	}
+
+	protected boolean continueReading() {
+		boolean continueReading = true;
+		switch(token.getTokenType()) {
+			case "COMMA":
+				continueReading = false;
+				break;
+			case "CLOSE_PARENTHESIS":
+				continueReading = false;
+				break;
+			case "SEMICOLON":
+				continueReading = false;
+				break;
+			case "CLOSE_BRACKET":
+				continueReading = false;
+				break;
+			default:
+				break;
+		}
+		return continueReading;
+	}
+
+	protected void readRemainingExpr() {
+		int currPrec = 0;
+		int nextPrec = 20;
+
+		currPrec = addOperatorChild(token);
+
+		if(isUnary()){
+			addChild(new UnaryExpression(token, it));
+		}
+		else{
+			addOperandChild(token);
+		}
+		while(continueReading()) {
+			nextPrec = addOperatorChild(token);
+		 	if(nextPrec > currPrec) {
+		 		Subtree operator = new Subtree(children.get(children.size() - 1));
+		 		Subtree leftHand = new Subtree(children.get(children.size() - 2));
+		 		Expression toAdd = new Expression(leftHand, operator, token, it);
+		 		children.remove(children.get(children.size() - 1));
+		 		children.remove(children.get(children.size() - 1));
+		 		addChild(toAdd);
+	 	
+		 	} else {
+		 		if(isUnary())
+		 			addChild(new UnaryExpression(token, it));
+		 		else
+		 			addOperandChild(token);
+		 	}
+		}
 	}
 
 	@Override
@@ -1538,370 +1691,219 @@ class Expression extends Subtree {
 
 		String toPrint = print + this.toPrint();
 		System.out.println(toPrint);
-		toPrint = "";
-		if(children != null) {
-			for(int i = 0; i < children.size(); i++){
-				toPrint += "" + children.get(i).toPrint() + "";
-			}
-		}
-	}
-
-	private void matchOperand() {
-		switch(token.getTokenType()) {
-			case "IntIdentifier":
-				tokenType = Integer.toString((int)token.getVal());
-				tokenDescrip = "Integer";
-				match("IntIdentifier");
-				break;
-			case "FloatIdentifier":
-				tokenType = Float.toString((float)token.getVal());
-				tokenDescrip = "Float";
-				match("FloatIdentifier");
-				break;
-			case "BYTE_IDENTIFIER":
-				tokenType = Integer.toString((int)token.getVal());
-				tokenDescrip = "Byte";
-				match("BYTE_IDENTIFIER");
-				break;
-			case "StringIdentifier":
-				tokenType = token.getName();
-				tokenDescrip = "Identifier";
-				match("StringIdentifier");
-				break;
-			case "KEYWORD_INT32":
-				match("KEYWORD_INT32");
-				match("OPEN_PARENTHESIS");
-				tokenDescrip = "Keyword";
-				addChild(new Expression(token, it));
-				match("CLOSE_PARENTHESIS");
-				break;
-			case "KEYWORD_FLOAT":
-				match("KEYWORD_FLOAT");
-				match("OPEN_PARENTHESIS");
-				tokenDescrip = "Keyword";
-				addChild(new Expression(token, it));
-				match("CLOSE_PARENTHESIS");
-				break;
-			case "KEYWORD_BYTE":
-				match("KEYWORD_BYTE");
-				tokenDescrip = "Keyword";
-				match("OPEN_PARENTHESIS");
-				addChild(new Expression(token, it));
-				match("CLOSE_PARENTHESIS");
-				break;
-			case "OPEN_PARENTHESIS":
-				match("OPEN_PARENTHESIS");
-				tokenDescrip = "subexpression";
-				tokenType = "";
-				Expression child = new Expression();
-				it = child.populate(it, token);
-				addChild(child);
-				match("CLOSE_PARENTHESIS");
-				break;
-			case "String_Literal":
-				tokenType = token.getName();
-				tokenDescrip = "String Literal";
-				match("String_Literal");
-				break;
-			case "Char_Literal":
-				match("Char_Literal");
-				tokenDescrip = "Char Literal";
-				break;
-			default:
-				break;
-		}
-	}
-
-	private boolean isUnary(Token current) {
-		boolean isUnary = false;
-		switch(current.getTokenType()) {
-			case "TILDE":
-				isUnary = true;
-				unaryOp = "~";
-				break;
-			case "EXCLAMATION_POINT":
-				isUnary = true;
-				unaryOp = "!";
-				break;
-			case "MINUS":
-				unaryOp = "-";
-				isUnary = true;
-				break;
-			default:
-				break;
-		}
-		return isUnary;
 	}
 
 	@Override
 	public String toPrint() {
 		String retVal = "";
-		
-		retVal += "" + tokenType + " ";
 
-		if(children != null) {
-			for(int index = 0; index < children.size(); index++) {
-				retVal += children.get(index).toPrint();
-			}
+		for(int index = 0; index < children.size(); index++) {
+			retVal += children.get(index).toPrint();
 		}
-
 		return retVal;
 	}
 
 }
 
-class ExprRest extends Subtree {	
+class UnaryExpression extends Subtree {
 
-	ExprRest() {}
-
-	ExprRest(Token t, Iterator<Token> i){
+	UnaryExpression(Token t, Iterator<Token> i){
 		super(t, i);
-		addAllChildren();
+		addUnaryChild();
+		addOperandChild();
 	}
 
-	/*	Checks first to see if the operand is a valid built-in type. The only types which are included
-	 *	in operations are int32, byte, and float64. We know since we are in the ExprRest node that an
-	 *	operation of some type is going to be performed. Second step is to check whether the operation
-	 *	is valid for the given symboltype provided by the first step.
-	 */
-
-	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-		//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
-		//otherwise we need to resolve the type in the enclosing scope or throw an error
-		//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
-
-		MathOp currentNode = null;
-		System.out.println(children.size());
-		if(children != null) {
-			for(int index = 0; index < children.size(); index++) {
-				System.out.println("decorateExpr entered in ExprRest");
-				currentNode = (MathOp)children.get(index);
-				currentNode.decorateExpr(enclosing);
-		//MathOp currentNode = null;
-		if(children != null) {
-			for(int index = 0; index < children.size(); index++) {
-				//currentNode = (MathOp)children.get(index);
-				//currentNode.decorateExpr(enclosing);
-			}
-		}
-
-	}
-
-	public Iterator<Token> populateExpr(Iterator<Token> i, Token current) {
-		it = i;
-		token = current;
-		if(!isEndChar(token)) {
-			return it;
-		}
-
-		populate();
-		return it;
-	}
-
-	private void addAllChildren() {
-		if(keepReading(token)) {
-			populate();
-
-			if(keepReading(token)) {
-				ExprRest child = new ExprRest();
-				it = child.populateExpr(it,token);
-				addChild(child);
-			}
-		}
-	}
-
-	private boolean isEndChar(Token current) {
-		boolean isEndChar = true;
-		switch(current.getTokenType()) {
-			case "COMMA":
-				isEndChar = false;
-				break;
-			case "CLOSE_PARENTHESIS":
-				isEndChar = false;
-				break;
-			case "SEMICOLON":
-				isEndChar = false;
-				break;
-			default:
-				break;
-		}
-		return isEndChar;
-	}
-
-	private void populate() {
-		matchOperator();
-	}
-
-	private boolean keepReading(Token current) {
-		boolean isEndChar = true;
-		switch(current.getTokenType()) {
-			case "COMMA":
-				isEndChar = false;
-				break;
-			case "CLOSE_PARENTHESIS":
-				isEndChar = false;
-				break;
-			case "SEMICOLON":
-				isEndChar = false;
-				break;
-			default:
-				break;
-		}
-		return isEndChar;
-	}
-
-	/*
-	 *	Matches the operator in the expression statement. Function sets the 
-	 *	operator to the current token and opType to the name of the current
-	 *	token for later printing.
-	 *
-	 */
-
-	private void matchOperator() {
+	private void addUnaryChild() {
 		switch(token.getTokenType()) {
-			case "PLUS":
-				match("PLUS");
-				addChild(new Addition(token));
-				match(token.getTokenType());
-				break;
-			case "MINUS":
-				match("MINUS");
-				addChild(new Subtraction(token));
-				match(token.getTokenType());
-				break;
-			case "ASTERISK":
-				match("ASTERISK");
-				addChild(new Multiplication(token));
-				match(token.getTokenType());
-				break;
-			case "BACKSLASH":
-				match("BACKSLASH");
-				addChild(new Division(token));
-				match(token.getTokenType());
-				break;
 			case "TILDE":
+				addChild(new Tilde(token, it));
 				match("TILDE");
-				addChild(new Tilde(token));
-				match(token.getTokenType());
-				break;
-			case "ASSIGNMENT_OPERATOR":
-				match("ASSIGNMENT_OPERATOR");
-				addChild(new Assignment(token));
-				match(token.getTokenType());
-				break;
-			case "RELATIONAL_GREATER_THAN":
-				match("RELATIONAL_GREATER_THAN");
-				addChild(new GreaterThan(token));
-				match(token.getTokenType());
-				break;
-			case "RELATIONAL_GREATER_EQUALTO":
-				match("RELATIONAL_GREATER_EQUALTO");
-				addChild(new GreaterThanEqual(token));
-				match(token.getTokenType());
-				break;
-			case "RELATIONAL_LESS_THAN":
-				match("RELATIONAL_LESS_THAN");
-				addChild(new LessThan(token));
-				match(token.getTokenType());
-				break;
-			case "RELATIONAL_LESS_EQUALTO":
-				match("RELATIONAL_LESS_EQUALTO");
-				addChild(new LessThanEqual(token));
-				match(token.getTokenType());
-				break;
-			case "BITWISE_AND":
-				match("BITWISE_AND");
-				addChild(new BitwiseAnd(token));
-				match(token.getTokenType());
-				break;
-			case "LOGICAL_AND":
-				match("LOGICAL_AND");
-				addChild(new LogicalAnd(token));
-				match(token.getTokenType());
-				break;
-			case "BITWISE_OR":
-				match("BITWISE_OR");
-				addChild(new BitwiseOr(token));
-				match(token.getTokenType());
-				break;
-			case "LOGICAL_OR":
-				match("LOGICAL_OR");
-				addChild(new LogicalOr(token));
-				match(token.getTokenType());
 				break;
 			case "EXCLAMATION_POINT":
+				addChild(new Not(token, it));
 				match("EXCLAMATION_POINT");
-				addChild(new Not(token));
-				match(token.getTokenType());
 				break;
-			case "BITWISE_XOR":
-				match("BITWISE_XOR");
-				addChild(new XoR(token));
-				match(token.getTokenType());
-				break;
-			case "LOGICAL_NOT":
-				match("LOGICAL_NOT");
-				addChild(new Inequality(token));
-				match(token.getTokenType());
-				break;
-			case "OUTPUT":
-				match("OUTPUT");
-				addChild(new LeftShift(token));
-				match(token.getTokenType());
-				break;
-			case "INPUT":
-				match("INPUT");
-				addChild(new RightShift(token));
-				match(token.getTokenType());
-				break;
-			case "EQUALITY":
-				match("EQUALITY");
-				addChild(new Equality(token));
-				match(token.getTokenType());
+			case "MINUS":
+				addChild(new Negative(token, it));
+				match("MINUS");
 				break;
 			default:
 				break;
 		}
 	}
 
-	@Override
-	public void print() {}
+	private void addOperandChild() {
+		switch(token.getTokenType()) {
+			case "IntIdentifier":
+				addChild(new IntLiteral(token, it));
+				match("IntIdentifier");
+				break;
+			case "FloatIdentifier":
+				addChild(new FloatLiteral(token, it));
+				match("FloatIdentifier");
+				break;
+			case "StringIdentifier":
+				addChild(new Identifier(token, it));
+				match("StringIdentifier");
+				break;
+			case "OPEN_PARENTHESIS":
+				match("OPEN_PARENTHESIS");
+				addChild(new Expression(token, it));
+				match("CLOSE_PARENTHESIS");
+				break;
+			case "String_Literal":
+				addChild(new StringLit(token, it));
+				match("String_Literal");
+				break;
+			case "Char_Literal":
+				addChild(new CharLit(token, it));
+				match("Char_Literal");
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+class Operand extends Subtree {
+	Operand(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+
+	Operand(int current) {
+		token = new IntIdentifier(current, 0, 0);
+	}
 
 	@Override
 	public String toPrint() {
-		String retVal = ""; //+ opType + " " + uOperator + operandType + "";
-
-		if(children != null) {
-			for(int index = 0; index < children.size(); index++) {
-				if(children.get(index) instanceof Expression){
-					retVal += "(" + children.get(index).toPrint() + ")";
-				} else {
-					retVal += children.get(index).toPrint();
-				}
-			}
-		}
-
-		return retVal;
+		return "";
 	}
-		
+}
+
+class Identifier extends Operand {
+	Identifier(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+
+	@Override
+	public String toPrint() {
+		return "Identifier";
+	}
+}
+
+class StringLit extends Operand {
+	StringLit(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+}
+
+class IntLiteral extends Operand {
+	IntLiteral(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+
+	IntLiteral(int current) {
+		super(current);
+	}
+
+	@Override
+	public String toPrint() {
+		return Integer.toString((Integer)token.getVal());
+	}
+}
+
+class FloatLiteral extends Operand {
+	FloatLiteral(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+}
+
+class CharLit extends Operand {
+	CharLit(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+}
+
+class FunctionCall extends Operand {
+	FunctionCall(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+}
+
+class TypeCast extends Operand {
+	TypeCast(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+
+	private void sort() {
+		switch(token.getTokenType()) {
+			case "KEYWORD_INT32":
+				match("KEYWORD_INT32");
+				addChild(new IntTypeCast(token, it));
+				break;
+			case "KEYWORD_BYTE":
+				match("KEYWORD_BYTE");
+				addChild(new ByteTypeCast(token, it));
+				break;
+			case "KEYWORD_FLOAT":
+				match("KEYWORD_FLOAT");
+				addChild(new FloatTypeCast(token, it));
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+class FloatTypeCast extends TypeCast {
+	FloatTypeCast(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+}
+
+class ByteTypeCast extends TypeCast {
+	ByteTypeCast(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+}
+
+class IntTypeCast extends TypeCast {
+	IntTypeCast(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+}
+
+
+
+
+class Negative extends Subtree {
+	Negative(Token t, Iterator<Token> i){
+		super(t, i);
+	}
 }
 
 class MathOp extends Subtree {
+	MathOp(Token t, Iterator<Token> i){
+		super(t, i);
+	}
 
 	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {}
+
+	@Override
+	public String toPrint() {
+		return token.getTokenType();
+	}
 
 }
 
 class Addition extends MathOp {
-	Addition(Token t){
-		token = t;
+	Addition(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "+" + token.getVal(); 
-		return retVal;
+		return "+";
 	}
 
 	/*	First thing to check for an expression is that the operand is valid
@@ -1911,34 +1913,34 @@ class Addition extends MathOp {
 
 	@Override
 	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
-		//throw new IllegalOperationException();
-		//throw new RuntimeException();
-		// System.out.println("decorateExpr entered in Addition");
-		// //System.out.println(token.getClass());
-		// if(token instanceof IntIdentifier) {
+		// throw new IllegalOperationException();
+		// throw new RuntimeException();
+		//System.out.println("decorateExpr entered in Addition");
+		//System.out.println(token.getClass());
+		if(token instanceof IntIdentifier) {
 		
-		// } else if(token instanceof FloatIdentifier) {
+		} else if(token instanceof FloatIdentifier) {
 
-		// } else if(token instanceof StringIdentifier) {
-		// 	Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-		// 	//System.out.println("previouslyDefined is " + previouslyDefined);
-		// 	if(previouslyDefined == null) {
-		// 		throw new UndefinedTypeException(token.getName());
-		// 	}
-		// 	type = previouslyDefined.getType();
-		// } else {
-		// 	System.out.println(token.getClass());
-		// 	throw new IllegalOperationException("+", token.getTokenType());
-		// }
+		} else if(token instanceof StringIdentifier) {
+			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+			//System.out.println("previouslyDefined is " + previouslyDefined);
+			if(previouslyDefined == null) {
+				throw new UndefinedTypeException(token.getName());
+			}
+			type = previouslyDefined.getType();
+		} else {
+			System.out.println(token.getClass());
+			throw new IllegalOperationException("+", token.getTokenType());
+		}
 
 	}
 }
 
-class Subtraction extends Subtree {
+class Subtraction extends MathOp {
 	Token unaryOperator = null;
 
-	Subtraction(Token t){
-		token = t;
+	Subtraction(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -1966,17 +1968,17 @@ class Subtraction extends Subtree {
 	}
 }
 
-class Multiplication extends Subtree {
+class Multiplication extends MathOp {
 	Token unaryOperator = null;
 
-	Multiplication(Token t){
-		token = t;
+	Multiplication(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
 		String retVal = "";
-		retVal += "*" + token.getVal(); 
+		retVal += "*"; 
 		return retVal;
 	}
 
@@ -1998,11 +2000,11 @@ class Multiplication extends Subtree {
 	}
 }
 
-class Division extends Subtree {
+class Division extends MathOp {
 	Token unaryOperator = null;
 
-	Division(Token t){
-		token = t;
+	Division(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2032,8 +2034,8 @@ class Division extends Subtree {
 class Tilde extends Subtree {		//bitwise not
 	Token unaryOperator = null;
 
-	Tilde(Token t){
-		token = t;
+	Tilde(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2044,11 +2046,11 @@ class Tilde extends Subtree {		//bitwise not
 	}
 }
 
-class Assignment extends Subtree {
+class Assignment extends MathOp {
 	Token unaryOperator = null;
 
-	Assignment(Token t){
-		token = t;
+	Assignment(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2071,10 +2073,9 @@ class Assignment extends Subtree {
 class GreaterThan extends Subtree {
 	Token unaryOperator = null;
 
-	GreaterThan(Token t){
-		token = t;
+	GreaterThan(Token t, Iterator<Token> i){
+		super(t, i);
 	}
-
 	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
 		if(token instanceof IntIdentifier) {
 		
@@ -2101,8 +2102,8 @@ class GreaterThan extends Subtree {
 class GreaterThanEqual extends Subtree {
 	Token unaryOperator = null;
 
-	GreaterThanEqual(Token t){
-		token = t;
+	GreaterThanEqual(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2116,8 +2117,8 @@ class GreaterThanEqual extends Subtree {
 class LessThan extends Subtree {
 	Token unaryOperator = null;
 
-	LessThan(Token t){
-		token = t;
+	LessThan(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2131,8 +2132,8 @@ class LessThan extends Subtree {
 class LessThanEqual extends Subtree {
 	Token unaryOperator = null;
 
-	LessThanEqual(Token t){
-		token = t;
+	LessThanEqual(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2146,8 +2147,8 @@ class LessThanEqual extends Subtree {
 class BitwiseAnd extends Subtree {
 	Token unaryOperator = null;
 
-	BitwiseAnd(Token t){
-		token = t;
+	BitwiseAnd(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2161,8 +2162,8 @@ class BitwiseAnd extends Subtree {
 class LogicalAnd extends Subtree {
 	Token unaryOperator = null;
 
-	LogicalAnd(Token t){
-		token = t;
+	LogicalAnd(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2173,11 +2174,11 @@ class LogicalAnd extends Subtree {
 	}
 }
 
-class BitwiseOr extends Subtree {
+class BitwiseOr extends MathOp {
 	Token unaryOperator = null;
 
-	BitwiseOr(Token t){
-		token = t;
+	BitwiseOr(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2188,11 +2189,11 @@ class BitwiseOr extends Subtree {
 	}
 }
 
-class LogicalOr extends Subtree {
+class LogicalOr extends MathOp {
 	Token unaryOperator = null;
 
-	LogicalOr(Token t){
-		token = t;
+	LogicalOr(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2203,11 +2204,11 @@ class LogicalOr extends Subtree {
 	}
 }
 
-class Not extends Subtree {
+class Not extends MathOp {
 	Token unaryOperator = null;
 
-	Not(Token t){
-		token = t;
+	Not(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2218,11 +2219,11 @@ class Not extends Subtree {
 	}
 }
 
-class XoR extends Subtree {
+class XoR extends MathOp {
 	Token unaryOperator = null;
 
-	XoR(Token t){
-		token = t;
+	XoR(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2233,11 +2234,11 @@ class XoR extends Subtree {
 	}
 }
 
-class Inequality extends Subtree {
+class Inequality extends MathOp {
 	Token unaryOperator = null;
 
-	Inequality(Token t){
-		token = t;
+	Inequality(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2248,11 +2249,11 @@ class Inequality extends Subtree {
 	}
 }
 
-class LeftShift extends Subtree {
+class LeftShift extends MathOp {
 	Token unaryOperator = null;
 
-	LeftShift(Token t){
-		token = t;
+	LeftShift(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2263,11 +2264,11 @@ class LeftShift extends Subtree {
 	}
 }
 
-class RightShift extends Subtree {
+class RightShift extends MathOp {
 	Token unaryOperator = null;
 
-	RightShift(Token t){
-		token = t;
+	RightShift(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override
@@ -2278,11 +2279,11 @@ class RightShift extends Subtree {
 	}
 }
 
-class Equality extends Subtree {
+class Equality extends MathOp {
 	Token unaryOperator = null;
 
-	Equality(Token t){
-		token = t;
+	Equality(Token t, Iterator<Token> i){
+		super(t, i);
 	}
 
 	@Override

@@ -3,6 +3,12 @@ public class IntIdentifier extends Token {
 	public IntIdentifier(int v, int r, int c){
 		super("IntIdentifier", r, c);
 		setVal(v);
+		this.intValue = v;
+	}
+
+	public IntIdentifier(Token toCopy) {
+		super(toCopy);
+		this.val = new Integer((Integer)toCopy.val);
 	}
 
 	@Override

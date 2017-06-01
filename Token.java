@@ -3,6 +3,7 @@ public class Token {
 	protected String input;
 	protected String name;
 	protected Object val;
+	public int intValue = 0;
 
 	public Token(String i, int r, int c){
 	 	this.input = i;
@@ -16,6 +17,14 @@ public class Token {
 	}
 	public String getVarName() {
 		return "";
+	}
+
+	public Token(Token toCopy) {
+		this.row = toCopy.getRow();
+		this.col = toCopy.getCol();
+		this.input = toCopy.getTokenType();
+		this.name = toCopy.getName();
+		this.val = toCopy.val;
 	}
 
 	public Object getVal(){ return val; }
