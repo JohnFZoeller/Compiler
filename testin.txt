@@ -1,3 +1,5 @@
-type john record a byte end;
+var john int32;
+var zoeller float64;
+var frederick byte;
 
-var zoeller john.a;
+var myArray int32[3];

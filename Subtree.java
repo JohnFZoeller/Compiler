@@ -82,12 +82,13 @@ public class Subtree {
 	}
 
 	public void emitAssemblyCode(List<String> consts){
-		System.out.println("ASSEMBLY CODE");
+		System.out.println("ASSEMBLY CODE \n");
 
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts);
 		}
 
+		System.out.println("\n");
 		printConstants(consts);
 	}
 
@@ -673,6 +674,14 @@ class Var extends Subtree{
 				instruction += "int_literal " + defaultInt;
 			} else {
 				instruction += "float_literal " + defaultFloat;
+			}
+			if(symType == "array"){
+				//if(array type is an int)
+				instruction += "int_literal " + defaultInt;
+				consts.add(instruction);
+				instruction = "arraySize: \n\t int_literal " + "2";
+				System.out.println("load_label " + "arraySize");
+				System.out.println("load_mem_int \nalloc_int");
 			}
 			//System.out.println(instruction);
 
