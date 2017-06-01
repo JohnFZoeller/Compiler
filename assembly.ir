@@ -1,28 +1,39 @@
-#comment these four things in and out to watch the stack
+#a) comment 1-6 in and out to watch the stack
+#b) see the syntax -> python interpreter.py -h
+#c) run code 	   -> python interpreter.py assembly.ir
+#d) sublime text syntax scheme -> view->syntax->makefile
 
-#1
-#var john int32;	->john declared as default int val below
+
+#1111111111111111
+#var john int32;	->john declared (as default int, below)
 #john = 4;			->john reinitialized as 4
+		#get address of four
 	load_label four
+		#derefernce, pushing the value 4 onto stack
 	load_mem_int
+		#get address of john
 	load_label john
+		#store 4 into address of john
 	store_mem_int
 
-#2
+
+#222222222222222222
 #print john;
 	load_label john
 	load_mem_int
 	print_int
 
-#3
-#add/sub/mult/div two values
+
+#3333333333333333333
+#add/sub/mult/div two values (also works for and/or/</>... any binary op)
 	load_label one
 	load_mem_int
 	load_label four
 	load_mem_int
 	add
 
-#4
+
+#4444444444444444444
 #basic loop
 loop:
 	load_label iter
@@ -31,15 +42,32 @@ loop:
 	load_mem_int
 	sub
 	load_label done
+		#if sub produced a zero on top of stack, branch to "done: "
 	branch_zero
 	load_label iter
 	load_mem_int
 	load1
+		#increments iter
 	add
 	load_label iter
+		#stores incremented value
 	store_mem_int
 	load_label loop
 	branch
+
+
+#555555555555555555
+#unary op
+	load_label four
+	load_mem_int
+	not
+
+#666666666666666666
+#type  conversion
+	load_label four
+	load_mem_int
+	to_float
+
 
 #exit the code
 done:
@@ -47,18 +75,32 @@ done:
 	exit			
 
 
+#anytime you see a number, add it to the constValues list.
+#That number will then be printed as one of these literals
 john:
 	int_literal -2147483648
-
 one:
 	int_literal 1
 four:
 	int_literal 4
 iter:
 	int_literal 0
-#syntax note:
+stringhello:
+	int_literal 104
+    int_literal 101
+    int_literal 108
+    int_literal 108
+    int_literal 111
+byteTheLetterH:
+	int_literal 104
+
+#syntax notes:
 #sub	n m -- n-m 
+#stac input -- stack output
+
 #n is top of stack (highest number)
 #m is second highest
+
+#COMMENTS MUST HAVE THIER OWN LINES
 
 
