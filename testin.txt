@@ -1,2 +1,3 @@
-type john byte[3];
+type john record a byte end;
 
+var zoeller john.a;
