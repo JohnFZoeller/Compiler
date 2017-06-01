@@ -66,6 +66,12 @@ class ParamSymbol extends Symbol {
 		locks = l;
 		record = r;
 	}
+
+	ParamSymbol(String n, SymbolType t, ArraySymbol a, boolean [] l){
+		super(n, t);
+		locks = l;
+		array = a;
+	}
 }
 
 class VarSymbol extends Symbol {
