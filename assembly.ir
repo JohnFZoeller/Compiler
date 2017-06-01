@@ -1,36 +1,49 @@
+#comment these four things in and out to watch the stack
+
+#1
 #var john int32;	->john declared as default int val below
 #john = 4;			->john reinitialized as 4
 	load_label four
 	load_mem_int
 	load_label john
 	store_mem_int
+
+#2
 #print john;
 	load_label john
 	load_mem_int
 	print_int
 
+#3
+#add/sub/mult/div two values
+	load_label one
+	load_mem_int
+	load_label four
+	load_mem_int
+	add
 
-	# 	#pop int (hopefully) from stack and output	
-	# #print_int
-
-	# # 	#push address of j onto stack
-	# # load_label j
-	# # 	#pop address, get value, push value
-	# # load_mem_int
-	# # 	#pop value and print
-	# # add
-
-	# 	#load address of <i>
-	# load_label john
-	# 	#push 1 to stack
-	# load1
-	# 	#create 1 int at address 
-	# alloc_int
-	# 	#push 1 onto stack
+#4
+#basic loop
+loop:
+	load_label iter
+	load_mem_int
+	load_label four
+	load_mem_int
+	sub
+	load_label done
+	branch_zero
+	load_label iter
+	load_mem_int
+	load1
+	add
+	load_label iter
+	store_mem_int
+	load_label loop
+	branch
 
 #exit the code
-
-	load0			
+done:
+	load0
 	exit			
 
 
@@ -41,7 +54,8 @@ one:
 	int_literal 1
 four:
 	int_literal 4
-
+iter:
+	int_literal 0
 #syntax note:
 #sub	n m -- n-m 
 #n is top of stack (highest number)
