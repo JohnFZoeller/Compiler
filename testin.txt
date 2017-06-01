@@ -1,1 +1,11 @@
+type reed int32;
+type laura reed;
+type anna record b byte end;
+
 var john int32;
+var nancy laura;
+var fred record z byte end;
+
+function zoeller(ref a byte) float64{
+	var poop byte;
+}

@@ -503,6 +503,21 @@ class Function extends Subtree {
 	}
 
 	@Override
+	public void emit(List<String> consts){
+		String instruction = children.get(0).token.getName() + ":\n\t";
+		String symType = symbol.getType().getTypeName();
+
+		if(symType == "int32" || symType == "byte"){
+				instruction += "int_literal " + defaultInt;
+		} else {
+				instruction += "float_literal " + defaultFloat;
+		}
+		//System.out.println(instruction);
+
+		consts.add(instruction);
+	}
+
+	@Override
 	public void print(){
 		int i = 0;
 
@@ -628,6 +643,8 @@ class Var extends Subtree{
 		String symType = symbol.getType().getTypeName();
 
 		if(emitType instanceof Expression){
+			//getExpressionType();
+			//instruction += expressionType + default<>
 			;
 		} else {
 			if(symType == "int32" || symType == "byte"){
@@ -1082,7 +1099,6 @@ class FieldDeclaration extends Subtree{
 	}
 }
 
-//not working with expressions, temporarily using expression instead.  
 class Dimension extends Subtree{
 	Dimension(Token t, Iterator<Token> i){
 		super(t, i);
