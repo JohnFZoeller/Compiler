@@ -663,7 +663,6 @@ class Var extends Subtree{
 		Subtree emitType = children.get(1);
 		String instruction = children.get(0).token.getName() + ":\n\t";
 		String symType = symbol.getType().getTypeName();
-
 		if(emitType instanceof Expression){
 			//getExpressionType();
 			//instruction += expressionType + default<>
@@ -1435,6 +1434,97 @@ class Expression extends Subtree {
 			readExpression();
 	}
 
+	/*
+		A const-expression is an expression whose operands are literals and/or variables declared
+		const and are initialized by const-expressions.
+
+		A compile-time error shall be issued if the operand to a bitwise or boolean operator is of
+		floating-point type.
+
+		Usual math operations can be performed on int32 and float64
+
+		The binary operator, except assignment, where one of the operands is an integer type and the
+		other is floating-type should automatically convert the int to float
+
+		No-type casting for non-primitive types
+	*/
+
+	@Override
+	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, IllegalOperationException, AlreadyDefinedException {
+		//first step is going to be to check that operands and operators are appropriate for the
+		//type of expression. This includes resolving the types of different identifiers.
+
+		//iterate through the children. When we find an operator we will want to compare the
+		//left and right hand sides of the expression to make sure that it is a valid operation
+		//for the given types.
+
+		//if the operand is of type identifier or function-call then we will need to call
+		//decorateFirst on them to resolve their types before comparing them to the other
+		//side of the expression
+
+		//first test-case var x = 6 + 2
+		//second test-case var x = s + 2
+		System.out.println("decorateFirst in Expression called");
+
+		Subtree currentNode = null;
+		Subtree lhs = null;
+		Subtree rhs = null;
+		Subtree op = null;
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+
+			if(currentNode instanceof MathOp) {
+				lhs = children.get(index - 1);
+				rhs = children.get(index + 1);
+
+				validate(lhs, currentNode, rhs, enclosing);
+			} else if(currentNode instanceof Operand) {
+				//System.out.println(currentNode.getSymType());
+				//enclosing.resolve(currentNode.getSymType().getTypeName());
+			} else if(currentNode instanceof Expression) {
+				currentNode.decorateFirst(enclosing);
+			}
+		}
+
+
+	}
+
+	public SymbolType validate(Subtree lhs, Subtree operator, Subtree rhs, Scope enclosing) throws UndefinedTypeException {
+		SymbolType result = null;				//result type to be returned
+
+
+		//first thing to do is check that the lhs and rhs are valid for the expression
+		//can either by a charliteral, intliteral, floatliteral, identifier, or function-call
+
+		//resolves the types for the lhs and rhs of the expression. resulting symbol type's
+		//left and right should be int32 or float64 to be valid for mathematical operations
+
+		SymbolType left = (BuiltInTypeSymbol)enclosing.resolve(lhs.getSymType().getTypeName());
+		SymbolType right = (BuiltInTypeSymbol)enclosing.resolve(rhs.getSymType().getTypeName());
+
+		//checks that both the left and right side of the expressions have types
+		//that have been defined in this scope
+		if(left == null) {
+			throw new UndefinedTypeException(left.getTypeName());
+		} else if(right == null) {
+			throw new UndefinedTypeException(right.getTypeName());
+		}
+
+		if(left.getTypeName().equals("int32")) {
+
+		}
+
+
+		//need to sort by binary operation etc.
+
+		//need to sort by whether the types are valid when combined with the math
+		//operation, if they are of the same type then that will be the resulting type
+		//otherwise casting is necessary.
+
+		return result;
+
+	}
+
 	protected void readExpression() {
 		if(isUnary())
 			addChild(new UnaryExpression(token, it));
@@ -1873,10 +1963,12 @@ class StringLit extends Operand {
 class IntLiteral extends Operand {
 	IntLiteral(Token t, Iterator<Token> i){
 		super(t, i);
+		type = new BuiltInTypeSymbol("int32");
 	}
 
 	IntLiteral(int current) {
 		super(current);
+		type = new BuiltInTypeSymbol("int32");
 	}
 
 	@Override
@@ -1884,29 +1976,31 @@ class IntLiteral extends Operand {
 		return Integer.toString((Integer)token.getVal());
 	}
 
-	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-		//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
-		//otherwise we need to resolve the type in the enclosing scope or throw an error
-		//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
 
-		MathOp currentNode = null;
-		System.out.println(children.size());
-		if(children != null) {
-			for(int index = 0; index < children.size(); index++) {
-				System.out.println("decorateExpr entered in ExprRest");
-				currentNode = (MathOp)children.get(index);
-				currentNode.decorateExpr(enclosing);
-			}
-		}
-		//MathOp currentNode = null;
-		if(children != null) {
-			for(int index = 0; index < children.size(); index++) {
-				//currentNode = (MathOp)children.get(index);
-				//currentNode.decorateExpr(enclosing);
-			}
-		}
 
-	}
+	// public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+	// 	//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
+	// 	//otherwise we need to resolve the type in the enclosing scope or throw an error
+	// 	//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
+
+	// 	MathOp currentNode = null;
+	// 	System.out.println(children.size());
+	// 	if(children != null) {
+	// 		for(int index = 0; index < children.size(); index++) {
+	// 			System.out.println("decorateExpr entered in ExprRest");
+	// 			currentNode = (MathOp)children.get(index);
+	// 			currentNode.decorateExpr(enclosing);
+	// 		}
+	// 	}
+	// 	//MathOp currentNode = null;
+	// 	if(children != null) {
+	// 		for(int index = 0; index < children.size(); index++) {
+	// 			//currentNode = (MathOp)children.get(index);
+	// 			//currentNode.decorateExpr(enclosing);
+	// 		}
+	// 	}
+
+	// }
 }
 
 class FloatLiteral extends Operand {
