@@ -1,6 +1,50 @@
-#var john = 1 + 2
+#var john int32;	->john declared as default int val below
+#john = 4;			->john reinitialized as 4
+	load_label four
+	load_mem_int
+	load_label john
+	store_mem_int
+#print john;
+	load_label john
+	load_mem_int
+	print_int
 
-load_label i
 
-i:
-        int_literal 1
+	# 	#pop int (hopefully) from stack and output	
+	# #print_int
+
+	# # 	#push address of j onto stack
+	# # load_label j
+	# # 	#pop address, get value, push value
+	# # load_mem_int
+	# # 	#pop value and print
+	# # add
+
+	# 	#load address of <i>
+	# load_label john
+	# 	#push 1 to stack
+	# load1
+	# 	#create 1 int at address 
+	# alloc_int
+	# 	#push 1 onto stack
+
+#exit the code
+
+	load0			
+	exit			
+
+
+john:
+	int_literal -2147483648
+
+one:
+	int_literal 1
+four:
+	int_literal 4
+
+#syntax note:
+#sub	n m -- n-m 
+#n is top of stack (highest number)
+#m is second highest
+
+

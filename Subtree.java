@@ -23,6 +23,8 @@ public class Subtree {
 	Symbol symbol = null;
 	SymbolType type = null;
 
+	String defaultInt = "-2147483648", defaultFloat = "-123456789.123456789";
+
 	public Subtree(){}
 
 	public Subtree(Iterator<Token> i){ 
@@ -74,14 +76,24 @@ public class Subtree {
 		}
 	}
 
-	public void emitAssemblyCode(){
+	public void emitAssemblyCode(List<String> consts){
+		System.out.println("ASSEMBLY CODE");
 
 		for(int i = 0; i < children.size(); i++){
-			children.get(i).emit();
+			children.get(i).emit(consts);
+		}
+
+		printConstants(consts);
+	}
+
+	public void printConstants(List<String> consts){
+
+		for(int i = 0; i < consts.size(); i++){
+			System.out.println(consts.get(i));
 		}
 	}
 
-	public void emit(){}
+	public void emit(List<String> c){}
 
 	public void print(){;}
 
@@ -609,26 +621,25 @@ class Var extends Subtree{
 		}		
 	}
 
-	//var john int32[2];
+	@Override
+	public void emit(List<String> consts){
+		Subtree emitType = children.get(1);
+		String instruction = children.get(0).token.getName() + ":\n\t";
+		String symType = symbol.getType().getTypeName();
 
+		if(emitType instanceof Expression){
+			;
+		} else {
+			if(symType == "int32" || symType == "byte"){
+				instruction += "int_literal " + defaultInt;
+			} else {
+				instruction += "float_literal " + defaultFloat;
+			}
+			//System.out.println(instruction);
 
-	//actually unnecessary- here's why: Any var that is declared with an expression 
-	//is still given a type (the type of the expression); and we don't actually store 
-	//the value of that expression in the symbol table- just its type. 
-	//public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {;}
-	//When he said the second pass is for initializations, what I think he was 
-	//referring to is this kind of case...
-
-	//var zoel = 5;		-> zoel.type = int32;  -> still technically a declaration
-	//var john int32;	-> john.type = int32;
-	//john = zoel;		-> verify john.type == zoel.type; 
-
-	//the above case is therefore a decoration of an expression, because a line that
-	//starts with a stringIdentifer is not a declaration of any kind. This makes
-	//me realize that I have written very little on this iteration and would like to 
-	//steal some of your work (-:
-
-
+		}
+		consts.add(instruction);
+	}
 
 	@Override
 	public void print(){
@@ -1686,6 +1697,7 @@ class ExprRest extends Subtree {
 				System.out.println("decorateExpr entered in ExprRest");
 				currentNode = (MathOp)children.get(index);
 				currentNode.decorateExpr(enclosing);
+			}
 		//MathOp currentNode = null;
 		if(children != null) {
 			for(int index = 0; index < children.size(); index++) {
@@ -1694,7 +1706,7 @@ class ExprRest extends Subtree {
 			}
 		}
 
-	}
+	}}
 
 	public Iterator<Token> populateExpr(Iterator<Token> i, Token current) {
 		it = i;
