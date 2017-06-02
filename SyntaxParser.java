@@ -65,9 +65,11 @@ public class SyntaxParser {
 			case "const":	root.addChild(new Var(currentTok, i));
 							break;
 			case "StringIdentifier":
-							//root.addChild(new Expression(currentTok, i));
-							//if(nextToken == SEMICOLON)
-								//match("SEMICOLON");
+							Expression toAdd = new Expression(currentTok, i);
+							root.addChild(toAdd);
+							currentTok = toAdd.token;
+							if(currentTok.getTokenType().equals("SEMICOLON"))
+								match("SEMICOLON");
 							break;
 			default:		System.out.println("Bad root token "
 							+ currentTok.getTokenType());

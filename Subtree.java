@@ -1158,12 +1158,6 @@ class Dimension extends Subtree{
 		super(t, i);
 
 		match("OPEN_BRACKET");
-
-
-
-
-
-
 		addChild(new Expressions(token, it));
 		match("CLOSE_BRACKET");
 	}
@@ -1172,6 +1166,17 @@ class Dimension extends Subtree{
 	public void print(){
 		children.get(0).printUp(print);
 		children.get(0).print();
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		Subtree currentNode = null;
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+			retVal += currentNode.toPrint();
+		}
+		return retVal;
 	}
 }
 
@@ -1427,6 +1432,17 @@ class Expressions extends Subtree {
 		 	children.get(i).print();
 		}
 	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		Subtree currentNode = null;
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+			retVal += currentNode.toPrint();
+		}
+		return retVal;
+	}
 }
 
 class Expression extends Subtree {
@@ -1485,31 +1501,31 @@ class Expression extends Subtree {
 		Subtree lhs = null;
 		Subtree rhs = null;
 		Subtree op = null;
-		for(int index = 0; index < children.size(); index++) {
-			currentNode = children.get(index);
+		// for(int index = 0; index < children.size(); index++) {
+		// 	currentNode = children.get(index);
 
-			if(currentNode instanceof MathOp) {
-				lhs = children.get(index - 1);
-				rhs = children.get(index + 1);
+		// 	if(currentNode instanceof MathOp) {
+		// 		lhs = children.get(index - 1);
+		// 		rhs = children.get(index + 1);
 
-				validate(lhs, currentNode, rhs, enclosing);
-			} else if(currentNode instanceof Operand) {
-				if(currentNode instanceof Identifier) {
-					currentNode.setType(enclosing);
-					SymbolType ss = currentNode.getSymType();
-					//System.out.println("Identifier " + currentNode.toPrint() + " type " + ss.getTypeName());
-				}
-				//System.out.println(currentNode.getSymType());
-				//enclosing.resolve(currentNode.getSymType().getTypeName());
-			} else if(currentNode instanceof BitWiseOp) {
-				lhs = children.get(index - 1);
-				rhs = children.get(index + 1);
+		// 		validate(lhs, currentNode, rhs, enclosing);
+		// 	} else if(currentNode instanceof Operand) {
+		// 		if(currentNode instanceof Identifier) {
+		// 			currentNode.setType(enclosing);
+		// 			SymbolType ss = currentNode.getSymType();
+		// 			//System.out.println("Identifier " + currentNode.toPrint() + " type " + ss.getTypeName());
+		// 		}
+		// 		//System.out.println(currentNode.getSymType());
+		// 		//enclosing.resolve(currentNode.getSymType().getTypeName());
+		// 	} else if(currentNode instanceof BitWiseOp) {
+		// 		lhs = children.get(index - 1);
+		// 		rhs = children.get(index + 1);
 
-				validate(lhs, currentNode, rhs, enclosing);
-			} else if(currentNode instanceof Expression) {
-				currentNode.decorateFirst(enclosing);
-			}
-		}
+		// 		validate(lhs, currentNode, rhs, enclosing);
+		// 	} else if(currentNode instanceof Expression) {
+		// 		currentNode.decorateFirst(enclosing);
+		// 	}
+		// }
 
 
 	}
@@ -1566,7 +1582,6 @@ class Expression extends Subtree {
 		//operation, if they are of the same type then that will be the resulting type
 		//otherwise casting is necessary.
 		return result;
-
 	}
 
 	protected void readExpression() {
@@ -1609,7 +1624,7 @@ class Expression extends Subtree {
 			case "StringIdentifier":
 				addChild(new Identifier(current, it));
 				match("StringIdentifier");
-				checkForFunctionCall();
+				disambiguate();
 				break;
 			case "OPEN_PARENTHESIS":
 				match("OPEN_PARENTHESIS");
@@ -1888,12 +1903,23 @@ class Expression extends Subtree {
 		}
 	}
 
-	public void checkForFunctionCall() {
+	public void disambiguate() {
+		//if the identifier is part of a function call
 		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
 			Identifier functionName = (Identifier)children.get(children.size() - 1);
 			children.remove(children.size() - 1);
 			FunctionCall functionCall = new FunctionCall(functionName, token, it);
 			addChild(functionCall);
+		//if the identifier is part of an array
+		} else if(token.getTokenType().equals("OPEN_BRACKET")) {
+			Identifier arrayName = (Identifier)children.get(children.size() - 1);
+			children.remove(children.size() - 1);
+			ArrayCall arrayCall = new ArrayCall(arrayName, token, it);
+			addChild(arrayCall);
+		//know it is of type record and we need to reference the record
+		//of a certain variable
+		} else if(token.getTokenType().equals(".")) {
+
 		}
 	}
 
@@ -1984,6 +2010,9 @@ class UnaryExpression extends Subtree {
 		}
 	}
 }
+
+//------------------------ Operand should be done -----------------------------
+//shell class for differentiating operands from operators
 
 class Operand extends Subtree {
 	Operand(Token t, Iterator<Token> i){
@@ -2163,6 +2192,52 @@ class FunctionCall extends Operand {
 		return retVal;
 	}
 }
+
+class Variable extends Operand {
+	Variable(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+
+	Variable(Identifier name, Token t, Iterator<Token> i) {
+		super(t, i);
+		addChild(name);
+		token = t;
+		it = i;
+		//addParams();
+	}	
+}
+
+class ArrayCall extends Operand {
+	ArrayCall(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+
+	ArrayCall(Identifier name, Token t, Iterator<Token> i) {
+		super(t, i);
+		addChild(name);
+		token = t;
+		it = i;
+		addDimension();
+	}
+
+	public void addDimension() {
+		Dimension dimensions = new Dimension(token, it);
+		addChild(dimensions);
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "Array: " + children.get(0).toPrint() + "[";
+
+		Subtree currentNode = null;
+		for(int index = 1; index < children.size(); index++) {
+			currentNode = children.get(index);
+			retVal += currentNode.toPrint();
+		}
+		retVal += "]";
+		return retVal;
+	}
+}
 //-----------------------------------------------------------------------------
 //------------------------- Type - Cast needs work ----------------------------
 //-----------------------------------------------------------------------------
@@ -2218,6 +2293,9 @@ class Negative extends Subtree {
 	}
 }
 
+//-------------------------- MathOp should be done ----------------------------
+//shell class for differentiating operands from operators.
+
 class MathOp extends Subtree {
 	MathOp(Token t, Iterator<Token> i){
 		super(t, i);
@@ -2231,7 +2309,6 @@ class MathOp extends Subtree {
 	public String toPrint() {
 		return token.getTokenType();
 	}
-
 }
 
 //------------------------ Addition should be done ----------------------------
@@ -2257,7 +2334,6 @@ class Addition extends MathOp {
 		}
 		return isValid;
 	}
-
 }
 
 //---------------------- Subtraction should be done ---------------------------
