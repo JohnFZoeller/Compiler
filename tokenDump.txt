@@ -1,6 +1,21 @@
 StringIdentifier john
-byte null
-OPEN_BRACKET null
-IntIdentifier null
-CLOSE_BRACKET null
+record null
+StringIdentifier a
+int32 null
+end null
 SEMICOLON null
+var null
+StringIdentifier String
+int32 null
+SEMICOLON null
+var null
+StringIdentifier zoeller
+ASSIGNMENT_OPERATOR null
+StringIdentifier String
+SEMICOLON null
+Exception in thread "main" java.lang.NullPointerException
+	at Var.emit(Subtree.java:665)
+	at Subtree.emitAssemblyCode(Subtree.java:88)
+	at SyntaxParser.decorate(SyntaxParser.java:38)
+	at Main.run(Main.java:21)
+	at Main.main(Main.java:7)
