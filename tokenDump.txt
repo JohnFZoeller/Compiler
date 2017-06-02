@@ -1,21 +1,38 @@
 StringIdentifier john
-record null
-StringIdentifier a
-int32 null
-end null
-SEMICOLON null
-var null
-StringIdentifier String
 int32 null
 SEMICOLON null
 var null
 StringIdentifier zoeller
+float64 null
+SEMICOLON null
+var null
+StringIdentifier frederick
+byte null
+SEMICOLON null
+var null
+StringIdentifier destiny
+record null
+StringIdentifier a
+int32 null
+COMMA null
+StringIdentifier b
+int32 null
+end null
+SEMICOLON null
+var null
+StringIdentifier x
 ASSIGNMENT_OPERATOR null
-StringIdentifier String
+IntIdentifier null
+PLUS null
+IntIdentifier null
+ASTERISK null
+IntIdentifier null
 SEMICOLON null
 Exception in thread "main" java.lang.NullPointerException
-	at Var.emit(Subtree.java:665)
-	at Subtree.emitAssemblyCode(Subtree.java:88)
-	at SyntaxParser.decorate(SyntaxParser.java:38)
+	at Expression.validate(Subtree.java:1802)
+	at Expression.decorateFirst(Subtree.java:1769)
+	at Var.decorateFirst(Subtree.java:744)
+	at Subtree.beginDecorateFirst(Subtree.java:93)
+	at SyntaxParser.decorate(SyntaxParser.java:36)
 	at Main.run(Main.java:21)
 	at Main.main(Main.java:7)

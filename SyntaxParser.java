@@ -67,7 +67,7 @@ public class SyntaxParser {
 			case "StringIdentifier":
 							Expression toAdd = new Expression(currentTok, i);
 							root.addChild(toAdd);
-							currentTok = toAdd.token;
+							//currentTok = toAdd.token;
 							if(currentTok.getTokenType().equals("SEMICOLON"))
 								match("SEMICOLON");
 							break;
