@@ -2084,6 +2084,10 @@ class CharLit extends Operand {
 	}
 }
 
+//-----------------------------------------------------------------------------
+//------------------------- FunctionCall needs work ---------------------------
+//-----------------------------------------------------------------------------
+
 class FunctionCall extends Operand {
 	boolean hasParams = false;
 	FunctionCall(Token t, Iterator<Token> i){
@@ -2136,11 +2140,13 @@ class FunctionCall extends Operand {
 			if(hasParams == true)
 				throw new ParameterMismatchError((String)token.getVal());
 		}
-
 		//otherwise we know there should be parameters and we can check
 		//to see that the symbol type of each parameter is in the
 		//members of the original function symbol
 
+		//want to iterate over children, check the expressions return type
+		//to see if it matches the type in the members, and that there is
+		//the correct amount
 
 	}
 
@@ -2157,6 +2163,9 @@ class FunctionCall extends Operand {
 		return retVal;
 	}
 }
+//-----------------------------------------------------------------------------
+//------------------------- Type - Cast needs work ----------------------------
+//-----------------------------------------------------------------------------
 
 class TypeCast extends Operand {
 	TypeCast(Token t, Iterator<Token> i){
@@ -2201,6 +2210,8 @@ class IntTypeCast extends TypeCast {
 	}
 }
 
+
+
 class Negative extends Subtree {
 	Negative(Token t, Iterator<Token> i){
 		super(t, i);
@@ -2223,6 +2234,8 @@ class MathOp extends Subtree {
 
 }
 
+//------------------------ Addition should be done ----------------------------
+
 class Addition extends MathOp {
 	Addition(Token t, Iterator<Token> i){
 		super(t, i);
@@ -2242,40 +2255,13 @@ class Addition extends MathOp {
 		} else if(operand.getTypeName().equals("float64")) {
 			isValid = true;
 		}
-
 		return isValid;
 	}
 
-	/*	First thing to check for an expression is that the operand is valid
-	 *	for the expression type. Mathematical operations can only be performed
-	 *	on int32 and float64 types.
-
-	@Override
-	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
-		// throw new IllegalOperationException();
-		// throw new RuntimeException();
-		//System.out.println("decorateExpr entered in Addition");
-		//System.out.println(token.getClass());
-		if(token instanceof IntIdentifier) {
-		
-		} else if(token instanceof FloatIdentifier) {
-
-		} else if(token instanceof StringIdentifier) {
-			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-			//System.out.println("previouslyDefined is " + previouslyDefined);
-			if(previouslyDefined == null) {
-				throw new UndefinedTypeException(token.getName());
-			}
-			type = previouslyDefined.getType();
-		} else {
-			System.out.println(token.getClass());
-			throw new IllegalOperationException("+", token.getTokenType());
-		}
-
-	}
-	*/
-
 }
+
+//---------------------- Subtraction should be done ---------------------------
+
 class Subtraction extends MathOp {
 	Subtraction(Token t, Iterator<Token> i){
 		super(t, i);
@@ -2298,24 +2284,9 @@ class Subtraction extends MathOp {
 
 		return isValid;
 	}
-
-	// public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
-	// 	if(token instanceof IntIdentifier) {
-		
-	// 	} else if(token instanceof FloatIdentifier) {
-
-	// 	} else if(token instanceof StringIdentifier) {
-	// 		Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-	// 		if(previouslyDefined == null) {
-	// 			throw new UndefinedTypeException(token.getName());
-	// 		}
-	// 		type = previouslyDefined.getType();
-	// 	} else {
-	// 		throw new IllegalOperationException("-", token.getTokenType());
-	// 	}
-
-	// }
 }
+
+//---------------------- Multiplication should be done ------------------------
 
 class Multiplication extends MathOp {
 	Multiplication(Token t, Iterator<Token> i){
@@ -2336,27 +2307,11 @@ class Multiplication extends MathOp {
 		} else if(operand.getTypeName().equals("float64")) {
 			isValid = true;
 		}
-
 		return isValid;
 	}
-
-	// public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
-	// 	if(token instanceof IntIdentifier) {
-		
-	// 	} else if(token instanceof FloatIdentifier) {
-
-	// 	} else if(token instanceof StringIdentifier) {
-	// 		Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-	// 		if(previouslyDefined == null) {
-	// 			throw new UndefinedTypeException(token.getName());
-	// 		}
-	// 		type = previouslyDefined.getType();
-	// 	} else {
-	// 		throw new IllegalOperationException("*", token.getTokenType());
-	// 	}
-
-	// }
 }
+
+//------------------------ Division should be done ----------------------------
 
 class Division extends MathOp {
 	Division(Token t, Iterator<Token> i){
@@ -2368,21 +2323,17 @@ class Division extends MathOp {
 		return "/";
 	}
 
-	// public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
-	// 	if(token instanceof IntIdentifier) {
-		
-	// 	} else if(token instanceof FloatIdentifier) {
+	@Override
+	public boolean validOp(SymbolType operand) {
+		boolean isValid = false;
 
-	// 	} else if(token instanceof StringIdentifier) {
-	// 		Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-	// 		if(previouslyDefined == null) {
-	// 			throw new UndefinedTypeException(token.getName());
-	// 		}
-	// 		type = previouslyDefined.getType();
-	// 	} else {
-	// 		throw new IllegalOperationException("/", token.getTokenType());
-	// 	}
-	// }
+		if(operand.getTypeName().equals("int32")) {
+			isValid = true;
+		} else if(operand.getTypeName().equals("float64")) {
+			isValid = true;
+		}
+		return isValid;
+	}
 }
 
 class Tilde extends Subtree {		//bitwise not
