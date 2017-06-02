@@ -185,7 +185,7 @@ public class Subtree {
 		return "";
 	}
 
-	public void setType(Scope e){;}  //temporary workaround
+	public void setType(Scope e) throws UndefinedTypeException {;}  //temporary workaround
 
 	public Symbol makeArray(String n, SymbolType t, boolean [] l, int s, RecordSymbol r){
 		ArraySymbol arr = (r == null) ? new ArraySymbol(n, s, t) : new ArraySymbol(n, s, t, r);
@@ -1465,6 +1465,7 @@ class Expression extends Subtree {
 		//first test-case var x = 6 + 2
 		//second test-case var x = s + 2
 		System.out.println("decorateFirst in Expression called");
+		//System.out.println("Character test" + Character.toString((Character)'c'));
 
 		Subtree currentNode = null;
 		Subtree lhs = null;
@@ -1479,8 +1480,18 @@ class Expression extends Subtree {
 
 				validate(lhs, currentNode, rhs, enclosing);
 			} else if(currentNode instanceof Operand) {
+				if(currentNode instanceof Identifier) {
+					currentNode.setType(enclosing);
+					SymbolType ss = currentNode.getSymType();
+					//System.out.println("Identifier " + currentNode.toPrint() + " type " + ss.getTypeName());
+				}
 				//System.out.println(currentNode.getSymType());
 				//enclosing.resolve(currentNode.getSymType().getTypeName());
+			} else if(currentNode instanceof BitWiseOp) {
+				lhs = children.get(index - 1);
+				rhs = children.get(index + 1);
+
+				validate(lhs, currentNode, rhs, enclosing);
 			} else if(currentNode instanceof Expression) {
 				currentNode.decorateFirst(enclosing);
 			}
@@ -1510,7 +1521,27 @@ class Expression extends Subtree {
 			throw new UndefinedTypeException(right.getTypeName());
 		}
 
-		if(left.getTypeName().equals("int32")) {
+		//by this point we know that both lhs and rhs are valid BuiltInTypes.
+		//two cases, can be bitwise operator or math operation, these two
+		//cases will be handled differently as far as the type of operands that
+		//they allow.
+		MathOp temp = (MathOp)operator;
+		if(operator instanceof MathOp) {
+			if(temp.validOp(left) && temp.validOp(right)) {
+				System.out.println("Both operations were valid");
+
+				if(right.getTypeName().equals("float64") ||
+					left.getTypeName().equals("float64")) {
+					result = (BuiltInTypeSymbol)enclosing.resolve("float64");
+				} else {
+					result = (BuiltInTypeSymbol)enclosing.resolve("int32"); 
+				}
+
+			} else {
+				throw new IllegalOperationException(operator.getClass().getName(), "");
+			}
+
+		} else if(operator instanceof BitWiseOp) {
 
 		}
 
@@ -1520,7 +1551,6 @@ class Expression extends Subtree {
 		//need to sort by whether the types are valid when combined with the math
 		//operation, if they are of the same type then that will be the resulting type
 		//otherwise casting is necessary.
-
 		return result;
 
 	}
@@ -1949,16 +1979,36 @@ class Identifier extends Operand {
 	}
 
 	@Override
+	public void setType(Scope enclosing) throws UndefinedTypeException {
+		Symbol defined = enclosing.resolve((String)token.getVal());
+
+		if(defined == null) {
+			throw new UndefinedTypeException(toPrint());
+		}
+
+		type = defined.getType();
+	}
+
+	@Override
 	public String toPrint() {
-		return "Identifier";
+		return (String)token.getVal();
 	}
 }
+
+//------------------------ StringLit should be done ---------------------------
 
 class StringLit extends Operand {
 	StringLit(Token t, Iterator<Token> i){
 		super(t, i);
 	}
+
+	@Override
+	public String toPrint() {
+		return (String)token.getVal();
+	}
 }
+
+//----------------------- IntLiteral should be done ---------------------------
 
 class IntLiteral extends Operand {
 	IntLiteral(Token t, Iterator<Token> i){
@@ -1966,6 +2016,8 @@ class IntLiteral extends Operand {
 		type = new BuiltInTypeSymbol("int32");
 	}
 
+	//constructor was trying to fix a bug of sorts, fairly certain
+	//the bug is no longer present but I am not positive
 	IntLiteral(int current) {
 		super(current);
 		type = new BuiltInTypeSymbol("int32");
@@ -1975,43 +2027,33 @@ class IntLiteral extends Operand {
 	public String toPrint() {
 		return Integer.toString((Integer)token.getVal());
 	}
-
-
-
-	// public void decorateExpr(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
-	// 	//first thing to do is check the type of the operand and if it is an int, float or byte, we are good.
-	// 	//otherwise we need to resolve the type in the enclosing scope or throw an error
-	// 	//Symbol temp = (BuiltInTypeSymbol)enclosing.resolve(getOpType());
-
-	// 	MathOp currentNode = null;
-	// 	System.out.println(children.size());
-	// 	if(children != null) {
-	// 		for(int index = 0; index < children.size(); index++) {
-	// 			System.out.println("decorateExpr entered in ExprRest");
-	// 			currentNode = (MathOp)children.get(index);
-	// 			currentNode.decorateExpr(enclosing);
-	// 		}
-	// 	}
-	// 	//MathOp currentNode = null;
-	// 	if(children != null) {
-	// 		for(int index = 0; index < children.size(); index++) {
-	// 			//currentNode = (MathOp)children.get(index);
-	// 			//currentNode.decorateExpr(enclosing);
-	// 		}
-	// 	}
-
-	// }
 }
+
+//----------------------- FloatLiteral should be done -------------------------
 
 class FloatLiteral extends Operand {
 	FloatLiteral(Token t, Iterator<Token> i){
 		super(t, i);
+		type = new BuiltInTypeSymbol("float64");
+	}
+
+	@Override
+	public String toPrint() {
+		return Float.toString((Float)token.getVal());
 	}
 }
+
+//------------------------- CharLit should be done ----------------------------
 
 class CharLit extends Operand {
 	CharLit(Token t, Iterator<Token> i){
 		super(t, i);
+		type = new BuiltInTypeSymbol("byte");
+	}
+
+	@Override
+	public String toPrint() {
+		return "'" + Character.toString((Character)token.getVal()) + "'";
 	}
 }
 
@@ -2077,6 +2119,8 @@ class MathOp extends Subtree {
 
 	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {}
 
+	public boolean validOp(SymbolType operand) { return false; }
+
 	@Override
 	public String toPrint() {
 		return token.getTokenType();
@@ -2094,34 +2138,47 @@ class Addition extends MathOp {
 		return "+";
 	}
 
+	@Override
+	public boolean validOp(SymbolType operand) {
+		boolean isValid = false;
+
+		if(operand.getTypeName().equals("int32")) {
+			isValid = true;
+		} else if(operand.getTypeName().equals("float64")) {
+			isValid = true;
+		}
+
+		return isValid;
+	}
+
 	/*	First thing to check for an expression is that the operand is valid
 	 *	for the expression type. Mathematical operations can only be performed
 	 *	on int32 and float64 types.
 	 */
 
-	@Override
-	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
-		// throw new IllegalOperationException();
-		// throw new RuntimeException();
-		//System.out.println("decorateExpr entered in Addition");
-		//System.out.println(token.getClass());
-		if(token instanceof IntIdentifier) {
+	// @Override
+	// public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
+	// 	// throw new IllegalOperationException();
+	// 	// throw new RuntimeException();
+	// 	//System.out.println("decorateExpr entered in Addition");
+	// 	//System.out.println(token.getClass());
+	// 	if(token instanceof IntIdentifier) {
 		
-		} else if(token instanceof FloatIdentifier) {
+	// 	} else if(token instanceof FloatIdentifier) {
 
-		} else if(token instanceof StringIdentifier) {
-			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-			//System.out.println("previouslyDefined is " + previouslyDefined);
-			if(previouslyDefined == null) {
-				throw new UndefinedTypeException(token.getName());
-			}
-			type = previouslyDefined.getType();
-		} else {
-			System.out.println(token.getClass());
-			throw new IllegalOperationException("+", token.getTokenType());
-		}
+	// 	} else if(token instanceof StringIdentifier) {
+	// 		Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+	// 		//System.out.println("previouslyDefined is " + previouslyDefined);
+	// 		if(previouslyDefined == null) {
+	// 			throw new UndefinedTypeException(token.getName());
+	// 		}
+	// 		type = previouslyDefined.getType();
+	// 	} else {
+	// 		System.out.println(token.getClass());
+	// 		throw new IllegalOperationException("+", token.getTokenType());
+	// 	}
 
-	}
+	// }
 }
 
 class Subtraction extends MathOp {
@@ -2480,4 +2537,8 @@ class Equality extends MathOp {
 		retVal += "== " + token.getVal(); 
 		return retVal;
 	}
+}
+
+class BitWiseOp extends Subtree {
+
 }
