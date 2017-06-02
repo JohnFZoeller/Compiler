@@ -39,9 +39,30 @@ public class Subtree {
 		it = i;
 	}
 
+	Subtree(Subtree name, Token t, Iterator<Token> i) {
+		token = t;
+		it = i;
+		addChild(name);
+	}
+
+	Subtree(Subtree name, Token current, Token sync, Iterator<Token> i) {
+		token = sync;
+		it = i;
+		addChild(name);
+	}
+
 	public Subtree(Subtree toCopy) {
 		this.token = new Token(toCopy.token);
 		this.it = toCopy.it;
+		this.row = toCopy.row;
+		this.col = toCopy.col;
+		this.level = toCopy.level;
+		this.print = toCopy.print;
+		if(this.children != toCopy.children) 
+			for(int index = 0; index < toCopy.children.size(); index++) {
+				this.addChild(toCopy.children.get(index).deepCopy());
+			}
+			//this.children = new ArrayList<Subtree>(toCopy.children);
 	}
 
 	public SymbolType getSymType(){
@@ -212,6 +233,9 @@ public class Subtree {
 		else return new TypeSymbol(n, type, rec);
 	}
 
+	public Subtree deepCopy() {
+		return new Subtree(this);
+	}
 }
 
 /*------------------------------ Main Node Types ---------------------------------*/
@@ -236,6 +260,10 @@ class For extends Subtree{
 		match("CLOSE_PARENTHESIS");
 
 		addChild(new Block(token, it));
+	}
+
+	For(For toCopy) {
+		super(toCopy);
 	}
 
 	@Override
@@ -272,6 +300,11 @@ class For extends Subtree{
 		children.get(3).printUp(print);
 		children.get(3).print();
 	}
+
+	@Override
+	public For deepCopy() {
+		return new For(this);
+	}
 }
 
 class While extends Subtree{
@@ -290,6 +323,11 @@ class While extends Subtree{
 		addChild(new Block(token, it));
 	}
 
+	While(While toCopy) {
+		super(toCopy);
+		this.block = toCopy.block.deepCopy();
+	}
+
 	@Override
 	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
 		currentScope = new LocalScope(enclosing);
@@ -297,6 +335,11 @@ class While extends Subtree{
 		block.decorateFirst(currentScope);
 		block.decorateSecond(currentScope);
 		currentScope = currentScope.getEnclosingScope();
+	}
+
+	@Override
+	public While deepCopy() {
+		return new While(this);
 	}
 
 	@Override
@@ -335,6 +378,16 @@ class If extends Subtree{
 
 		if(isElse())
 			addChild(new Else(token, it));
+	}
+
+	If(If toCopy) {
+		super(toCopy);
+		this.block = toCopy.block.deepCopy();
+	}
+
+	@Override
+	public If deepCopy() {
+		return new If(this);
 	}
 
 	@Override
@@ -379,6 +432,16 @@ class Else extends Subtree{
 		super(t, i);
 		match("else");
 		addChild(new Block(token, it));
+	}
+
+	Else(Else toCopy) {
+		super(toCopy);
+		this.block = toCopy.block.deepCopy();
+	}
+
+	@Override
+	public Else deepCopy() {
+		return new Else(this);
 	}
 
 	@Override
@@ -442,6 +505,18 @@ class Function extends Subtree {
 		}
 
 		addChild(new Block(token, it));				//final child, Block
+	}
+
+	Function(Function toCopy) {
+		super(toCopy);
+		this.localScope = toCopy.localScope;
+		this.block = toCopy.block.deepCopy();
+		this.flags = toCopy.flags;
+	}
+
+	@Override
+	public Function deepCopy() {
+		return new Function(this);
 	}
 
 	@Override
@@ -609,6 +684,16 @@ class Var extends Subtree{
 		match("SEMICOLON");
 	}
 
+	Var(Var toCopy) {
+		super(toCopy);
+		this.locks = toCopy.locks;
+	}
+
+	@Override
+	public Var deepCopy() {
+		return new Var(this);
+	}
+
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
 		String symbolName = children.get(0).token.getName();
 		Symbol previouslyDefined = enclosing.resolve(symbolName);
@@ -731,6 +816,15 @@ class Retur extends Subtree{
 		match("SEMICOLON");
 	}
 
+	Retur(Retur toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Retur deepCopy() {
+		return new Retur(this);
+	}
+
 	@Override 
 	public void print(){
 		System.out.println(print + "(" + row + ", "
@@ -755,6 +849,15 @@ class Print extends Subtree{
 		match("SEMICOLON");
 	}
 
+	Print(Print toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Print deepCopy() {
+		return new Print(this);
+	}
+
 	@Override 
 	public void print(){
 		System.out.println(print + "(" + row + ", "
@@ -776,6 +879,15 @@ class Exit extends Subtree{
 			addChild(new Expression(token, it));
 
 		match("SEMICOLON");
+	}
+
+	Exit(Exit toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Exit deepCopy() {
+		return new Exit(this);
 	}
 
 	@Override 
@@ -807,6 +919,15 @@ class Type extends Subtree{
 		addChild(new TypeDescriptor(token, it));
 
 		match("SEMICOLON");
+	}
+
+	Type(Type toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Type deepCopy() {
+		return new Type(this);
 	}
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
@@ -903,6 +1024,15 @@ class Block extends Subtree {
 		match("CLOSE_BRACE");
 	}
 
+	Block(Block toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Block deepCopy() {
+		return new Block(this);
+	}
+
 	public void match(){
 		switch(token.getTokenType()) {
 			case "for":		addChild(new For(token, it));
@@ -993,6 +1123,15 @@ class TypeDescriptor extends Subtree{
 		}
 	}
 
+	TypeDescriptor(TypeDescriptor toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public TypeDescriptor deepCopy() {
+		return new TypeDescriptor(this);
+	}
+
 	public String returnType() {
 		NaTypeDescriptor temp = (NaTypeDescriptor) children.get(0);
 		return temp.returnType();
@@ -1054,6 +1193,15 @@ class NaTypeDescriptor extends Subtree {
 		}
 	}
 
+	NaTypeDescriptor(NaTypeDescriptor toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public NaTypeDescriptor deepCopy() {
+		return new NaTypeDescriptor(this);
+	}
+
 	public String returnType() {
 		return symbolType;
 	}
@@ -1077,6 +1225,15 @@ class RecordDescriptor extends Subtree{
 		match("end");
 	}
 
+	RecordDescriptor(RecordDescriptor toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public RecordDescriptor deepCopy() {
+		return new RecordDescriptor(this);
+	}
+
 	@Override 
 	public void print(){
 		System.out.println(print + "(" + row + ", "
@@ -1095,6 +1252,15 @@ class FieldDeclarations extends Subtree{
 
 		addChild(new FieldDeclaration(token, it));
 		y();
+	}
+
+	FieldDeclarations(FieldDeclarations toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public FieldDeclarations deepCopy() {
+		return new FieldDeclarations(this);
 	}
 
 	public void y(){
@@ -1132,6 +1298,15 @@ class FieldDeclaration extends Subtree{
 		addChild(new TypeDescriptor(token, it));
 	}
 
+	FieldDeclaration(FieldDeclaration toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public FieldDeclaration deepCopy() {
+		return new FieldDeclaration(this);
+	}
+
 	@Override
 	public void print(){
 		printUp("+---");
@@ -1162,6 +1337,15 @@ class Dimension extends Subtree{
 		match("CLOSE_BRACKET");
 	}
 
+	Dimension(Dimension toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Dimension deepCopy() {
+		return new Dimension(this);
+	}
+
 	@Override
 	public void print(){
 		children.get(0).printUp(print);
@@ -1189,6 +1373,15 @@ class Params extends Subtree{
 		this.symbol = new Symbol("Params");
 
 		x();
+	}
+
+	Params(Params toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Params deepCopy() {
+		return new Params(this);
 	}
 
 	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
@@ -1262,6 +1455,15 @@ class Param extends Subtree{
 		}
 	}
 
+	Param(Param toCopy) {
+		super(toCopy);
+		this.locks = toCopy.locks;
+	}
+
+	@Override
+	public Param deepCopy() {
+		return new Param(this);
+	}
 
 	@Override
 	public void print(){
@@ -1302,6 +1504,15 @@ class DimWilds extends Subtree{
 		y();
 	}
 
+	DimWilds(DimWilds toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public DimWilds deepCopy() {
+		return new DimWilds(this);
+	}
+
 	public void y(){
 		if(!token.getTokenType().equals("COMMA")) return;
 
@@ -1322,6 +1533,15 @@ class WildCard extends Subtree{
 
 		match("ASTERISK");
 	}
+
+	WildCard(WildCard toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public WildCard deepCopy() {
+		return new WildCard(this);
+	}
 }
 
 
@@ -1332,6 +1552,15 @@ class WildCard extends Subtree{
 class Name extends Subtree{
 	Name(Token t){
 		token = t;
+	}
+
+	Name(Name toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Name deepCopy() {
+		return new Name(this);
 	}
 
 	public String getName() {
@@ -1356,6 +1585,15 @@ class BasicType extends Subtree{
 		token = t;
 	}
 
+	BasicType(BasicType toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public BasicType deepCopy() {
+		return new BasicType(this);
+	}
+
 	@Override
 	public void print(){
 
@@ -1375,6 +1613,15 @@ class Expressions extends Subtree {
 		super(t, i);
 		addChild(new Expression(token, it));
 		addAllChildren();
+	}
+
+	Expressions(Expressions toCopy){
+		super(toCopy);
+	}
+
+	@Override
+	public Expressions deepCopy() {
+		return new Expressions(this);
 	}
 
 	/*
@@ -1449,19 +1696,30 @@ class Expression extends Subtree {
 
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
-		this.token = t;
-		this.it = i;
+		//this.token = t;
+		//this.it = i;
 		readExpression();
+	}
+
+	Expression(Expression toCopy) {
+		super(toCopy);
 	}
 
 	Expression(Subtree leftHand, Subtree operator, Token t, Iterator<Token> i) {
 		super(t, i);
-		addOperandChild(new Token(leftHand.token), true);
-		addOperatorChild(new Token(operator.token), true);
+		System.out.println(leftHand.getClass());
+		addChild(leftHand);
+		addChild(operator);
+		//addOperandChild(new Token(leftHand.token), true);
+		//addOperatorChild(new Token(operator.token), true);
 		this.token = t;
 		this.it = i;
 		if(continueReading())
 			readExpression();
+	}
+
+	Expression(Token popped, Token t, Iterator<Token> i) {
+		super(t, i);
 	}
 
 	/*
@@ -1501,31 +1759,31 @@ class Expression extends Subtree {
 		Subtree lhs = null;
 		Subtree rhs = null;
 		Subtree op = null;
-		// for(int index = 0; index < children.size(); index++) {
-		// 	currentNode = children.get(index);
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
 
-		// 	if(currentNode instanceof MathOp) {
-		// 		lhs = children.get(index - 1);
-		// 		rhs = children.get(index + 1);
+			if(currentNode instanceof MathOp) {
+				lhs = children.get(index - 1);
+				rhs = children.get(index + 1);
 
-		// 		validate(lhs, currentNode, rhs, enclosing);
-		// 	} else if(currentNode instanceof Operand) {
-		// 		if(currentNode instanceof Identifier) {
-		// 			currentNode.setType(enclosing);
-		// 			SymbolType ss = currentNode.getSymType();
-		// 			//System.out.println("Identifier " + currentNode.toPrint() + " type " + ss.getTypeName());
-		// 		}
-		// 		//System.out.println(currentNode.getSymType());
-		// 		//enclosing.resolve(currentNode.getSymType().getTypeName());
-		// 	} else if(currentNode instanceof BitWiseOp) {
-		// 		lhs = children.get(index - 1);
-		// 		rhs = children.get(index + 1);
+				validate(lhs, currentNode, rhs, enclosing);
+			} else if(currentNode instanceof Operand) {
+				if(currentNode instanceof Identifier) {
+					currentNode.setType(enclosing);
+					SymbolType ss = currentNode.getSymType();
+					//System.out.println("Identifier " + currentNode.toPrint() + " type " + ss.getTypeName());
+				}
+				//System.out.println(currentNode.getSymType());
+				//enclosing.resolve(currentNode.getSymType().getTypeName());
+			} else if(currentNode instanceof BitWiseOp) {
+				lhs = children.get(index - 1);
+				rhs = children.get(index + 1);
 
-		// 		validate(lhs, currentNode, rhs, enclosing);
-		// 	} else if(currentNode instanceof Expression) {
-		// 		currentNode.decorateFirst(enclosing);
-		// 	}
-		// }
+				validate(lhs, currentNode, rhs, enclosing);
+			} else if(currentNode instanceof Expression) {
+				currentNode.decorateFirst(enclosing);
+			}
+		}
 
 
 	}
@@ -1611,6 +1869,12 @@ class Expression extends Subtree {
 		return isUnary;
 	}
 
+	/*
+		Bug when trying to pass in current v. token because it takes current to be the node's token
+		item. something that definitely needs to be fixed.
+
+	*/
+
 	protected void addOperandChild(Token current) {
 		switch(current.getTokenType()) {
 			case "IntIdentifier":
@@ -1622,8 +1886,9 @@ class Expression extends Subtree {
 				match("FloatIdentifier");
 				break;
 			case "StringIdentifier":
-				addChild(new Identifier(current, it));
+				addChild(new Identifier(token, it));
 				match("StringIdentifier");
+				System.out.println("Token " + token.getTokenType());
 				disambiguate();
 				break;
 			case "OPEN_PARENTHESIS":
@@ -1744,6 +2009,15 @@ class Expression extends Subtree {
 		return precedence;
 	}
 
+	/*
+
+		Definite bug, need to creat some sort of constructor that takes two
+		token's, one that is the current one that is the same across all nodes
+		the other is being passed in because it is the one that has been popped
+		off the top.
+
+	*/
+
 	private void addOperandChild(Token current, boolean match) {
 		switch(current.getTokenType()) {
 			case "IntIdentifier":
@@ -1757,7 +2031,7 @@ class Expression extends Subtree {
 				break;
 			case "OPEN_PARENTHESIS":
 				match("OPEN_PARENTHESIS");
-				addChild(new Expression(current, it));
+				addChild(new Expression(current, token, it));
 				break;
 			case "String_Literal":
 				addChild(new StringLit(current, it));
@@ -1887,8 +2161,8 @@ class Expression extends Subtree {
 		while(continueReading()) {
 			nextPrec = addOperatorChild(token);
 		 	if(nextPrec > currPrec) {
-		 		Subtree operator = new Subtree(children.get(children.size() - 1));
-		 		Subtree leftHand = new Subtree(children.get(children.size() - 2));
+		 		Subtree operator = (children.get(children.size() - 1));
+		 		Subtree leftHand = (children.get(children.size() - 2)).deepCopy();
 		 		Expression toAdd = new Expression(leftHand, operator, token, it);
 		 		children.remove(children.get(children.size() - 1));
 		 		children.remove(children.get(children.size() - 1));
@@ -1918,9 +2192,19 @@ class Expression extends Subtree {
 			addChild(arrayCall);
 		//know it is of type record and we need to reference the record
 		//of a certain variable
-		} else if(token.getTokenType().equals(".")) {
-
+		} else if(token.getTokenType().equals("DOT")) {
+			System.out.println(token.getTokenType());
+			Identifier varName = (Identifier)children.get(children.size() - 1);
+			children.remove(children.size() - 1);
+			Variable variable = new Variable(varName, token, it);
+			System.out.println(token.getTokenType());
+			addChild(variable);
 		}
+	}
+
+	@Override
+	public Expression deepCopy() {
+		return new Expression(this);
 	}
 
 	@Override
@@ -1950,6 +2234,413 @@ class Expression extends Subtree {
 	}
 
 }
+
+	/*	Class to model subexpressions created when there is a conflict of precedence
+	 *	and an operand and operator are popped from the children list.
+	 * 
+	 * 
+	 */
+
+// class SubExpression extends Subtree {
+// 	Token popped = null;
+
+// 	SubExpression(Token pop, Token t, Iterator<Token> i) {
+// 		super(t, i);
+// 	}
+
+// 	SubExpression(Subtree leftHand, Subtree operator, int precedence, Token t, Iterator<Token> i) {
+// 		super(t, i);
+// 		addChild(leftHand);			//adds popped operand
+// 		addChild(operator);			//adds popped operator
+// 		//addOperandChild(new Token(leftHand.token), true);
+// 		//addOperatorChild(new Token(operator.token), true);
+// 		//this.token = t;
+// 		//this.it = i;
+// 		//if(continueReading())
+// 			//readExpression();
+// 		readExpression();			//reads remaining expression
+// 	}
+
+// 	protected void readExpression() {
+// 		if(isUnary())
+// 			addChild(new UnaryExpression(token, it));
+// 		else
+// 			addOperandChild(token);
+// 		if(continueReading())
+// 			readRemainingExpr();
+// 	}
+
+// 	protected boolean isUnary() {
+// 		boolean isUnary = false;
+// 		switch(token.getTokenType()) {
+// 			case "TILDE":
+// 				isUnary = true;
+// 				break;
+// 			case "EXCLAMATION_POINT":
+// 				isUnary = true;
+// 				break;
+// 			case "MINUS":
+// 				isUnary = true;
+// 				break;
+// 			default:
+// 				break;
+// 		}
+// 		return isUnary;
+// 	}
+
+// 	protected void addOperandChild() {
+// 		switch(token.getTokenType()) {
+// 			case "IntIdentifier":
+// 				addChild(new IntLiteral(token, it)); 
+// 				match("IntIdentifier");
+// 				break;
+// 			case "FloatIdentifier":
+// 				addChild(new FloatLiteral(token, it));
+// 				match("FloatIdentifier");
+// 				break;
+// 			case "StringIdentifier":
+// 				addChild(new Identifier(token, it));
+// 				match("StringIdentifier");
+// 				disambiguate();
+// 				break;
+// 			case "OPEN_PARENTHESIS":
+// 				match("OPEN_PARENTHESIS");
+// 				SubExpression sub = new SubExpression(token, it);
+// 				addChild(sub);
+// 				match("CLOSE_PARENTHESIS");
+// 				break;
+// 			case "String_Literal":
+// 				addChild(new StringLit(token, it));
+// 				match("String_Literal");
+// 				break;
+// 			case "Char_Literal":
+// 				addChild(new CharLit(token, it));
+// 				match("Char_Literal");
+// 				break;
+// 			default:
+// 				break;
+// 		}
+// 	}
+
+// 	protected int addOperatorChild(Token current) {
+// 		int precedence = 0;
+// 		switch(current.getTokenType()) {
+// 			case "PLUS":
+// 				precedence = 10; 
+// 				addChild(new Addition(current, it));
+// 				match("PLUS");
+// 				break;
+// 			case "MINUS":
+// 				precedence = 10;
+// 				match("MINUS");
+// 				addChild(new Subtraction(current, it));
+// 				break;
+// 			case "ASTERISK":
+// 				precedence = 11;
+// 				addChild(new Multiplication(current, it));
+// 				match("ASTERISK");
+// 				break;
+// 			case "BACKSLASH":
+// 				precedence = 11;
+// 				addChild(new Division(current, it));
+// 				match("BACKSLASH");
+// 				break;
+// 			case "ASSIGNMENT_OPERATOR":
+// 				precedence = 1;
+// 				addChild(new Assignment(current, it));
+// 				match("ASSIGNMENT_OPERATOR");
+// 				break;
+// 			case "RELATIONAL_GREATER_THAN":
+// 				precedence = 8;
+// 				addChild(new GreaterThan(current, it));
+// 				match("RELATIONAL_GREATER_THAN");
+// 				break;
+// 			case "RELATIONAL_GREATER_EQUALTO":
+// 				precedence = 8;
+// 				addChild(new GreaterThanEqual(current, it));
+// 				match("RELATIONAL_GREATER_EQUALTO");
+// 				break;
+// 			case "RELATIONAL_LESS_THAN":
+// 				precedence = 8;
+// 				addChild(new LessThan(current, it));
+// 				match("RELATIONAL_LESS_THAN");
+// 				break;
+// 			case "RELATIONAL_LESS_EQUALTO":
+// 				precedence = 8;
+// 				addChild(new LessThanEqual(current, it));
+// 				match("RELATIONAL_LESS_EQUALTO");
+// 				break;
+// 			case "BITWISE_AND":
+// 				precedence = 6;
+// 				addChild(new BitwiseAnd(current, it));
+// 				match("BITWISE_AND");
+// 				break;
+// 			case "LOGICAL_AND":
+// 				precedence = 3;
+// 				addChild(new LogicalAnd(current, it));
+// 				match("LOGICAL_AND");
+// 				break;
+// 			case "BITWISE_OR":
+// 				precedence = 4;
+// 				addChild(new BitwiseOr(current, it));
+// 				match("BITWISE_OR");
+// 				break;
+// 			case "LOGICAL_OR":
+// 				precedence = 2;
+// 				addChild(new LogicalOr(current, it));
+// 				match("LOGICAL_OR");
+// 				break;
+// 			case "BITWISE_XOR":
+// 				precedence = 5;
+// 				addChild(new XoR(current, it));
+// 				match("BITWISE_XOR");
+// 				break;
+// 			case "LOGICAL_NOT":
+// 				precedence = 7;
+// 				addChild(new Inequality(current, it));
+// 				match("LOGICAL_NOT");
+// 				break;
+// 			case "OUTPUT":
+// 				precedence = 9;
+// 				addChild(new LeftShift(current, it));
+// 				match("OUTPUT");
+// 				break;
+// 			case "INPUT":
+// 				precedence = 9;
+// 				addChild(new RightShift(current, it));
+// 				match("INPUT");
+// 				break;
+// 			case "EQUALITY":
+// 				precedence = 7;
+// 				addChild(new Equality(current, it));
+// 				match("EQUALITY");
+// 				break;
+// 			default:
+// 				break;
+// 		}
+// 		return precedence;
+// 	}
+
+// 	/*
+
+// 		Definite bug, need to creat some sort of constructor that takes two
+// 		token's, one that is the current one that is the same across all nodes
+// 		the other is being passed in because it is the one that has been popped
+// 		off the top.
+
+// 	*/
+
+// 	private void addOperandChild(Token current, boolean match) {
+// 		switch(current.getTokenType()) {
+// 			case "IntIdentifier":
+// 				addChild(new IntLiteral((Integer)current.getVal())); 
+// 				break;
+// 			case "FloatIdentifier":
+// 				addChild(new FloatLiteral(current, it));
+// 				break;
+// 			case "StringIdentifier":
+// 				addChild(new Identifier(current, it));
+// 				break;
+// 			case "OPEN_PARENTHESIS":
+// 				match("OPEN_PARENTHESIS");
+// 				addChild(new Expression(current, token, it));
+// 				break;
+// 			case "String_Literal":
+// 				addChild(new StringLit(current, it));
+// 				break;
+// 			case "Char_Literal":
+// 				addChild(new CharLit(current, it));
+// 				break;
+// 			default:
+// 				break;
+// 		}
+// 	}
+
+// 	private int addOperatorChild(Token current, boolean match) {
+// 		int precedence = 0;
+// 		switch(current.getTokenType()) {
+// 			case "PLUS":
+// 				precedence = 10; 
+// 				addChild(new Addition(current, it));
+// 				break;
+// 			case "MINUS":
+// 				precedence = 10;
+// 				addChild(new Subtraction(current, it));
+// 				break;
+// 			case "ASTERISK":
+// 				precedence = 11;
+// 				addChild(new Multiplication(current, it));
+// 				break;
+// 			case "BACKSLASH":
+// 				precedence = 11;
+// 				addChild(new Division(current, it));
+// 				break;
+// 			case "ASSIGNMENT_OPERATOR":
+// 				precedence = 1;
+// 				addChild(new Assignment(current, it));
+// 				break;
+// 			case "RELATIONAL_GREATER_THAN":
+// 				precedence = 8;
+// 				addChild(new GreaterThan(current, it));
+// 				break;
+// 			case "RELATIONAL_GREATER_EQUALTO":
+// 				precedence = 8;
+// 				addChild(new GreaterThanEqual(current, it));
+// 				break;
+// 			case "RELATIONAL_LESS_THAN":
+// 				precedence = 8;
+// 				addChild(new LessThan(current, it));
+// 				break;
+// 			case "RELATIONAL_LESS_EQUALTO":
+// 				precedence = 8;
+// 				addChild(new LessThanEqual(current, it));
+// 				break;
+// 			case "BITWISE_AND":
+// 				precedence = 6;
+// 				addChild(new BitwiseAnd(current, it));
+// 				break;
+// 			case "LOGICAL_AND":
+// 				precedence = 3;
+// 				addChild(new LogicalAnd(current, it));
+// 				break;
+// 			case "BITWISE_OR":
+// 				precedence = 4;
+// 				addChild(new BitwiseOr(current, it));
+// 				break;
+// 			case "LOGICAL_OR":
+// 				precedence = 2;
+// 				addChild(new LogicalOr(current, it));
+// 				break;
+// 			case "BITWISE_XOR":
+// 				precedence = 5;
+// 				addChild(new XoR(current, it));
+// 				break;
+// 			case "LOGICAL_NOT":
+// 				precedence = 7;
+// 				addChild(new Inequality(current, it));
+// 				break;
+// 			case "OUTPUT":
+// 				precedence = 9;
+// 				addChild(new LeftShift(current, it));
+// 				break;
+// 			case "INPUT":
+// 				precedence = 9;
+// 				addChild(new RightShift(current, it));
+// 				break;
+// 			case "EQUALITY":
+// 				precedence = 7;
+// 				addChild(new Equality(current, it));
+// 				break;
+// 			default:
+// 				break;
+// 		}
+// 		return precedence;
+// 	}
+
+// 	protected boolean continueReading() {
+// 		boolean continueReading = true;
+// 		switch(token.getTokenType()) {
+// 			case "COMMA":
+// 				continueReading = false;
+// 				break;
+// 			case "CLOSE_PARENTHESIS":
+// 				continueReading = false;
+// 				break;
+// 			case "SEMICOLON":
+// 				continueReading = false;
+// 				break;
+// 			case "CLOSE_BRACKET":
+// 				continueReading = false;
+// 				break;
+// 			default:
+// 				break;
+// 		}
+// 		return continueReading;
+// 	}
+
+// 	protected void readRemainingExpr() {
+// 		int currPrec = 0;
+// 		int nextPrec = 20;
+
+// 		currPrec = addOperatorChild(token);
+
+// 		if(isUnary()){
+// 			addChild(new UnaryExpression(token, it));
+// 		}
+// 		else{
+// 			addOperandChild(token);
+// 		}
+// 		while(continueReading()) {
+// 			nextPrec = addOperatorChild(token);
+// 		 	if(nextPrec > currPrec) {
+// 		 		Subtree operator = children.get(children.size() - 1);
+// 		 		Subtree leftHand = children.get(children.size() - 2);
+// 		 		Expression toAdd = new Expression(leftHand, operator, token, it);
+// 		 		children.remove(children.get(children.size() - 1));
+// 		 		children.remove(children.get(children.size() - 1));
+// 		 		addChild(toAdd);
+	 	
+// 		 	} else {
+// 		 		if(isUnary())
+// 		 			addChild(new UnaryExpression(token, it));
+// 		 		else
+// 		 			addOperandChild(token);
+// 		 	}
+// 		}
+// 	}
+
+// 	public void disambiguate() {
+// 		//if the identifier is part of a function call
+// 		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
+// 			Identifier functionName = (Identifier)children.get(children.size() - 1);
+// 			children.remove(children.size() - 1);
+// 			FunctionCall functionCall = new FunctionCall(functionName, token, it);
+// 			addChild(functionCall);
+// 		//if the identifier is part of an array
+// 		} else if(token.getTokenType().equals("OPEN_BRACKET")) {
+// 			Identifier arrayName = (Identifier)children.get(children.size() - 1);
+// 			children.remove(children.size() - 1);
+// 			ArrayCall arrayCall = new ArrayCall(arrayName, token, it);
+// 			addChild(arrayCall);
+// 		//know it is of type record and we need to reference the record
+// 		//of a certain variable
+// 		} else if(token.getTokenType().equals("DOT")) {
+// 			System.out.println(token.getTokenType());
+// 			Identifier varName = (Identifier)children.get(children.size() - 1);
+// 			children.remove(children.size() - 1);
+// 			Variable variable = new Variable(varName, token, it);
+// 			System.out.println(token.getTokenType());
+// 			addChild(variable);
+// 		}
+// 	}
+
+// 	@Override
+// 	public void print(){
+// 		printUp("+---");
+
+// 		System.out.println(print + "(,) " 
+// 			+ " subexpression");
+
+// 		printUp("+---");
+
+// 		String toPrint = print + this.toPrint();
+// 		System.out.println(toPrint);
+// 	}
+
+// 	@Override
+// 	public String toPrint() {
+// 		String retVal = "";
+// 		Subtree currentNode = null;
+// 		if(children != null) {
+// 			for(int index = 0; index < children.size(); index++) {
+// 				currentNode = children.get(index);
+// 				retVal += currentNode.toPrint();
+// 			}
+// 		}
+// 		return retVal;
+// 	}
+
+// }
 
 class UnaryExpression extends Subtree {
 
@@ -2019,8 +2710,21 @@ class Operand extends Subtree {
 		super(t, i);
 	}
 
+	Operand(Identifier name, Token t, Iterator<Token> i) {
+		super(name, t, i);
+	}
+
+	Operand(Operand toCopy) {
+		super(toCopy);
+	}
+
 	Operand(int current) {
 		token = new IntIdentifier(current, 0, 0);
+	}
+
+	@Override
+	public Operand deepCopy() {
+		return new Operand(this);
 	}
 
 	@Override
@@ -2058,6 +2762,15 @@ class StringLit extends Operand {
 		super(t, i);
 	}
 
+	StringLit(StringLit toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public StringLit deepCopy() {
+		return new StringLit(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return (String)token.getVal();
@@ -2072,11 +2785,20 @@ class IntLiteral extends Operand {
 		type = new BuiltInTypeSymbol("int32");
 	}
 
+	IntLiteral(IntLiteral toCopy) {
+		super(toCopy);
+	}
+
 	//constructor was trying to fix a bug of sorts, fairly certain
 	//the bug is no longer present but I am not positive
 	IntLiteral(int current) {
 		super(current);
 		type = new BuiltInTypeSymbol("int32");
+	}
+
+	@Override
+	public IntLiteral deepCopy() {
+		return new IntLiteral(this);
 	}
 
 	@Override
@@ -2093,6 +2815,15 @@ class FloatLiteral extends Operand {
 		type = new BuiltInTypeSymbol("float64");
 	}
 
+	FloatLiteral(FloatLiteral toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public FloatLiteral deepCopy() {
+		return new FloatLiteral(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return Float.toString((Float)token.getVal());
@@ -2107,6 +2838,15 @@ class CharLit extends Operand {
 		type = new BuiltInTypeSymbol("byte");
 	}
 
+	CharLit(CharLit toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public CharLit deepCopy() {
+		return new CharLit(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "'" + Character.toString((Character)token.getVal()) + "'";
@@ -2119,8 +2859,14 @@ class CharLit extends Operand {
 
 class FunctionCall extends Operand {
 	boolean hasParams = false;
+	
 	FunctionCall(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	FunctionCall(FunctionCall toCopy) {
+		super(toCopy);
+		this.hasParams = toCopy.hasParams;
 	}
 
 	FunctionCall(Identifier name, Token t, Iterator<Token> i) {
@@ -2180,6 +2926,11 @@ class FunctionCall extends Operand {
 	}
 
 	@Override
+	public FunctionCall deepCopy() {
+		return new FunctionCall(this);
+	}
+
+	@Override
 	public String toPrint() {
 		String retVal = "Function Call: " + children.get(0).toPrint() + "(";
 
@@ -2198,18 +2949,58 @@ class Variable extends Operand {
 		super(t, i);
 	}
 
+	Variable(Variable toCopy) {
+		super(toCopy);
+	}
+
 	Variable(Identifier name, Token t, Iterator<Token> i) {
-		super(t, i);
-		addChild(name);
+		super(name, t, i);
 		token = t;
 		it = i;
-		//addParams();
+		addField();
+		//token = t;
+		//it = i;
+		System.out.println("In variable constructor " + (String)token.getTokenType());
+	}
+
+	public void addField() {
+		match("DOT");
+		System.out.println("In addField" + token.getTokenType());
+		if(token.getTokenType().equals("StringIdentifier")) {
+			Identifier field = new Identifier(token, it);
+			System.out.println("In addField before match " + (String)token.getVal());
+			match(token.getTokenType());
+			addChild(field);
+			System.out.println("In addField" + (String)token.getVal());
+			//recursively keep adding fields
+			if(token.getTokenType().equals("DOT")) {
+				addField();
+			}
+		} else {
+			String varName = children.get(0).toPrint();
+			throw new MissingReferenceField(varName);
+		}
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "Variable: " + children.get(0).toPrint();
+		Subtree currentNode = null;
+		for(int index = 1; index < children.size(); index++) {
+			currentNode = children.get(index);
+			retVal += currentNode.toPrint();
+		}
+		return retVal;	
 	}	
 }
 
 class ArrayCall extends Operand {
 	ArrayCall(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	ArrayCall(ArrayCall toCopy) {
+		super(toCopy);
 	}
 
 	ArrayCall(Identifier name, Token t, Iterator<Token> i) {
@@ -2223,6 +3014,11 @@ class ArrayCall extends Operand {
 	public void addDimension() {
 		Dimension dimensions = new Dimension(token, it);
 		addChild(dimensions);
+	}
+
+	@Override
+	public ArrayCall deepCopy() {
+		return new ArrayCall(this);
 	}
 
 	@Override
@@ -2247,6 +3043,10 @@ class TypeCast extends Operand {
 		super(t, i);
 	}
 
+	TypeCast(TypeCast toCopy) {
+		super(toCopy);
+	}
+
 	private void sort() {
 		switch(token.getTokenType()) {
 			case "KEYWORD_INT32":
@@ -2265,11 +3065,25 @@ class TypeCast extends Operand {
 				break;
 		}
 	}
+
+	@Override
+	public TypeCast deepCopy() {
+		return new TypeCast(this);
+	}
 }
 
 class FloatTypeCast extends TypeCast {
 	FloatTypeCast(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	FloatTypeCast(FloatTypeCast toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public FloatTypeCast deepCopy() {
+		return new FloatTypeCast(this);
 	}
 }
 
@@ -2277,19 +3091,44 @@ class ByteTypeCast extends TypeCast {
 	ByteTypeCast(Token t, Iterator<Token> i){
 		super(t, i);
 	}
+
+	ByteTypeCast(ByteTypeCast toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public ByteTypeCast deepCopy() {
+		return new ByteTypeCast(this);
+	}
 }
 
 class IntTypeCast extends TypeCast {
 	IntTypeCast(Token t, Iterator<Token> i){
 		super(t, i);
 	}
+
+	IntTypeCast(IntTypeCast toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public IntTypeCast deepCopy() {
+		return new IntTypeCast(this);
+	}
 }
-
-
 
 class Negative extends Subtree {
 	Negative(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	Negative(Negative toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Negative deepCopy() {
+		return new Negative(this);
 	}
 }
 
@@ -2301,9 +3140,18 @@ class MathOp extends Subtree {
 		super(t, i);
 	}
 
+	MathOp(MathOp toCopy) {
+		super(toCopy);
+	}
+
 	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {}
 
 	public boolean validOp(SymbolType operand) { return false; }
+
+	@Override
+	public MathOp deepCopy() {
+		return new MathOp(this);
+	}
 
 	@Override
 	public String toPrint() {
@@ -2316,6 +3164,15 @@ class MathOp extends Subtree {
 class Addition extends MathOp {
 	Addition(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	Addition(Addition toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Addition deepCopy() {
+		return new Addition(this);
 	}
 
 	@Override
@@ -2341,6 +3198,15 @@ class Addition extends MathOp {
 class Subtraction extends MathOp {
 	Subtraction(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	Subtraction(Subtraction toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Subtraction deepCopy() {
+		return new Subtraction(this);
 	}
 
 	@Override
@@ -2369,6 +3235,15 @@ class Multiplication extends MathOp {
 		super(t, i);
 	}
 
+	Multiplication(Multiplication toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Multiplication deepCopy() {
+		return new Multiplication(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "*";
@@ -2394,6 +3269,15 @@ class Division extends MathOp {
 		super(t, i);
 	}
 
+	Division(Division toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Division deepCopy() {
+		return new Division(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "/";
@@ -2417,6 +3301,15 @@ class Tilde extends Subtree {		//bitwise not
 		super(t, i);
 	}
 
+	Tilde(Tilde toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Tilde deepCopy() {
+		return new Tilde(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "~";
@@ -2426,6 +3319,15 @@ class Tilde extends Subtree {		//bitwise not
 class Assignment extends MathOp {
 	Assignment(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	Assignment(Assignment toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Assignment deepCopy() {
+		return new Assignment(this);
 	}
 
 	@Override
@@ -2447,6 +3349,16 @@ class GreaterThan extends Subtree {
 	GreaterThan(Token t, Iterator<Token> i){
 		super(t, i);
 	}
+
+	GreaterThan(GreaterThan toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public GreaterThan deepCopy() {
+		return new GreaterThan(this);
+	}
+
 	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
 		if(token instanceof IntIdentifier) {
 		
@@ -2473,6 +3385,15 @@ class GreaterThanEqual extends Subtree {
 		super(t, i);
 	}
 
+	GreaterThanEqual(GreaterThanEqual toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public GreaterThanEqual deepCopy() {
+		return new GreaterThanEqual(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return ">=";
@@ -2482,6 +3403,15 @@ class GreaterThanEqual extends Subtree {
 class LessThan extends Subtree {
 	LessThan(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	LessThan(LessThan toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public LessThan deepCopy() {
+		return new LessThan(this);
 	}
 
 	@Override
@@ -2495,6 +3425,15 @@ class LessThanEqual extends Subtree {
 		super(t, i);
 	}
 
+	LessThanEqual(LessThanEqual toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public LessThanEqual deepCopy() {
+		return new LessThanEqual(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "<=";
@@ -2504,6 +3443,15 @@ class LessThanEqual extends Subtree {
 class BitwiseAnd extends Subtree {
 	BitwiseAnd(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	BitwiseAnd(BitwiseAnd toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public BitwiseAnd deepCopy() {
+		return new BitwiseAnd(this);
 	}
 
 	@Override
@@ -2528,6 +3476,15 @@ class BitwiseOr extends MathOp {
 		super(t, i);
 	}
 
+	BitwiseOr(BitwiseOr toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public BitwiseOr deepCopy() {
+		return new BitwiseOr(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "|";
@@ -2537,6 +3494,15 @@ class BitwiseOr extends MathOp {
 class LogicalOr extends MathOp {
 	LogicalOr(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	LogicalOr(LogicalOr toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public LogicalOr deepCopy() {
+		return new LogicalOr(this);
 	}
 
 	@Override
@@ -2550,6 +3516,15 @@ class Not extends MathOp {
 		super(t, i);
 	}
 
+	Not(Not toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Not deepCopy() {
+		return new Not(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "!";
@@ -2559,6 +3534,15 @@ class Not extends MathOp {
 class XoR extends MathOp {
 	XoR(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	XoR(XoR toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public XoR deepCopy() {
+		return new XoR(this);
 	}
 
 	@Override
@@ -2572,6 +3556,15 @@ class Inequality extends MathOp {
 		super(t, i);
 	}
 
+	Inequality(Inequality toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Inequality deepCopy() {
+		return new Inequality(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "!=";
@@ -2581,6 +3574,15 @@ class Inequality extends MathOp {
 class LeftShift extends MathOp {
 	LeftShift(Token t, Iterator<Token> i){
 		super(t, i);
+	}
+
+	LeftShift(LeftShift toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public LeftShift deepCopy() {
+		return new LeftShift(this);
 	}
 
 	@Override
@@ -2594,6 +3596,15 @@ class RightShift extends MathOp {
 		super(t, i);
 	}
 
+	RightShift(RightShift toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public RightShift deepCopy() {
+		return new RightShift(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return ">>";
@@ -2605,6 +3616,15 @@ class Equality extends MathOp {
 		super(t, i);
 	}
 
+	Equality(Equality toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Equality deepCopy() {
+		return new Equality(this);
+	}
+
 	@Override
 	public String toPrint() {
 		return "==";
@@ -2612,5 +3632,16 @@ class Equality extends MathOp {
 }
 
 class BitWiseOp extends Subtree {
+	BitWiseOp(Token t, Iterator<Token> i){
+		super(t, i);
+	}
 
+	BitWiseOp(BitWiseOp toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public BitWiseOp deepCopy() {
+		return new BitWiseOp(this);
+	}
 }
