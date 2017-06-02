@@ -453,13 +453,19 @@ class Function extends Subtree {
 		currentScope = enclosing;
 		boolean isArray = false;
 
+		boolean noReturnType = flags[1] ? false : true;
+
 		if(previouslyDefined != null) {
 			throw new AlreadyDefinedException(token.getTokenType());
 		} else {
-			if(!flags[1]) {														//no type
-				type = (BuiltInTypeSymbol)enclosing.resolve("void");			//type = void
-				currentNode = (flags[0]) ? children.get(1) : null;				//cur = PARAMS HERE
-			} else {															//has a type
+			if(noReturnType) {
+				//if there is no return type, set type for this node to "void"
+				type = (BuiltInTypeSymbol)enclosing.resolve("void");
+				//sets currentNode to params if function has params
+				currentNode = (flags[0]) ? children.get(1) : null;
+			} else {
+				//sets currentNode to the child that has the return type-descriptor
+				//based on whether the function has parameters or not.															//has a type
 				currentNode = (flags[0]) ? children.get(2) : children.get(1);	//cur = TYPE HERE
 				Subtree nodeType = currentNode.children.get(0).children.get(0);	//nodeType
 				isArray = ((TypeDescriptor)currentNode).array;					//array?
@@ -497,7 +503,7 @@ class Function extends Subtree {
 						new FunctionSymbol(funcName, type, enclosing, rec);
 				}
 			}
-
+			//if there are parameters
 			if(flags[0])
 				symbol.addParams(children.get(1).children);
 
@@ -649,8 +655,7 @@ class Var extends Subtree{
 						new VarSymbol(symbolName, type, rec, locks);
 					
 				}
-			}
-			else if(children.get(1) instanceof Expression){
+			} else if(children.get(1) instanceof Expression){
 				children.get(1).decorateFirst(currentScope);
 				type = children.get(1).type;
 				symbol = new VarSymbol(symbolName, type, locks);
@@ -1885,13 +1890,10 @@ class Expression extends Subtree {
 
 	public void checkForFunctionCall() {
 		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
-			
 			Identifier functionName = (Identifier)children.get(children.size() - 1);
 			children.remove(children.size() - 1);
 			FunctionCall functionCall = new FunctionCall(functionName, token, it);
 			addChild(functionCall);
-
-			System.out.println("Function call child added");
 		}
 	}
 
@@ -2083,6 +2085,7 @@ class CharLit extends Operand {
 }
 
 class FunctionCall extends Operand {
+	boolean hasParams = false;
 	FunctionCall(Token t, Iterator<Token> i){
 		super(t, i);
 	}
@@ -2098,6 +2101,7 @@ class FunctionCall extends Operand {
 	public void addParams() {
 		match("OPEN_PARENTHESIS");
 		if(!(token.getTokenType().equals("CLOSE_PARENTHESIS"))) {
+			hasParams = true;
 			Expressions params = new Expressions(token, it);
 			addChild(params);
 		}
@@ -2105,14 +2109,51 @@ class FunctionCall extends Operand {
 	}
 
 	@Override
+	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, IllegalOperationException, AlreadyDefinedException {
+		//gets the name of the identifier associated with the function call
+		String symbolName = (String)children.get(0).token.getVal();
+		//retrieves Symbol of function decl associated with symbolName
+		//if undefined then previouslyDefined == null
+		Symbol previouslyDefined = enclosing.resolve(symbolName);
+
+		//function not declared in enclosing scope
+		if(previouslyDefined == null) {
+			throw new UndefinedTypeException(symbolName);
+		}
+
+		//know that the function is defined in this scope
+		//now need to set the type and start checking the params.
+
+		//sets this nodes symbol and symboltype equal to the original
+		//function call.
+		symbol = (FunctionSymbol)previouslyDefined;
+		type = previouslyDefined.getType();
+
+		//checks if original function had no parameter members
+		if(((FunctionSymbol)symbol).getMembers() == null) {	//there are no params
+			//if original symbol has no params and this call has params,
+			//throw error
+			if(hasParams == true)
+				throw new ParameterMismatchError((String)token.getVal());
+		}
+
+		//otherwise we know there should be parameters and we can check
+		//to see that the symbol type of each parameter is in the
+		//members of the original function symbol
+
+
+	}
+
+	@Override
 	public String toPrint() {
-		String retVal = "Function Call: ";
+		String retVal = "Function Call: " + children.get(0).toPrint() + "(";
 
 		Subtree currentNode = null;
-		for(int index = 0; index < children.size(); index++) {
+		for(int index = 1; index < children.size(); index++) {
 			currentNode = children.get(index);
 			retVal += currentNode.toPrint();
 		}
+		retVal += ")";
 		return retVal;
 	}
 }

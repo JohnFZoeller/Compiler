@@ -31,7 +31,7 @@ public abstract class ScopedSymbol extends Symbol implements Scope{
 		return enclosing;
 	}
 	public void define(Symbol sym){
-		if(sym == null) System.out.println("scopedsymbol define error");
+		if(sym == null) System.out.println("ScopedSymbol define error");
 		
 		getMembers().put(sym.name, sym);
 	}
