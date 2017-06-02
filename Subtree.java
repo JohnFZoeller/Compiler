@@ -2235,129 +2235,134 @@ class Addition extends MathOp {
 	*/
 
 }
-
 class Subtraction extends MathOp {
-	Token unaryOperator = null;
-
 	Subtraction(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "-" + token.getVal(); 
-		return retVal;
+		return "-";
 	}
 
-	public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
-		if(token instanceof IntIdentifier) {
-		
-		} else if(token instanceof FloatIdentifier) {
+	@Override
+	public boolean validOp(SymbolType operand) {
+		boolean isValid = false;
 
-		} else if(token instanceof StringIdentifier) {
-			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-			if(previouslyDefined == null) {
-				throw new UndefinedTypeException(token.getName());
-			}
-			type = previouslyDefined.getType();
-		} else {
-			throw new IllegalOperationException("-", token.getTokenType());
+		if(operand.getTypeName().equals("int32")) {
+			isValid = true;
+		} else if(operand.getTypeName().equals("float64")) {
+			isValid = true;
 		}
 
+		return isValid;
 	}
+
+	// public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
+	// 	if(token instanceof IntIdentifier) {
+		
+	// 	} else if(token instanceof FloatIdentifier) {
+
+	// 	} else if(token instanceof StringIdentifier) {
+	// 		Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+	// 		if(previouslyDefined == null) {
+	// 			throw new UndefinedTypeException(token.getName());
+	// 		}
+	// 		type = previouslyDefined.getType();
+	// 	} else {
+	// 		throw new IllegalOperationException("-", token.getTokenType());
+	// 	}
+
+	// }
 }
 
 class Multiplication extends MathOp {
-	Token unaryOperator = null;
-
 	Multiplication(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "*"; 
-		return retVal;
+		return "*";
 	}
 
-	public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
-		if(token instanceof IntIdentifier) {
-		
-		} else if(token instanceof FloatIdentifier) {
+	@Override
+	public boolean validOp(SymbolType operand) {
+		boolean isValid = false;
 
-		} else if(token instanceof StringIdentifier) {
-			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-			if(previouslyDefined == null) {
-				throw new UndefinedTypeException(token.getName());
-			}
-			type = previouslyDefined.getType();
-		} else {
-			throw new IllegalOperationException("*", token.getTokenType());
+		if(operand.getTypeName().equals("int32")) {
+			isValid = true;
+		} else if(operand.getTypeName().equals("float64")) {
+			isValid = true;
 		}
 
+		return isValid;
 	}
+
+	// public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
+	// 	if(token instanceof IntIdentifier) {
+		
+	// 	} else if(token instanceof FloatIdentifier) {
+
+	// 	} else if(token instanceof StringIdentifier) {
+	// 		Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+	// 		if(previouslyDefined == null) {
+	// 			throw new UndefinedTypeException(token.getName());
+	// 		}
+	// 		type = previouslyDefined.getType();
+	// 	} else {
+	// 		throw new IllegalOperationException("*", token.getTokenType());
+	// 	}
+
+	// }
 }
 
 class Division extends MathOp {
-	Token unaryOperator = null;
-
 	Division(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "/ " + token.getVal(); 
-		return retVal;
+		return "/";
 	}
 
-	public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
-		if(token instanceof IntIdentifier) {
+	// public void decorateExpr(Scope enclosing) throws IllegalOperationException, UndefinedTypeException {
+	// 	if(token instanceof IntIdentifier) {
 		
-		} else if(token instanceof FloatIdentifier) {
+	// 	} else if(token instanceof FloatIdentifier) {
 
-		} else if(token instanceof StringIdentifier) {
-			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-			if(previouslyDefined == null) {
-				throw new UndefinedTypeException(token.getName());
-			}
-			type = previouslyDefined.getType();
-		} else {
-			throw new IllegalOperationException("/", token.getTokenType());
-		}
-	}
+	// 	} else if(token instanceof StringIdentifier) {
+	// 		Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+	// 		if(previouslyDefined == null) {
+	// 			throw new UndefinedTypeException(token.getName());
+	// 		}
+	// 		type = previouslyDefined.getType();
+	// 	} else {
+	// 		throw new IllegalOperationException("/", token.getTokenType());
+	// 	}
+	// }
 }
 
 class Tilde extends Subtree {		//bitwise not
-	Token unaryOperator = null;
-
 	Tilde(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "~ " + token.getVal(); 
-		return retVal;
+		return "~";
 	}
 }
 
 class Assignment extends MathOp {
-	Token unaryOperator = null;
-
 	Assignment(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "= " + token.getVal(); 
-		return retVal;
+		return "=";
 	}
 }
 
@@ -2371,8 +2376,6 @@ class Assignment extends MathOp {
  */
 
 class GreaterThan extends Subtree {
-	Token unaryOperator = null;
-
 	GreaterThan(Token t, Iterator<Token> i){
 		super(t, i);
 	}
@@ -2393,204 +2396,150 @@ class GreaterThan extends Subtree {
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "> " + token.getVal(); 
-		return retVal;
+		return ">";
 	}
 }
 
 class GreaterThanEqual extends Subtree {
-	Token unaryOperator = null;
-
 	GreaterThanEqual(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += ">= " + token.getVal(); 
-		return retVal;
+		return ">=";
 	}
 }
 
 class LessThan extends Subtree {
-	Token unaryOperator = null;
-
 	LessThan(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "< " + token.getVal(); 
-		return retVal;
+		return "<";
 	}
 }
 
 class LessThanEqual extends Subtree {
-	Token unaryOperator = null;
-
 	LessThanEqual(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "<= " + token.getVal(); 
-		return retVal;
+		return "<=";
 	}
 }
 
 class BitwiseAnd extends Subtree {
-	Token unaryOperator = null;
-
 	BitwiseAnd(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "& " + token.getVal(); 
-		return retVal;
+		return "&";
 	}
 }
 
 class LogicalAnd extends Subtree {
-	Token unaryOperator = null;
-
 	LogicalAnd(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "&& " + token.getVal(); 
-		return retVal;
+		return "&&";
 	}
 }
 
 class BitwiseOr extends MathOp {
-	Token unaryOperator = null;
-
 	BitwiseOr(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "| " + token.getVal(); 
-		return retVal;
+		return "|";
 	}
 }
 
 class LogicalOr extends MathOp {
-	Token unaryOperator = null;
-
 	LogicalOr(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "|| " + token.getVal(); 
-		return retVal;
+		return "||";
 	}
 }
 
 class Not extends MathOp {
-	Token unaryOperator = null;
-
 	Not(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "! " + token.getVal(); 
-		return retVal;
+		return "!";
 	}
 }
 
 class XoR extends MathOp {
-	Token unaryOperator = null;
-
 	XoR(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "^ " + token.getVal(); 
-		return retVal;
+		return "^";
 	}
 }
 
 class Inequality extends MathOp {
-	Token unaryOperator = null;
-
 	Inequality(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "!= " + token.getVal(); 
-		return retVal;
+		return "!=";
 	}
 }
 
 class LeftShift extends MathOp {
-	Token unaryOperator = null;
-
 	LeftShift(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "<< " + token.getVal(); 
-		return retVal;
+		return "<<";
 	}
 }
 
 class RightShift extends MathOp {
-	Token unaryOperator = null;
-
 	RightShift(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += ">> " + token.getVal(); 
-		return retVal;
+		return ">>";
 	}
 }
 
 class Equality extends MathOp {
-	Token unaryOperator = null;
-
 	Equality(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
 	public String toPrint() {
-		String retVal = "";
-		retVal += "== " + token.getVal(); 
-		return retVal;
+		return "==";
 	}
 }
 
