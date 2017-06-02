@@ -1,29 +1,19 @@
 import java.io.*;
 import java.util.*;
 
-/*
- *	Look at typeCheck function defined in Subtree and Block class.
-		The first pass
- *	will define the different scopes encountered and create Symbol Tables
- *	for each scope, the second pass will be populating the declared scope's
- *	symbol tables with the identifiers found in that scope.
- *
- */
-
 public class Subtree {
-	protected int row = 0;
-	protected int col = 0;
-	protected int level = 0;
 	Token token = null;
-	List<Subtree> children = null;
 	Iterator<Token> it = null;
-	String print = "";
+	protected int row = 0, col = 0, level = 0;
+	List<Subtree> children = null;
 
 	Scope currentScope = null;
 	Symbol symbol = null;
 	SymbolType type = null;
 
-	String defaultInt = "-2147483648", defaultFloat = "-123456789.123456789";
+	String print = "", defaultInt = "-2147483648", defaultFloat = "-123456789.123456789";
+	String defaultRecord = "1111111", defaultArray = "2222222";
+
 
 	public Subtree(){}
 
@@ -754,6 +744,7 @@ class Var extends Subtree{
 		Subtree emitType = children.get(1);
 		String instruction = children.get(0).token.getName() + ":\n\t";
 		String symType = symbol.getType().getTypeName();
+
 		if(emitType instanceof Expression){
 			//getExpressionType();
 			//instruction += expressionType + default<>
@@ -761,19 +752,23 @@ class Var extends Subtree{
 		} else {
 			if(symType == "int32" || symType == "byte"){
 				instruction += "int_literal " + defaultInt;
-			} else {
+			} 
+			else if(symType == "float64"){
 				instruction += "float_literal " + defaultFloat;
 			}
-			if(symType == "array"){
+			else if(symType == "array"){
 				//if(array type is an int)
-				instruction += "int_literal " + defaultInt;
+				instruction += "int_literal " + defaultArray;
 				consts.add(instruction);
-				instruction = "arraySize: \n\t int_literal " + "2";
+				instruction = "arraySize: \n\tint_literal " + "2";
 				System.out.println("load_label " + "arraySize");
 				System.out.println("load_mem_int \nalloc_int");
 			}
-			//System.out.println(instruction);
-
+			else if(symType == "record"){
+				RecordSymbol tempRecord = ((VarSymbol)symbol).record;
+				instruction += "int_literal " + defaultRecord;
+				tempRecord.saveConstValues(consts);
+			}
 		}
 		consts.add(instruction);
 	}

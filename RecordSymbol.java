@@ -15,7 +15,7 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 	public void addDecls(List<Subtree> fds){
 		for(int i = 0; i < fds.size(); i++){
 			Subtree nodeType = fds.get(i).children.get(1);
-			Symbol temp = fieldDeclType(nodeType, fds.get(i).token.getName());
+			Symbol temp = fieldDeclType(nodeType, fds.get(i).children.get(0).token.getName());
  			define(temp);
 		}
 	}
@@ -76,6 +76,35 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 	//will reference "a" and return its symbol object
 	public Symbol getDecl(String declName){
 		return resolve(declName);
+	}
+
+	public void saveConstValues(List<String> consts){
+		String instruction = getName() + ".";
+		String symtype;
+
+		for (Map.Entry<String, Symbol> entry : members.entrySet()) {
+    		Symbol value = entry.getValue();
+    		String typeName = value.getType().getTypeName();
+
+    		instruction += entry.getKey() + ":\n\t";
+
+			if(typeName == "int32" || typeName == "byte"){
+				instruction += "int_literal " + defaultInt;
+			} 
+			else if(typeName == "float64"){
+				instruction += "float_literal " + defaultFloat;
+			}
+			else if(typeName == "array"){
+
+			}
+			else if(typeName == "record"){
+
+			}
+			consts.add(instruction);
+			instruction = getName() + ".";
+		}
+
+
 	}
 
 	@Override
