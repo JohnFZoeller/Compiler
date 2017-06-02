@@ -3,3 +3,5 @@ var zoeller float64;
 var frederick byte;
 
 var myArray int32[3];
+
+var myRecord record a byte, b int32 end;
