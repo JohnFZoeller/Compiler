@@ -3,7 +3,7 @@ public class StringLiteral extends Token {
 	
 	public StringLiteral(String i, int r, int c) {
 		super("String_Literal", r, c);
-		
+		this.val = i;
 		name = i;
 	}
 
@@ -13,6 +13,11 @@ public class StringLiteral extends Token {
 
 	public void setValue(String v) {
 		name = v;
+	}
+
+	@Override
+	public String getVal() {
+		return (String)this.val;
 	}
 
 }
