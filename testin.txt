@@ -1,3 +1,5 @@
-type john record a int32 end;
-var String int32;
-var zoeller = String;
+var john int32;
+var zoeller float64;
+var frederick byte;
+
+var myArray int32[3];
