@@ -1604,6 +1604,7 @@ class Expression extends Subtree {
 			case "StringIdentifier":
 				addChild(new Identifier(current, it));
 				match("StringIdentifier");
+				checkForFunctionCall();
 				break;
 			case "OPEN_PARENTHESIS":
 				match("OPEN_PARENTHESIS");
@@ -1882,6 +1883,18 @@ class Expression extends Subtree {
 		}
 	}
 
+	public void checkForFunctionCall() {
+		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
+			
+			Identifier functionName = (Identifier)children.get(children.size() - 1);
+			children.remove(children.size() - 1);
+			FunctionCall functionCall = new FunctionCall(functionName, token, it);
+			addChild(functionCall);
+
+			System.out.println("Function call child added");
+		}
+	}
+
 	@Override
 	public void print(){
 		printUp("+---");
@@ -1898,9 +1911,12 @@ class Expression extends Subtree {
 	@Override
 	public String toPrint() {
 		String retVal = "";
-
-		for(int index = 0; index < children.size(); index++) {
-			retVal += children.get(index).toPrint();
+		Subtree currentNode = null;
+		if(children != null) {
+			for(int index = 0; index < children.size(); index++) {
+				currentNode = children.get(index);
+				retVal += currentNode.toPrint();
+			}
 		}
 		return retVal;
 	}
@@ -2070,6 +2086,35 @@ class FunctionCall extends Operand {
 	FunctionCall(Token t, Iterator<Token> i){
 		super(t, i);
 	}
+
+	FunctionCall(Identifier name, Token t, Iterator<Token> i) {
+		super(t, i);
+		addChild(name);
+		token = t;
+		it = i;
+		addParams();
+	}
+
+	public void addParams() {
+		match("OPEN_PARENTHESIS");
+		if(!(token.getTokenType().equals("CLOSE_PARENTHESIS"))) {
+			Expressions params = new Expressions(token, it);
+			addChild(params);
+		}
+		match("CLOSE_PARENTHESIS");
+	}
+
+	@Override
+	public String toPrint() {
+		String retVal = "Function Call: ";
+
+		Subtree currentNode = null;
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+			retVal += currentNode.toPrint();
+		}
+		return retVal;
+	}
 }
 
 class TypeCast extends Operand {
@@ -2163,31 +2208,32 @@ class Addition extends MathOp {
 	/*	First thing to check for an expression is that the operand is valid
 	 *	for the expression type. Mathematical operations can only be performed
 	 *	on int32 and float64 types.
-	 */
 
-	// @Override
-	// public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
-	// 	// throw new IllegalOperationException();
-	// 	// throw new RuntimeException();
-	// 	//System.out.println("decorateExpr entered in Addition");
-	// 	//System.out.println(token.getClass());
-	// 	if(token instanceof IntIdentifier) {
+	@Override
+	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
+		// throw new IllegalOperationException();
+		// throw new RuntimeException();
+		//System.out.println("decorateExpr entered in Addition");
+		//System.out.println(token.getClass());
+		if(token instanceof IntIdentifier) {
 		
-	// 	} else if(token instanceof FloatIdentifier) {
+		} else if(token instanceof FloatIdentifier) {
 
-	// 	} else if(token instanceof StringIdentifier) {
-	// 		Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
-	// 		//System.out.println("previouslyDefined is " + previouslyDefined);
-	// 		if(previouslyDefined == null) {
-	// 			throw new UndefinedTypeException(token.getName());
-	// 		}
-	// 		type = previouslyDefined.getType();
-	// 	} else {
-	// 		System.out.println(token.getClass());
-	// 		throw new IllegalOperationException("+", token.getTokenType());
-	// 	}
+		} else if(token instanceof StringIdentifier) {
+			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
+			//System.out.println("previouslyDefined is " + previouslyDefined);
+			if(previouslyDefined == null) {
+				throw new UndefinedTypeException(token.getName());
+			}
+			type = previouslyDefined.getType();
+		} else {
+			System.out.println(token.getClass());
+			throw new IllegalOperationException("+", token.getTokenType());
+		}
 
-	// }
+	}
+	*/
+
 }
 
 class Subtraction extends MathOp {
