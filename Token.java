@@ -20,10 +20,10 @@ public class Token {
 	}
 
 	public Token(Token toCopy) {
-		this.row = toCopy.getRow();
-		this.col = toCopy.getCol();
-		this.input = toCopy.getTokenType();
-		this.name = toCopy.getName();
+		this.row = toCopy.row;
+		this.col = toCopy.col;
+		this.input = toCopy.input;
+		this.name =toCopy.name;
 		this.val = toCopy.val;
 	}
 

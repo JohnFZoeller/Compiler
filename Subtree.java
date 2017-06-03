@@ -27,6 +27,9 @@ public class Subtree {
 		this.row = current.getRow();
 		this.col = current.getCol();
 		it = i;
+
+		//System.out.println(token.toString());
+		//System.out.println(current.toString());
 	}
 
 	Subtree(Subtree name, Token t, Iterator<Token> i) {
@@ -41,8 +44,13 @@ public class Subtree {
 		addChild(name);
 	}
 
+	Subtree(Subtree leftHand, Subtree operator, int precedence, Token t, Iterator<Token> i) {
+		token = t;
+		it = i;
+	}
+
 	public Subtree(Subtree toCopy) {
-		this.token = new Token(toCopy.token);
+		this.token = toCopy.token;
 		this.it = toCopy.it;
 		this.row = toCopy.row;
 		this.col = toCopy.col;
@@ -838,7 +846,6 @@ class Print extends Subtree{
 	public Print(Token t, Iterator<Token> i){
 		super(t, i);
 		match("print");
-		//System.out.println(token.getName());
 		addChild(new Expression(token, it));
 		this.symbol = new Symbol("Print Statement");
 		match("SEMICOLON");
@@ -1691,8 +1698,6 @@ class Expression extends Subtree {
 
 	Expression(Token t, Iterator<Token> i){
 		super(t, i);
-		//this.token = t;
-		//this.it = i;
 		readExpression();
 	}
 
@@ -1700,22 +1705,6 @@ class Expression extends Subtree {
 		super(toCopy);
 	}
 
-	Expression(Subtree leftHand, Subtree operator, Token t, Iterator<Token> i) {
-		super(t, i);
-		System.out.println(leftHand.getClass());
-		addChild(leftHand);
-		addChild(operator);
-		//addOperandChild(new Token(leftHand.token), true);
-		//addOperatorChild(new Token(operator.token), true);
-		this.token = t;
-		this.it = i;
-		if(continueReading())
-			readExpression();
-	}
-
-	Expression(Token popped, Token t, Iterator<Token> i) {
-		super(t, i);
-	}
 
 	/*
 		A const-expression is an expression whose operands are literals and/or variables declared
@@ -1841,7 +1830,7 @@ class Expression extends Subtree {
 		if(isUnary())
 			addChild(new UnaryExpression(token, it));
 		else
-			addOperandChild(token);
+			addOperandChild();
 		if(continueReading())
 			readRemainingExpr();
 	}
@@ -1870,14 +1859,14 @@ class Expression extends Subtree {
 
 	*/
 
-	protected void addOperandChild(Token current) {
-		switch(current.getTokenType()) {
+	protected void addOperandChild() {
+		switch(token.getTokenType()) {
 			case "IntIdentifier":
-				addChild(new IntLiteral(current, it)); 
+				addChild(new IntLiteral(token, it)); 
 				match("IntIdentifier");
 				break;
 			case "FloatIdentifier":
-				addChild(new FloatLiteral(current, it));
+				addChild(new FloatLiteral(token, it));
 				match("FloatIdentifier");
 				break;
 			case "StringIdentifier":
@@ -1888,16 +1877,16 @@ class Expression extends Subtree {
 				break;
 			case "OPEN_PARENTHESIS":
 				match("OPEN_PARENTHESIS");
-				Expression sub = new Expression(token, it);
+				SubExpression sub = new SubExpression(token, it);
 				addChild(sub);
 				match("CLOSE_PARENTHESIS");
 				break;
 			case "String_Literal":
-				addChild(new StringLit(current, it));
+				addChild(new StringLit(token, it));
 				match("String_Literal");
 				break;
 			case "Char_Literal":
-				addChild(new CharLit(current, it));
+				addChild(new CharLit(token, it));
 				match("Char_Literal");
 				break;
 			default:
@@ -1905,97 +1894,98 @@ class Expression extends Subtree {
 		}
 	}
 
-	protected int addOperatorChild(Token current) {
+	protected int addOperatorChild() {
 		int precedence = 0;
-		switch(current.getTokenType()) {
+		switch(token.getTokenType()) {
 			case "PLUS":
 				precedence = 10; 
-				addChild(new Addition(current, it));
+				addChild(new Addition(token, it));
 				match("PLUS");
 				break;
 			case "MINUS":
 				precedence = 10;
 				match("MINUS");
-				addChild(new Subtraction(current, it));
+				addChild(new Subtraction(token, it));
 				break;
 			case "ASTERISK":
 				precedence = 11;
-				addChild(new Multiplication(current, it));
+				addChild(new Multiplication(token, it));
 				match("ASTERISK");
+				System.out.println("ASTERISK matched? " + token.getTokenType());
 				break;
 			case "BACKSLASH":
 				precedence = 11;
-				addChild(new Division(current, it));
+				addChild(new Division(token, it));
 				match("BACKSLASH");
 				break;
 			case "ASSIGNMENT_OPERATOR":
 				precedence = 1;
-				addChild(new Assignment(current, it));
+				addChild(new Assignment(token, it));
 				match("ASSIGNMENT_OPERATOR");
 				break;
 			case "RELATIONAL_GREATER_THAN":
 				precedence = 8;
-				addChild(new GreaterThan(current, it));
+				addChild(new GreaterThan(token, it));
 				match("RELATIONAL_GREATER_THAN");
 				break;
 			case "RELATIONAL_GREATER_EQUALTO":
 				precedence = 8;
-				addChild(new GreaterThanEqual(current, it));
+				addChild(new GreaterThanEqual(token, it));
 				match("RELATIONAL_GREATER_EQUALTO");
 				break;
 			case "RELATIONAL_LESS_THAN":
 				precedence = 8;
-				addChild(new LessThan(current, it));
+				addChild(new LessThan(token, it));
 				match("RELATIONAL_LESS_THAN");
 				break;
 			case "RELATIONAL_LESS_EQUALTO":
 				precedence = 8;
-				addChild(new LessThanEqual(current, it));
+				addChild(new LessThanEqual(token, it));
 				match("RELATIONAL_LESS_EQUALTO");
 				break;
 			case "BITWISE_AND":
 				precedence = 6;
-				addChild(new BitwiseAnd(current, it));
+				addChild(new BitwiseAnd(token, it));
 				match("BITWISE_AND");
 				break;
 			case "LOGICAL_AND":
 				precedence = 3;
-				addChild(new LogicalAnd(current, it));
+				addChild(new LogicalAnd(token, it));
 				match("LOGICAL_AND");
 				break;
 			case "BITWISE_OR":
 				precedence = 4;
-				addChild(new BitwiseOr(current, it));
+				addChild(new BitwiseOr(token, it));
 				match("BITWISE_OR");
 				break;
 			case "LOGICAL_OR":
 				precedence = 2;
-				addChild(new LogicalOr(current, it));
+				addChild(new LogicalOr(token, it));
 				match("LOGICAL_OR");
 				break;
 			case "BITWISE_XOR":
 				precedence = 5;
-				addChild(new XoR(current, it));
+				addChild(new XoR(token, it));
 				match("BITWISE_XOR");
 				break;
 			case "LOGICAL_NOT":
 				precedence = 7;
-				addChild(new Inequality(current, it));
+				addChild(new Inequality(token, it));
 				match("LOGICAL_NOT");
 				break;
 			case "OUTPUT":
 				precedence = 9;
-				addChild(new LeftShift(current, it));
+				addChild(new LeftShift(token, it));
 				match("OUTPUT");
 				break;
 			case "INPUT":
 				precedence = 9;
-				addChild(new RightShift(current, it));
+				addChild(new RightShift(token, it));
 				match("INPUT");
 				break;
 			case "EQUALITY":
 				precedence = 7;
-				addChild(new Equality(current, it));
+				addChild(new Equality(token, it));
 				match("EQUALITY");
 				break;
 			default:
@@ -2012,113 +2002,6 @@ class Expression extends Subtree {
 		off the top.
 
 	*/
-
-	private void addOperandChild(Token current, boolean match) {
-		switch(current.getTokenType()) {
-			case "IntIdentifier":
-				addChild(new IntLiteral((Integer)current.getVal())); 
-				break;
-			case "FloatIdentifier":
-				addChild(new FloatLiteral(current, it));
-				break;
-			case "StringIdentifier":
-				addChild(new Identifier(current, it));
-				break;
-			case "OPEN_PARENTHESIS":
-				match("OPEN_PARENTHESIS");
-				addChild(new Expression(current, token, it));
-				break;
-			case "String_Literal":
-				addChild(new StringLit(current, it));
-				break;
-			case "Char_Literal":
-				addChild(new CharLit(current, it));
-				break;
-			default:
-				break;
-		}
-	}
-
-	private int addOperatorChild(Token current, boolean match) {
-		int precedence = 0;
-		switch(current.getTokenType()) {
-			case "PLUS":
-				precedence = 10; 
-				addChild(new Addition(current, it));
-				break;
-			case "MINUS":
-				precedence = 10;
-				addChild(new Subtraction(current, it));
-				break;
-			case "ASTERISK":
-				precedence = 11;
-				addChild(new Multiplication(current, it));
-				break;
-			case "BACKSLASH":
-				precedence = 11;
-				addChild(new Division(current, it));
-				break;
-			case "ASSIGNMENT_OPERATOR":
-				precedence = 1;
-				addChild(new Assignment(current, it));
-				break;
-			case "RELATIONAL_GREATER_THAN":
-				precedence = 8;
-				addChild(new GreaterThan(current, it));
-				break;
-			case "RELATIONAL_GREATER_EQUALTO":
-				precedence = 8;
-				addChild(new GreaterThanEqual(current, it));
-				break;
-			case "RELATIONAL_LESS_THAN":
-				precedence = 8;
-				addChild(new LessThan(current, it));
-				break;
-			case "RELATIONAL_LESS_EQUALTO":
-				precedence = 8;
-				addChild(new LessThanEqual(current, it));
-				break;
-			case "BITWISE_AND":
-				precedence = 6;
-				addChild(new BitwiseAnd(current, it));
-				break;
-			case "LOGICAL_AND":
-				precedence = 3;
-				addChild(new LogicalAnd(current, it));
-				break;
-			case "BITWISE_OR":
-				precedence = 4;
-				addChild(new BitwiseOr(current, it));
-				break;
-			case "LOGICAL_OR":
-				precedence = 2;
-				addChild(new LogicalOr(current, it));
-				break;
-			case "BITWISE_XOR":
-				precedence = 5;
-				addChild(new XoR(current, it));
-				break;
-			case "LOGICAL_NOT":
-				precedence = 7;
-				addChild(new Inequality(current, it));
-				break;
-			case "OUTPUT":
-				precedence = 9;
-				addChild(new LeftShift(current, it));
-				break;
-			case "INPUT":
-				precedence = 9;
-				addChild(new RightShift(current, it));
-				break;
-			case "EQUALITY":
-				precedence = 7;
-				addChild(new Equality(current, it));
-				break;
-			default:
-				break;
-		}
-		return precedence;
-	}
 
 	protected boolean continueReading() {
 		boolean continueReading = true;
@@ -2145,20 +2028,21 @@ class Expression extends Subtree {
 		int currPrec = 0;
 		int nextPrec = 20;
 
-		currPrec = addOperatorChild(token);
+		currPrec = addOperatorChild();
 
 		if(isUnary()){
 			addChild(new UnaryExpression(token, it));
 		}
 		else{
-			addOperandChild(token);
+			addOperandChild();
 		}
 		while(continueReading()) {
-			nextPrec = addOperatorChild(token);
+			nextPrec = addOperatorChild();
 		 	if(nextPrec > currPrec) {
-		 		Subtree operator = (children.get(children.size() - 1));
+		 		Subtree operator = (children.get(children.size() - 1)).deepCopy();
 		 		Subtree leftHand = (children.get(children.size() - 2)).deepCopy();
-		 		Expression toAdd = new Expression(leftHand, operator, token, it);
+		 		System.out.println(token.toString());
+		 		SubExpression toAdd = new SubExpression(leftHand, operator, nextPrec, token, it);
 		 		children.remove(children.get(children.size() - 1));
 		 		children.remove(children.get(children.size() - 1));
 		 		addChild(toAdd);
@@ -2167,7 +2051,7 @@ class Expression extends Subtree {
 		 		if(isUnary())
 		 			addChild(new UnaryExpression(token, it));
 		 		else
-		 			addOperandChild(token);
+		 			addOperandChild();
 		 	}
 		}
 	}
@@ -2235,407 +2119,310 @@ class Expression extends Subtree {
 	 * 
 	 * 
 	 */
+class SubExpression extends Subtree {
 
-// class SubExpression extends Subtree {
-// 	Token popped = null;
+	SubExpression(Subtree leftHand, Subtree operator, int precedence, Token t, Iterator<Token> i) {
+		super(t, i);
+		addPoppedChild(leftHand);	//adds popped operand
+		addPoppedChild(operator);	//adds popped operator
+		readExpression();			//reads remaining expression
+	}
 
-// 	SubExpression(Token pop, Token t, Iterator<Token> i) {
-// 		super(t, i);
-// 	}
+	SubExpression(Token t, Iterator<Token> i){
+		super(t, i);
+		readExpression();
+	}
 
-// 	SubExpression(Subtree leftHand, Subtree operator, int precedence, Token t, Iterator<Token> i) {
-// 		super(t, i);
-// 		addChild(leftHand);			//adds popped operand
-// 		addChild(operator);			//adds popped operator
-// 		//addOperandChild(new Token(leftHand.token), true);
-// 		//addOperatorChild(new Token(operator.token), true);
-// 		//this.token = t;
-// 		//this.it = i;
-// 		//if(continueReading())
-// 			//readExpression();
-// 		readExpression();			//reads remaining expression
-// 	}
+	SubExpression(SubExpression toCopy) {
+		super(toCopy);
+	}
 
-// 	protected void readExpression() {
-// 		if(isUnary())
-// 			addChild(new UnaryExpression(token, it));
-// 		else
-// 			addOperandChild(token);
-// 		if(continueReading())
-// 			readRemainingExpr();
-// 	}
+	public void addPoppedChild(Subtree subtree) {
+		if(children == null)
+			children = new ArrayList<Subtree>();
 
-// 	protected boolean isUnary() {
-// 		boolean isUnary = false;
-// 		switch(token.getTokenType()) {
-// 			case "TILDE":
-// 				isUnary = true;
-// 				break;
-// 			case "EXCLAMATION_POINT":
-// 				isUnary = true;
-// 				break;
-// 			case "MINUS":
-// 				isUnary = true;
-// 				break;
-// 			default:
-// 				break;
-// 		}
-// 		return isUnary;
-// 	}
+		children.add(subtree);
+	}
 
-// 	protected void addOperandChild() {
-// 		switch(token.getTokenType()) {
-// 			case "IntIdentifier":
-// 				addChild(new IntLiteral(token, it)); 
-// 				match("IntIdentifier");
-// 				break;
-// 			case "FloatIdentifier":
-// 				addChild(new FloatLiteral(token, it));
-// 				match("FloatIdentifier");
-// 				break;
-// 			case "StringIdentifier":
-// 				addChild(new Identifier(token, it));
-// 				match("StringIdentifier");
-// 				disambiguate();
-// 				break;
-// 			case "OPEN_PARENTHESIS":
-// 				match("OPEN_PARENTHESIS");
-// 				SubExpression sub = new SubExpression(token, it);
-// 				addChild(sub);
-// 				match("CLOSE_PARENTHESIS");
-// 				break;
-// 			case "String_Literal":
-// 				addChild(new StringLit(token, it));
-// 				match("String_Literal");
-// 				break;
-// 			case "Char_Literal":
-// 				addChild(new CharLit(token, it));
-// 				match("Char_Literal");
-// 				break;
-// 			default:
-// 				break;
-// 		}
-// 	}
+	@Override
+	public SubExpression deepCopy() {
+		return new SubExpression(this);
+	}
 
-// 	protected int addOperatorChild(Token current) {
-// 		int precedence = 0;
-// 		switch(current.getTokenType()) {
-// 			case "PLUS":
-// 				precedence = 10; 
-// 				addChild(new Addition(current, it));
-// 				match("PLUS");
-// 				break;
-// 			case "MINUS":
-// 				precedence = 10;
-// 				match("MINUS");
-// 				addChild(new Subtraction(current, it));
-// 				break;
-// 			case "ASTERISK":
-// 				precedence = 11;
-// 				addChild(new Multiplication(current, it));
-// 				match("ASTERISK");
-// 				break;
-// 			case "BACKSLASH":
-// 				precedence = 11;
-// 				addChild(new Division(current, it));
-// 				match("BACKSLASH");
-// 				break;
-// 			case "ASSIGNMENT_OPERATOR":
-// 				precedence = 1;
-// 				addChild(new Assignment(current, it));
-// 				match("ASSIGNMENT_OPERATOR");
-// 				break;
-// 			case "RELATIONAL_GREATER_THAN":
-// 				precedence = 8;
-// 				addChild(new GreaterThan(current, it));
-// 				match("RELATIONAL_GREATER_THAN");
-// 				break;
-// 			case "RELATIONAL_GREATER_EQUALTO":
-// 				precedence = 8;
-// 				addChild(new GreaterThanEqual(current, it));
-// 				match("RELATIONAL_GREATER_EQUALTO");
-// 				break;
-// 			case "RELATIONAL_LESS_THAN":
-// 				precedence = 8;
-// 				addChild(new LessThan(current, it));
-// 				match("RELATIONAL_LESS_THAN");
-// 				break;
-// 			case "RELATIONAL_LESS_EQUALTO":
-// 				precedence = 8;
-// 				addChild(new LessThanEqual(current, it));
-// 				match("RELATIONAL_LESS_EQUALTO");
-// 				break;
-// 			case "BITWISE_AND":
-// 				precedence = 6;
-// 				addChild(new BitwiseAnd(current, it));
-// 				match("BITWISE_AND");
-// 				break;
-// 			case "LOGICAL_AND":
-// 				precedence = 3;
-// 				addChild(new LogicalAnd(current, it));
-// 				match("LOGICAL_AND");
-// 				break;
-// 			case "BITWISE_OR":
-// 				precedence = 4;
-// 				addChild(new BitwiseOr(current, it));
-// 				match("BITWISE_OR");
-// 				break;
-// 			case "LOGICAL_OR":
-// 				precedence = 2;
-// 				addChild(new LogicalOr(current, it));
-// 				match("LOGICAL_OR");
-// 				break;
-// 			case "BITWISE_XOR":
-// 				precedence = 5;
-// 				addChild(new XoR(current, it));
-// 				match("BITWISE_XOR");
-// 				break;
-// 			case "LOGICAL_NOT":
-// 				precedence = 7;
-// 				addChild(new Inequality(current, it));
-// 				match("LOGICAL_NOT");
-// 				break;
-// 			case "OUTPUT":
-// 				precedence = 9;
-// 				addChild(new LeftShift(current, it));
-// 				match("OUTPUT");
-// 				break;
-// 			case "INPUT":
-// 				precedence = 9;
-// 				addChild(new RightShift(current, it));
-// 				match("INPUT");
-// 				break;
-// 			case "EQUALITY":
-// 				precedence = 7;
-// 				addChild(new Equality(current, it));
-// 				match("EQUALITY");
-// 				break;
-// 			default:
-// 				break;
-// 		}
-// 		return precedence;
-// 	}
+	protected void readExpression() {
+		
+		if(isUnary())
+			addChild(new UnaryExpression(token, it));
+		else
+			addOperandChild();
+		if(continueReading())
+			readRemainingExpr();
+	}
 
-// 	/*
+	protected boolean isUnary() {
+		boolean isUnary = false;
+		switch(token.getTokenType()) {
+			case "TILDE":
+				isUnary = true;
+				break;
+			case "EXCLAMATION_POINT":
+				isUnary = true;
+				break;
+			case "MINUS":
+				isUnary = true;
+				break;
+			default:
+				break;
+		}
+		return isUnary;
+	}
 
-// 		Definite bug, need to creat some sort of constructor that takes two
-// 		token's, one that is the current one that is the same across all nodes
-// 		the other is being passed in because it is the one that has been popped
-// 		off the top.
+	protected void addOperandChild() {
+		switch(token.getTokenType()) {
+			case "IntIdentifier":
+				addChild(new IntLiteral(token, it)); 
+				match("IntIdentifier");
+				break;
+			case "FloatIdentifier":
+				addChild(new FloatLiteral(token, it));
+				match("FloatIdentifier");
+				break;
+			case "StringIdentifier":
+				addChild(new Identifier(token, it));
+				match("StringIdentifier");
+				disambiguate();
+				break;
+			case "OPEN_PARENTHESIS":
+				match("OPEN_PARENTHESIS");
+				SubExpression sub = new SubExpression(token, it);
+				addChild(sub);
+				match("CLOSE_PARENTHESIS");
+				break;
+			case "String_Literal":
+				addChild(new StringLit(token, it));
+				match("String_Literal");
+				break;
+			case "Char_Literal":
+				addChild(new CharLit(token, it));
+				match("Char_Literal");
+				break;
+			default:
+				break;
+		}
+	}
 
-// 	*/
+	protected int addOperatorChild() {
+		int precedence = 0;
+		switch(token.getTokenType()) {
+			case "PLUS":
+				precedence = 10; 
+				addChild(new Addition(token, it));
+				match("PLUS");
+				break;
+			case "MINUS":
+				precedence = 10;
+				match("MINUS");
+				addChild(new Subtraction(token, it));
+				break;
+			case "ASTERISK":
+				precedence = 11;
+				addChild(new Multiplication(token, it));
+				match("ASTERISK");
+				break;
+			case "BACKSLASH":
+				precedence = 11;
+				addChild(new Division(token, it));
+				match("BACKSLASH");
+				break;
+			case "ASSIGNMENT_OPERATOR":
+				precedence = 1;
+				addChild(new Assignment(token, it));
+				match("ASSIGNMENT_OPERATOR");
+				break;
+			case "RELATIONAL_GREATER_THAN":
+				precedence = 8;
+				addChild(new GreaterThan(token, it));
+				match("RELATIONAL_GREATER_THAN");
+				break;
+			case "RELATIONAL_GREATER_EQUALTO":
+				precedence = 8;
+				addChild(new GreaterThanEqual(token, it));
+				match("RELATIONAL_GREATER_EQUALTO");
+				break;
+			case "RELATIONAL_LESS_THAN":
+				precedence = 8;
+				addChild(new LessThan(token, it));
+				match("RELATIONAL_LESS_THAN");
+				break;
+			case "RELATIONAL_LESS_EQUALTO":
+				precedence = 8;
+				addChild(new LessThanEqual(token, it));
+				match("RELATIONAL_LESS_EQUALTO");
+				break;
+			case "BITWISE_AND":
+				precedence = 6;
+				addChild(new BitwiseAnd(token, it));
+				match("BITWISE_AND");
+				break;
+			case "LOGICAL_AND":
+				precedence = 3;
+				addChild(new LogicalAnd(token, it));
+				match("LOGICAL_AND");
+				break;
+			case "BITWISE_OR":
+				precedence = 4;
+				addChild(new BitwiseOr(token, it));
+				match("BITWISE_OR");
+				break;
+			case "LOGICAL_OR":
+				precedence = 2;
+				addChild(new LogicalOr(token, it));
+				match("LOGICAL_OR");
+				break;
+			case "BITWISE_XOR":
+				precedence = 5;
+				addChild(new XoR(token, it));
+				match("BITWISE_XOR");
+				break;
+			case "LOGICAL_NOT":
+				precedence = 7;
+				addChild(new Inequality(token, it));
+				match("LOGICAL_NOT");
+				break;
+			case "OUTPUT":
+				precedence = 9;
+				addChild(new LeftShift(token, it));
+				match("OUTPUT");
+				break;
+			case "INPUT":
+				precedence = 9;
+				addChild(new RightShift(token, it));
+				match("INPUT");
+				break;
+			case "EQUALITY":
+				precedence = 7;
+				addChild(new Equality(token, it));
+				match("EQUALITY");
+				break;
+			default:
+				break;
+		}
+		return precedence;
+	}
 
-// 	private void addOperandChild(Token current, boolean match) {
-// 		switch(current.getTokenType()) {
-// 			case "IntIdentifier":
-// 				addChild(new IntLiteral((Integer)current.getVal())); 
-// 				break;
-// 			case "FloatIdentifier":
-// 				addChild(new FloatLiteral(current, it));
-// 				break;
-// 			case "StringIdentifier":
-// 				addChild(new Identifier(current, it));
-// 				break;
-// 			case "OPEN_PARENTHESIS":
-// 				match("OPEN_PARENTHESIS");
-// 				addChild(new Expression(current, token, it));
-// 				break;
-// 			case "String_Literal":
-// 				addChild(new StringLit(current, it));
-// 				break;
-// 			case "Char_Literal":
-// 				addChild(new CharLit(current, it));
-// 				break;
-// 			default:
-// 				break;
-// 		}
-// 	}
+	/*
 
-// 	private int addOperatorChild(Token current, boolean match) {
-// 		int precedence = 0;
-// 		switch(current.getTokenType()) {
-// 			case "PLUS":
-// 				precedence = 10; 
-// 				addChild(new Addition(current, it));
-// 				break;
-// 			case "MINUS":
-// 				precedence = 10;
-// 				addChild(new Subtraction(current, it));
-// 				break;
-// 			case "ASTERISK":
-// 				precedence = 11;
-// 				addChild(new Multiplication(current, it));
-// 				break;
-// 			case "BACKSLASH":
-// 				precedence = 11;
-// 				addChild(new Division(current, it));
-// 				break;
-// 			case "ASSIGNMENT_OPERATOR":
-// 				precedence = 1;
-// 				addChild(new Assignment(current, it));
-// 				break;
-// 			case "RELATIONAL_GREATER_THAN":
-// 				precedence = 8;
-// 				addChild(new GreaterThan(current, it));
-// 				break;
-// 			case "RELATIONAL_GREATER_EQUALTO":
-// 				precedence = 8;
-// 				addChild(new GreaterThanEqual(current, it));
-// 				break;
-// 			case "RELATIONAL_LESS_THAN":
-// 				precedence = 8;
-// 				addChild(new LessThan(current, it));
-// 				break;
-// 			case "RELATIONAL_LESS_EQUALTO":
-// 				precedence = 8;
-// 				addChild(new LessThanEqual(current, it));
-// 				break;
-// 			case "BITWISE_AND":
-// 				precedence = 6;
-// 				addChild(new BitwiseAnd(current, it));
-// 				break;
-// 			case "LOGICAL_AND":
-// 				precedence = 3;
-// 				addChild(new LogicalAnd(current, it));
-// 				break;
-// 			case "BITWISE_OR":
-// 				precedence = 4;
-// 				addChild(new BitwiseOr(current, it));
-// 				break;
-// 			case "LOGICAL_OR":
-// 				precedence = 2;
-// 				addChild(new LogicalOr(current, it));
-// 				break;
-// 			case "BITWISE_XOR":
-// 				precedence = 5;
-// 				addChild(new XoR(current, it));
-// 				break;
-// 			case "LOGICAL_NOT":
-// 				precedence = 7;
-// 				addChild(new Inequality(current, it));
-// 				break;
-// 			case "OUTPUT":
-// 				precedence = 9;
-// 				addChild(new LeftShift(current, it));
-// 				break;
-// 			case "INPUT":
-// 				precedence = 9;
-// 				addChild(new RightShift(current, it));
-// 				break;
-// 			case "EQUALITY":
-// 				precedence = 7;
-// 				addChild(new Equality(current, it));
-// 				break;
-// 			default:
-// 				break;
-// 		}
-// 		return precedence;
-// 	}
+		Definite bug, need to creat some sort of constructor that takes two
+		token's, one that is the current one that is the same across all nodes
+		the other is being passed in because it is the one that has been popped
+		off the top.
 
-// 	protected boolean continueReading() {
-// 		boolean continueReading = true;
-// 		switch(token.getTokenType()) {
-// 			case "COMMA":
-// 				continueReading = false;
-// 				break;
-// 			case "CLOSE_PARENTHESIS":
-// 				continueReading = false;
-// 				break;
-// 			case "SEMICOLON":
-// 				continueReading = false;
-// 				break;
-// 			case "CLOSE_BRACKET":
-// 				continueReading = false;
-// 				break;
-// 			default:
-// 				break;
-// 		}
-// 		return continueReading;
-// 	}
+	*/
 
-// 	protected void readRemainingExpr() {
-// 		int currPrec = 0;
-// 		int nextPrec = 20;
+	protected boolean continueReading() {
+		boolean continueReading = true;
+		switch(token.getTokenType()) {
+			case "COMMA":
+				continueReading = false;
+				break;
+			case "CLOSE_PARENTHESIS":
+				continueReading = false;
+				break;
+			case "SEMICOLON":
+				continueReading = false;
+				break;
+			case "CLOSE_BRACKET":
+				continueReading = false;
+				break;
+			default:
+				break;
+		}
+		return continueReading;
+	}
 
-// 		currPrec = addOperatorChild(token);
+	protected void readRemainingExpr() {
+		int currPrec = 0;
+		int nextPrec = 20;
 
-// 		if(isUnary()){
-// 			addChild(new UnaryExpression(token, it));
-// 		}
-// 		else{
-// 			addOperandChild(token);
-// 		}
-// 		while(continueReading()) {
-// 			nextPrec = addOperatorChild(token);
-// 		 	if(nextPrec > currPrec) {
-// 		 		Subtree operator = children.get(children.size() - 1);
-// 		 		Subtree leftHand = children.get(children.size() - 2);
-// 		 		Expression toAdd = new Expression(leftHand, operator, token, it);
-// 		 		children.remove(children.get(children.size() - 1));
-// 		 		children.remove(children.get(children.size() - 1));
-// 		 		addChild(toAdd);
+		currPrec = addOperatorChild();
+
+		if(isUnary()){
+			addChild(new UnaryExpression(token, it));
+		}
+		else{
+			addOperandChild();
+		}
+		while(continueReading()) {
+			nextPrec = addOperatorChild();
+		 	if(nextPrec > currPrec) {
+		 		Subtree operator = (children.get(children.size() - 1));
+		 		Subtree leftHand = (children.get(children.size() - 2)).deepCopy();
+		 		SubExpression toAdd = new SubExpression(leftHand, operator, nextPrec, token, it);
+		 		children.remove(children.get(children.size() - 1));
+		 		children.remove(children.get(children.size() - 1));
+		 		addChild(toAdd);
 	 	
-// 		 	} else {
-// 		 		if(isUnary())
-// 		 			addChild(new UnaryExpression(token, it));
-// 		 		else
-// 		 			addOperandChild(token);
-// 		 	}
-// 		}
-// 	}
+		 	} else {
+		 		if(isUnary())
+		 			addChild(new UnaryExpression(token, it));
+		 		else
+		 			addOperandChild();
+		 	}
+		}
+	}
 
-// 	public void disambiguate() {
-// 		//if the identifier is part of a function call
-// 		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
-// 			Identifier functionName = (Identifier)children.get(children.size() - 1);
-// 			children.remove(children.size() - 1);
-// 			FunctionCall functionCall = new FunctionCall(functionName, token, it);
-// 			addChild(functionCall);
-// 		//if the identifier is part of an array
-// 		} else if(token.getTokenType().equals("OPEN_BRACKET")) {
-// 			Identifier arrayName = (Identifier)children.get(children.size() - 1);
-// 			children.remove(children.size() - 1);
-// 			ArrayCall arrayCall = new ArrayCall(arrayName, token, it);
-// 			addChild(arrayCall);
-// 		//know it is of type record and we need to reference the record
-// 		//of a certain variable
-// 		} else if(token.getTokenType().equals("DOT")) {
-// 			System.out.println(token.getTokenType());
-// 			Identifier varName = (Identifier)children.get(children.size() - 1);
-// 			children.remove(children.size() - 1);
-// 			Variable variable = new Variable(varName, token, it);
-// 			System.out.println(token.getTokenType());
-// 			addChild(variable);
-// 		}
-// 	}
+	public void disambiguate() {
+		//if the identifier is part of a function call
+		if(token.getTokenType().equals("OPEN_PARENTHESIS")) {
+			Identifier functionName = (Identifier)children.get(children.size() - 1);
+			children.remove(children.size() - 1);
+			FunctionCall functionCall = new FunctionCall(functionName, token, it);
+			addChild(functionCall);
+		//if the identifier is part of an array
+		} else if(token.getTokenType().equals("OPEN_BRACKET")) {
+			Identifier arrayName = (Identifier)children.get(children.size() - 1);
+			children.remove(children.size() - 1);
+			ArrayCall arrayCall = new ArrayCall(arrayName, token, it);
+			addChild(arrayCall);
+		//know it is of type record and we need to reference the record
+		//of a certain variable
+		} else if(token.getTokenType().equals("DOT")) {
+			System.out.println(token.getTokenType());
+			Identifier varName = (Identifier)children.get(children.size() - 1);
+			children.remove(children.size() - 1);
+			Variable variable = new Variable(varName, token, it);
+			System.out.println(token.getTokenType());
+			addChild(variable);
+		}
+	}
 
-// 	@Override
-// 	public void print(){
-// 		printUp("+---");
+	@Override
+	public void print(){
+		printUp("+---");
 
-// 		System.out.println(print + "(,) " 
-// 			+ " subexpression");
+		System.out.println(print + "(,) " 
+			+ " subexpression");
 
-// 		printUp("+---");
+		printUp("+---");
 
-// 		String toPrint = print + this.toPrint();
-// 		System.out.println(toPrint);
-// 	}
+		String toPrint = print + this.toPrint();
+		System.out.println(toPrint);
+	}
 
-// 	@Override
-// 	public String toPrint() {
-// 		String retVal = "";
-// 		Subtree currentNode = null;
-// 		if(children != null) {
-// 			for(int index = 0; index < children.size(); index++) {
-// 				currentNode = children.get(index);
-// 				retVal += currentNode.toPrint();
-// 			}
-// 		}
-// 		return retVal;
-// 	}
+	@Override
+	public String toPrint() {
+		String retVal = "";
+		Subtree currentNode = null;
+		if(children != null) {
+			for(int index = 0; index < children.size(); index++) {
+				currentNode = children.get(index);
+				retVal += currentNode.toPrint();
+			}
+		}
+		return retVal;
+	}
 
-// }
+}
 
 class UnaryExpression extends Subtree {
 
