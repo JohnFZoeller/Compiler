@@ -65,6 +65,11 @@ public class Subtree {
 		//collapse
 	}
 
+	public Symbol getSymbol(){
+		return symbol;
+		//collapse
+	}
+
 	public void addChild(Subtree subtree) {
 		if(children == null)
 			children = new ArrayList<Subtree>();
@@ -1735,13 +1740,16 @@ class Expression extends Subtree {
 	public void decorateFirst(Scope enclosing) {
 		//sets type for all children
 		setType(enclosing);
-
+		System.out.println("decorateFirst called in Expression");
 		Subtree currentNode = null;
+		
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
-			if(currentNode instanceof Assignment) {
-				
+			System.out.println(currentNode.getClass());
+			if(currentNode instanceof Variable) {
+				currentNode.decorateFirst(enclosing);
 			} else if(currentNode instanceof MathOp){
+			System.out.println("instance called in Expression");
 				//decorateMathOp()
 			} else if(currentNode instanceof BitWiseOp){
 				//decorateBitwiseOp()
@@ -1749,13 +1757,16 @@ class Expression extends Subtree {
 
 			} else if(currentNode instanceof ArrayCall) {
 
-			} else {
-				type = currentNode.getSymType();
+			} else if (currentNode instanceof SubExpression) {
+				currentNode.decorateFirst(enclosing);
+			} else if(currentNode instanceof Expression) {
+				currentNode.decorateFirst(enclosing);
+				//type = currentNode.getSymType();
 			}
 		}
 
-
 	}
+
 
 	public SymbolType validate(Subtree lhs, Subtree operator, Subtree rhs, Scope enclosing) {
 		SymbolType result = null;				//result type to be returned
@@ -2748,6 +2759,48 @@ class Variable extends Operand {
 		}
 	}
 
+	@Override
+	public void decorateFirst(Scope enclosing) {
+		System.out.println("decorateFirst called in Variable");
+		decorateAssignment(enclosing);
+	}
+
+		/**
+	 *	Decorates a variable assignment. Checks that the type declared for
+	 *	the variable is compatible with the assignment expression. If so
+	 *	changes the value of the symbol in the enclosing symbol table.
+	 *	All Symbol Types for each subtree should have already been set
+	 *	previously.
+	 *	
+	 *	@param 	n 	name associated with symbol
+	 *	@param 	s 	size of array
+	 *	@param 	t 	type of symbol associated with the array
+	 *	@param 	r 	record symbol associated with the array
+	 *	@see 		Symbol, SymbolType, RecordSymbol
+	 */
+
+	public void decorateAssignment(Scope enclosing) {
+		SymbolType exprType = null;
+		int assignmentIndex = 0;
+
+		Subtree child = null;
+		for(int index = 0; index < children.size(); index++) {
+			child = children.get(index);
+			if(child instanceof Assignment) {
+				assignmentIndex = index;
+				break;
+			}
+		}
+
+		exprType = children.get(assignmentIndex + 1).getSymType();
+
+		//System.out.println(exprType.toString());
+
+		//for assignment the left hand of the assignment statement must be
+		//right-hand side of assignment statement must be an expression
+
+	}
+
 	public void addFields() {
 		String varName = children.get(0).toPrint();
 		while(token.getTokenType().equals("DOT")) {
@@ -2803,10 +2856,9 @@ class Variable extends Operand {
 				}
 			}
 		} else {
+			symbol = defined;
 			type = defined.getType();
 		}
-
-		System.out.println(type.getTypeName());
 	}
 
 	@Override
