@@ -1733,53 +1733,25 @@ class Expression extends Subtree {
 
 	@Override
 	public void decorateFirst(Scope enclosing) {
-		//first step is going to be to check that operands and operators are appropriate for the
-		//type of expression. This includes resolving the types of different identifiers.
-
-		//iterate through the children. When we find an operator we will want to compare the
-		//left and right hand sides of the expression to make sure that it is a valid operation
-		//for the given types.
-
-		//if the operand is of type identifier or function-call then we will need to call
-		//decorateFirst on them to resolve their types before comparing them to the other
-		//side of the expression
-
-		//first test-case var x = 6 + 2
-		//second test-case var x = s + 2
-		System.out.println("decorateFirst in Expression called");
-		//System.out.println("Character test" + Character.toString((Character)'c'));
+		//sets type for all children
+		setType(enclosing);
 
 		Subtree currentNode = null;
-		Subtree lhs = null;
-		Subtree rhs = null;
-		Subtree op = null;
-
-		//first we want to iterate over all of the children and ensure
-		//that each one has a type set so that we can validate them.
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
-			currentNode.setType(enclosing);
-			// if(currentNode instanceof MathOp) {
-			// 	lhs = children.get(index - 1);
-			// 	rhs = children.get(index + 1);
+			if(currentNode instanceof Assignment) {
+				
+			} else if(currentNode instanceof MathOp){
+				//decorateMathOp()
+			} else if(currentNode instanceof BitWiseOp){
+				//decorateBitwiseOp()
+			} else if(currentNode instanceof FunctionCall){
 
-			// 	validate(lhs, currentNode, rhs, enclosing);
-			// } else if(currentNode instanceof Operand) {
-			// 	if(currentNode instanceof Identifier) {
-			// 		currentNode.setType(enclosing);
-			// 		SymbolType ss = currentNode.getSymType();
-			// 		//System.out.println("Identifier " + currentNode.toPrint() + " type " + ss.getTypeName());
-			// 	}
-			// 	//System.out.println(currentNode.getSymType());
-			// 	//enclosing.resolve(currentNode.getSymType().getTypeName());
-			// } else if(currentNode instanceof BitWiseOp) {
-			// 	lhs = children.get(index - 1);
-			// 	rhs = children.get(index + 1);
+			} else if(currentNode instanceof ArrayCall) {
 
-			// 	validate(lhs, currentNode, rhs, enclosing);
-			// } else if(currentNode instanceof Expression) {
-			// 	currentNode.decorateFirst(enclosing);
-			// }
+			} else {
+				type = currentNode.getSymType();
+			}
 		}
 
 
@@ -1837,6 +1809,15 @@ class Expression extends Subtree {
 		//operation, if they are of the same type then that will be the resulting type
 		//otherwise casting is necessary.
 		return result;
+	}
+
+	@Override
+	public void setType(Scope enclosing) {
+		Subtree currentNode = null;
+		for(int index = 0; index < children.size(); index++) {
+			currentNode = children.get(index);
+			currentNode.setType(enclosing);
+		}
 	}
 
 	protected void readExpression() {
@@ -2824,6 +2805,8 @@ class Variable extends Operand {
 		} else {
 			type = defined.getType();
 		}
+
+		System.out.println(type.getTypeName());
 	}
 
 	@Override
@@ -3192,7 +3175,7 @@ class Tilde extends Subtree {		//bitwise not
 	}
 }
 
-class Assignment extends MathOp {
+class Assignment extends Subtree {
 	Assignment(Token t, Iterator<Token> i){
 		super(t, i);
 	}
