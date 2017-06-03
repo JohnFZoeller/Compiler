@@ -27,12 +27,31 @@ PLUS null
 IntIdentifier null
 ASTERISK null
 IntIdentifier null
+PLUS null
+OPEN_PARENTHESIS null
+IntIdentifier null
+PLUS null
+IntIdentifier null
+CLOSE_PARENTHESIS null
+SEMICOLON null
+var null
+StringIdentifier myArray
+int32 null
+OPEN_BRACKET null
+IntIdentifier null
+CLOSE_BRACKET null
+SEMICOLON null
+StringIdentifier myArray
+DOT null
+StringIdentifier c
+DOT null
+StringIdentifier d
+ASSIGNMENT_OPERATOR null
+IntIdentifier null
 SEMICOLON null
 Exception in thread "main" java.lang.NullPointerException
-	at Expression.validate(Subtree.java:1802)
-	at Expression.decorateFirst(Subtree.java:1769)
-	at Var.decorateFirst(Subtree.java:744)
-	at Subtree.beginDecorateFirst(Subtree.java:93)
-	at SyntaxParser.decorate(SyntaxParser.java:36)
+	at Var.emit(Subtree.java:761)
+	at Subtree.emitAssemblyCode(Subtree.java:114)
+	at SyntaxParser.decorate(SyntaxParser.java:38)
 	at Main.run(Main.java:21)
 	at Main.main(Main.java:7)

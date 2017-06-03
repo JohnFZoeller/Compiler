@@ -76,6 +76,13 @@ public class Subtree {
 		token = children.get(children.size() - 1).token;
 	}
 
+	public void addPoppedChild(Subtree subtree) {
+		if(children == null)
+			children = new ArrayList<Subtree>();
+
+		children.add(subtree);
+	}
+
 	public boolean hasChildren(){
 		return (children != null);
 	}
@@ -1749,30 +1756,33 @@ class Expression extends Subtree {
 		Subtree lhs = null;
 		Subtree rhs = null;
 		Subtree op = null;
+
+		//first we want to iterate over all of the children and ensure
+		//that each one has a type set so that we can validate them.
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
+			currentNode.setType(enclosing);
+			// if(currentNode instanceof MathOp) {
+			// 	lhs = children.get(index - 1);
+			// 	rhs = children.get(index + 1);
 
-			if(currentNode instanceof MathOp) {
-				lhs = children.get(index - 1);
-				rhs = children.get(index + 1);
+			// 	validate(lhs, currentNode, rhs, enclosing);
+			// } else if(currentNode instanceof Operand) {
+			// 	if(currentNode instanceof Identifier) {
+			// 		currentNode.setType(enclosing);
+			// 		SymbolType ss = currentNode.getSymType();
+			// 		//System.out.println("Identifier " + currentNode.toPrint() + " type " + ss.getTypeName());
+			// 	}
+			// 	//System.out.println(currentNode.getSymType());
+			// 	//enclosing.resolve(currentNode.getSymType().getTypeName());
+			// } else if(currentNode instanceof BitWiseOp) {
+			// 	lhs = children.get(index - 1);
+			// 	rhs = children.get(index + 1);
 
-				validate(lhs, currentNode, rhs, enclosing);
-			} else if(currentNode instanceof Operand) {
-				if(currentNode instanceof Identifier) {
-					currentNode.setType(enclosing);
-					SymbolType ss = currentNode.getSymType();
-					//System.out.println("Identifier " + currentNode.toPrint() + " type " + ss.getTypeName());
-				}
-				//System.out.println(currentNode.getSymType());
-				//enclosing.resolve(currentNode.getSymType().getTypeName());
-			} else if(currentNode instanceof BitWiseOp) {
-				lhs = children.get(index - 1);
-				rhs = children.get(index + 1);
-
-				validate(lhs, currentNode, rhs, enclosing);
-			} else if(currentNode instanceof Expression) {
-				currentNode.decorateFirst(enclosing);
-			}
+			// 	validate(lhs, currentNode, rhs, enclosing);
+			// } else if(currentNode instanceof Expression) {
+			// 	currentNode.decorateFirst(enclosing);
+			// }
 		}
 
 
@@ -1833,12 +1843,17 @@ class Expression extends Subtree {
 	}
 
 	protected void readExpression() {
-		if(isUnary())
+		if(isUnary()) {
 			addChild(new UnaryExpression(token, it));
-		else
+		}
+		else {
 			addOperandChild();
-		if(continueReading())
+		}
+		System.out.println("continueReading " + token.toString());
+		if(continueReading()) {
+			System.out.println("continueReading " + token.toString());
 			readRemainingExpr();
+		}
 	}
 
 	protected boolean isUnary() {
@@ -1859,16 +1874,10 @@ class Expression extends Subtree {
 		return isUnary;
 	}
 
-	/*
-		Bug when trying to pass in current v. token because it takes current to be the node's token
-		item. something that definitely needs to be fixed.
-
-	*/
-
 	protected void addOperandChild() {
 		switch(token.getTokenType()) {
 			case "IntIdentifier":
-				addChild(new IntLiteral(token, it)); 
+				addChild(new IntLiteral(token, it));
 				match("IntIdentifier");
 				break;
 			case "FloatIdentifier":
@@ -1878,7 +1887,7 @@ class Expression extends Subtree {
 			case "StringIdentifier":
 				addChild(new Identifier(token, it));
 				match("StringIdentifier");
-				System.out.println("Token " + token.getTokenType());
+				System.out.println("Token n" + token.getTokenType());
 				disambiguate();
 				break;
 			case "OPEN_PARENTHESIS":
@@ -1917,7 +1926,6 @@ class Expression extends Subtree {
 				precedence = 11;
 				addChild(new Multiplication(token, it));
 				match("ASTERISK");
-				System.out.println("ASTERISK matched? " + token.getTokenType());
 				break;
 			case "BACKSLASH":
 				precedence = 11;
@@ -1928,6 +1936,9 @@ class Expression extends Subtree {
 				precedence = 1;
 				addChild(new Assignment(token, it));
 				match("ASSIGNMENT_OPERATOR");
+				System.out.println("rest of = " + token.toString());
+				Expression equals = new Expression(token, it);
+				addChild(equals);
 				break;
 			case "RELATIONAL_GREATER_THAN":
 				precedence = 8;
@@ -2000,15 +2011,6 @@ class Expression extends Subtree {
 		return precedence;
 	}
 
-	/*
-
-		Definite bug, need to creat some sort of constructor that takes two
-		token's, one that is the current one that is the same across all nodes
-		the other is being passed in because it is the one that has been popped
-		off the top.
-
-	*/
-
 	protected boolean continueReading() {
 		boolean continueReading = true;
 		switch(token.getTokenType()) {
@@ -2047,7 +2049,7 @@ class Expression extends Subtree {
 		 	if(nextPrec > currPrec) {
 		 		Subtree operator = (children.get(children.size() - 1)).deepCopy();
 		 		Subtree leftHand = (children.get(children.size() - 2)).deepCopy();
-		 		System.out.println(token.toString());
+		 		System.out.println(token.toString() + currPrec);
 		 		SubExpression toAdd = new SubExpression(leftHand, operator, nextPrec, token, it);
 		 		children.remove(children.get(children.size() - 1));
 		 		children.remove(children.get(children.size() - 1));
@@ -2082,8 +2084,9 @@ class Expression extends Subtree {
 			Identifier varName = (Identifier)children.get(children.size() - 1);
 			children.remove(children.size() - 1);
 			Variable variable = new Variable(varName, token, it);
-			System.out.println(token.getTokenType());
+			//System.out.println(token.toString());
 			addChild(variable);
+			System.out.println("after add child " + token.toString());
 		}
 	}
 
@@ -2112,7 +2115,10 @@ class Expression extends Subtree {
 		if(children != null) {
 			for(int index = 0; index < children.size(); index++) {
 				currentNode = children.get(index);
-				retVal += currentNode.toPrint();
+				if(currentNode instanceof SubExpression)
+					retVal += "(" + currentNode.toPrint() + ")";
+				else
+					retVal += currentNode.toPrint();
 			}
 		}
 		return retVal;
@@ -2122,9 +2128,8 @@ class Expression extends Subtree {
 
 	/*	Class to model subexpressions created when there is a conflict of precedence
 	 *	and an operand and operator are popped from the children list.
-	 * 
-	 * 
 	 */
+
 class SubExpression extends Subtree {
 
 	SubExpression(Subtree leftHand, Subtree operator, int precedence, Token t, Iterator<Token> i) {
@@ -2143,6 +2148,7 @@ class SubExpression extends Subtree {
 		super(toCopy);
 	}
 
+	@Override
 	public void addPoppedChild(Subtree subtree) {
 		if(children == null)
 			children = new ArrayList<Subtree>();
@@ -2316,15 +2322,6 @@ class SubExpression extends Subtree {
 		return precedence;
 	}
 
-	/*
-
-		Definite bug, need to creat some sort of constructor that takes two
-		token's, one that is the current one that is the same across all nodes
-		the other is being passed in because it is the one that has been popped
-		off the top.
-
-	*/
-
 	protected boolean continueReading() {
 		boolean continueReading = true;
 		switch(token.getTokenType()) {
@@ -2422,7 +2419,11 @@ class SubExpression extends Subtree {
 		if(children != null) {
 			for(int index = 0; index < children.size(); index++) {
 				currentNode = children.get(index);
-				retVal += currentNode.toPrint();
+				
+				if(currentNode instanceof SubExpression)
+					retVal += "(" + currentNode.toPrint() + ")";
+				else
+					retVal += currentNode.toPrint();
 			}
 		}
 		return retVal;
@@ -2436,6 +2437,26 @@ class UnaryExpression extends Subtree {
 		super(t, i);
 		addUnaryChild();
 		addOperandChild();
+	}
+
+	UnaryExpression(UnaryExpression toCopy) {
+		super(toCopy);
+	}
+
+	// @Override
+	// public void setType(Scope enclosing) throws UndefinedTypeException {
+	// 	Symbol defined = enclosing.resolve((String)token.getVal());
+
+	// 	if(defined == null) {
+	// 		throw new UndefinedTypeException(toPrint());
+	// 	}
+
+	// 	type = defined.getType();
+	// }
+
+	@Override
+	public UnaryExpression deepCopy() {
+		return new UnaryExpression(this);
 	}
 
 	private void addUnaryChild() {
@@ -2577,13 +2598,6 @@ class IntLiteral extends Operand {
 		super(toCopy);
 	}
 
-	//constructor was trying to fix a bug of sorts, fairly certain
-	//the bug is no longer present but I am not positive
-	IntLiteral(int current) {
-		super(current);
-		type = new BuiltInTypeSymbol("int32");
-	}
-
 	@Override
 	public IntLiteral deepCopy() {
 		return new IntLiteral(this);
@@ -2644,6 +2658,8 @@ class CharLit extends Operand {
 //-----------------------------------------------------------------------------
 //------------------------- FunctionCall needs work ---------------------------
 //-----------------------------------------------------------------------------
+
+//set-type done
 
 class FunctionCall extends Operand {
 	boolean hasParams = false;
@@ -2714,6 +2730,17 @@ class FunctionCall extends Operand {
 	}
 
 	@Override
+	public void setType(Scope enclosing) throws UndefinedTypeException {
+		String funcName = children.get(0).toPrint();
+		Symbol defined = enclosing.resolve(funcName);
+
+		if(defined == null)
+			throw new UndefinedTypeException(funcName);
+
+		type = defined.getType();
+	}
+
+	@Override
 	public FunctionCall deepCopy() {
 		return new FunctionCall(this);
 	}
@@ -2733,40 +2760,79 @@ class FunctionCall extends Operand {
 }
 
 class Variable extends Operand {
+	boolean hasRecord = false;
+	
 	Variable(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	Variable(Variable toCopy) {
 		super(toCopy);
+		this.hasRecord = toCopy.hasRecord;
 	}
 
 	Variable(Identifier name, Token t, Iterator<Token> i) {
-		super(name, t, i);
-		token = t;
-		it = i;
-		addField();
-		//token = t;
-		//it = i;
-		System.out.println("In variable constructor " + (String)token.getTokenType());
+		super(t, i);
+		addPoppedChild(name);
+		//variable has a record reference
+		if(token.getTokenType().equals("DOT")) {
+			hasRecord = true;
+			addFields();
+		}
+		System.out.println("In addField after addChild" + (String)token.getVal());
+	}
+
+	public void addFields() {
+		String varName = children.get(0).toPrint();
+		while(token.getTokenType().equals("DOT")) {
+			addChild(new Dot(token, it));
+			match("DOT");
+			if(token.getTokenType().equals("StringIdentifier"))
+				addField();
+			else
+				throw new MissingReferenceField(varName);
+		}
+		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR"))
+			addExpression();
+		else
+			throw new InitializationRequiredError(varName);
 	}
 
 	public void addField() {
-		match("DOT");
-		System.out.println("In addField" + token.getTokenType());
-		if(token.getTokenType().equals("StringIdentifier")) {
-			Identifier field = new Identifier(token, it);
-			System.out.println("In addField before match " + (String)token.getVal());
-			match(token.getTokenType());
-			addChild(field);
-			System.out.println("In addField" + (String)token.getVal());
-			//recursively keep adding fields
-			if(token.getTokenType().equals("DOT")) {
-				addField();
-			}
+		Identifier field = new Identifier(token, it);
+		addChild(field);
+		match("StringIdentifier");
+	}
+
+	public void addExpression() {
+		addChild(new Assignment(token, it));
+		match("ASSIGNMENT_OPERATOR");
+		Expression initializer = new Expression(token, it);
+		addChild(initializer);
+		System.out.println(token.toString());
+	}
+
+	@Override
+	public void setType(Scope enclosing) throws UndefinedTypeException {
+		String varName = children.get(0).toPrint();
+		VarSymbol defined = (VarSymbol)enclosing.resolve(varName);
+		Symbol recordDecl = null;
+
+		//first checks if the variable is defined in the enclosing scope
+		if(defined == null)
+			throw new UndefinedTypeException(varName);
+
+		//this var references a record and the previously defined var
+		//symbol indeed has a record of that type
+		if(hasRecord && defined.record != null) {
+			String declName = children.get(1).toPrint();
+			recordDecl = defined.record.getDecl(declName);
+
+			if(recordDecl == null)
+				throw new UndefinedReferenceError(declName, varName);
+			type = recordDecl.getType();
 		} else {
-			String varName = children.get(0).toPrint();
-			throw new MissingReferenceField(varName);
+			type = defined.getType();
 		}
 	}
 
@@ -2903,6 +2969,27 @@ class IntTypeCast extends TypeCast {
 	public IntTypeCast deepCopy() {
 		return new IntTypeCast(this);
 	}
+}
+
+class Dot extends Subtree {
+	Dot(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+
+	Dot(Dot toCopy) {
+		super(toCopy);
+	}
+
+	@Override
+	public Dot deepCopy() {
+		return new Dot(this);
+	}
+
+	@Override
+	public String toPrint() {
+		return ".";
+	}
+
 }
 
 class Negative extends Subtree {
