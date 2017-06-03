@@ -1,6 +1,11 @@
 /*============================= Array Symbol ==================================
 
-/**	Specialized symbol class for array objects.
+/**	Specialized symbol class for symbols for arrays.
+ *
+ *	@author		John Zoeller
+ *	@author		Destiny Boyer	
+ *	@see 		Symbol
+ *	@see 		SymbolType
  */
 
 import java.util.*;
@@ -68,6 +73,7 @@ public class ArraySymbol extends Symbol implements SymbolType {
 	 *	Setter method for size data member.
 	 *	
 	 *	@param 	s 	size of array, s > 0
+	 *	@throws	IllegalArraySymbolSize	if s is less than 0
 	 *	@see 		Symbol
 	 */
 
@@ -75,7 +81,7 @@ public class ArraySymbol extends Symbol implements SymbolType {
 		if(s > 0)
 			size = s;
 		else
-			throw new IllegalArraySymbolError(s);
+			throw new IllegalArraySymbolSize(s);
 	}
 
 	/**
@@ -102,13 +108,15 @@ public class ArraySymbol extends Symbol implements SymbolType {
 	/**
 	 *	Getter method for element at given index.
 	 *	
-	 *	@param i 	index of specified element. s >=0
+	 *	@param	i 	index of specified element. s >=0
+	 *	@throws	InvalidIndexError 	if i is not within the bounds
+	 *								of the array object
 	 *	@return 	element at specified position in array List
 	 *	@see 		Symbol
 	 */
 
 	public Symbol getIndex(int i){
-		if(i < 0)
+		if(i < 0 || i < size - 1)
 			throw new InvalidIndexError(i, "getIndex()");
 		else
 			return array.get(i);
