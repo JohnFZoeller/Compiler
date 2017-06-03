@@ -41,11 +41,9 @@ OPEN_BRACKET null
 IntIdentifier null
 CLOSE_BRACKET null
 SEMICOLON null
-StringIdentifier myArray
+StringIdentifier destiny
 DOT null
-StringIdentifier c
-DOT null
-StringIdentifier d
+StringIdentifier a
 ASSIGNMENT_OPERATOR null
 IntIdentifier null
 SEMICOLON null

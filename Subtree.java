@@ -2809,12 +2809,18 @@ class Variable extends Operand {
 		//this var references a record and the previously defined var
 		//symbol indeed has a record of that type
 		if(hasRecord && defined.record != null) {
-			String declName = children.get(1).toPrint();
-			recordDecl = defined.record.getDecl(declName);
+			Subtree currentNode = null;
+			for(int index = 0; index < children.size(); index++) {
+				currentNode = children.get(index);
+				if(currentNode instanceof Identifier) {
+					String declName = currentNode.toPrint();
+					recordDecl = defined.record.getDecl(declName);
 
-			if(recordDecl == null)
-				throw new UndefinedReferenceError(declName, varName);
-			type = recordDecl.getType();
+					if(recordDecl == null)
+						throw new UndefinedReferenceError(declName, varName);
+					type = recordDecl.getType();
+				}
+			}
 		} else {
 			type = defined.getType();
 		}
@@ -2856,7 +2862,13 @@ class ArrayCall extends Operand {
 
 	@Override
 	public void setType(Scope enclosing) {
+		String arrayName = children.get(0).toPrint();
+		ArraySymbol defined = (ArraySymbol)enclosing.resolve(arrayName);
+		
+		if(defined == null)
+			throw new UndefinedTypeError(arrayName);
 
+		System.out.println(defined.getTypeName());
 	}
 
 	@Override
