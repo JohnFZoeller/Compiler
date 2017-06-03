@@ -1,11 +1,43 @@
+/*============================= Array Symbol ==================================
+
+/**	Specialized symbol class for array objects.
+ */
+
 import java.util.*;
 import java.io.*;
 
 public class ArraySymbol extends Symbol implements SymbolType {
-	int size;
+	int size;										//dimension of the array
 	String typeName;
-	RecordSymbol record;
-	List<Symbol> array = new ArrayList<Symbol>();
+	RecordSymbol record = null;						//used if array is record
+	List<Symbol> array = new ArrayList<Symbol>();	//holds each element in the array
+
+	/*=========================== Constructors ==============================*/
+
+	/**
+	 *	Constructor used for instances where an array is declared and
+	 *	initialized. Type is dependent on initializing expressions and
+	 *	dimensions. Uses super class constructor.
+	 *	
+	 *	@param	n	string for name to be set to.
+	 *	@see 		Symbol
+	 */
+
+	ArraySymbol(String n){
+		super(n);
+		createArray();
+	}
+
+	/**
+	 *	Constructor used for instances where an array is declared and is
+	 *	of type record.
+	 *	
+	 *	@param 	n 	name associated with symbol
+	 *	@param 	s 	size of array
+	 *	@param 	t 	type of symbol associated with the array
+	 *	@param 	r 	record symbol associated with the array
+	 *	@see 		Symbol, SymbolType, RecordSymbol
+	 */
 
 	ArraySymbol(String n, int s, SymbolType t, RecordSymbol r){
 		super(n, t);
@@ -14,20 +46,48 @@ public class ArraySymbol extends Symbol implements SymbolType {
 		createArray();
 	}
 
+	/**
+	 *	Constructor used for instances where an is declared with the
+	 *	array type and number of elements in the array.
+	 *	
+	 *	@param 	n 	name associated with symbol
+	 *	@param 	s 	size of array
+	 *	@param 	t 	type of symbol associated with the array
+	 *	@see 		Symbol, SymbolType
+	 */
+
 	ArraySymbol(String n, int s, SymbolType t){
 		super(n, t);
 		size = s;
 		createArray();
 	}
 
-	ArraySymbol(String n){
-		super(n);
-		createArray();
+	/*=========================== Public Methods ============================*/
+
+	/**
+	 *	Setter method for size data member.
+	 *	
+	 *	@param 	s 	size of array, s > 0
+	 *	@see 		Symbol
+	 */
+
+	public void setSize(int s) {
+		if(s > 0)
+			size = s;
+		else
+			throw new IllegalArraySymbolError(s);
 	}
 
-	void setSize(int s) { size = s; }
+	/**
+	 *	Getter method for size data member.
+	 *	
+	 *	@return 	size data member of ArraySymbol
+	 *	@see 		Symbol
+	 */
 
-	int getSize() { return size; }
+	public int getSize() {
+		return size;
+	}
 
 	public void createArray(){ // 0xDEADBEEF -> 3735928559
 		if(size == 373592855){
@@ -39,13 +99,41 @@ public class ArraySymbol extends Symbol implements SymbolType {
 		}
 	}
 
+	/**
+	 *	Getter method for element at given index.
+	 *	
+	 *	@param i 	index of specified element. s >=0
+	 *	@return 	element at specified position in array List
+	 *	@see 		Symbol
+	 */
+
 	public Symbol getIndex(int i){
-		return array.get(i);
+		if(i < 0)
+			throw new InvalidIndexError(i, "getIndex()");
+		else
+			return array.get(i);
 	}
 
+	/**
+	 *	Getter method for the identifier associated with array
+	 *	
+	 *	@return 	name associated with array symbol object
+	 *	@see 		Symbol
+	 */
+
 	@Override
-	public String getName(){ return name; }	
+	public String getName() {
+		return name;
+	}	
 
-	public String getTypeName(){ return "array"; }
+	/**
+	 *	Getter method for the type name associated with array
+	 *	
+	 *	@return 	"array"
+	 *	@see 		Symbol
+	 */
 
+	public String getTypeName() {
+		return "array";
+	}
 }
