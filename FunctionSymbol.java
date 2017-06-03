@@ -23,7 +23,7 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 		record = r;
 	}
 
-	public void addParams(List<Subtree> params)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void addParams(List<Subtree> params) {
 		boolean defaultValuesLocked = false;
 
 		for(int i = 0; i < params.size(); i++){
@@ -46,7 +46,7 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 
 	}
 
-	public ParamSymbol paramType(Subtree nodeType, String sName, boolean [] pLocks)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public ParamSymbol paramType(Subtree nodeType, String sName, boolean [] pLocks) {
 		SymbolType t;
 		Symbol temp;
 		int db = 373592855; //default size of an int 

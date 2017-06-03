@@ -50,8 +50,8 @@ ASSIGNMENT_OPERATOR null
 IntIdentifier null
 SEMICOLON null
 Exception in thread "main" java.lang.NullPointerException
-	at Var.emit(Subtree.java:761)
-	at Subtree.emitAssemblyCode(Subtree.java:114)
+	at Var.emit(Subtree.java:758)
+	at Subtree.emitAssemblyCode(Subtree.java:111)
 	at SyntaxParser.decorate(SyntaxParser.java:38)
-	at Main.run(Main.java:21)
-	at Main.main(Main.java:7)
+	at Main.run(Main.java:20)
+	at Main.main(Main.java:6)

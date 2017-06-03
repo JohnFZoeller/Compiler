@@ -42,7 +42,7 @@ public class Symbol {
 		return getName();
 	}
 
-	public void addParams(List<Subtree> params) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void addParams(List<Subtree> params) {
 		System.out.println("wrong one");
 	}
 }

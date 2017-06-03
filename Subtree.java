@@ -27,9 +27,6 @@ public class Subtree {
 		this.row = current.getRow();
 		this.col = current.getCol();
 		it = i;
-
-		//System.out.println(token.toString());
-		//System.out.println(current.toString());
 	}
 
 	Subtree(Subtree name, Token t, Iterator<Token> i) {
@@ -87,11 +84,11 @@ public class Subtree {
 		return (children != null);
 	}
 
-	public void decorateFirst(Scope e) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {;}
+	public void decorateFirst(Scope e) {;}
 
-	public void decorateSecond(Scope e) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {;}
+	public void decorateSecond(Scope e) {;}
 
-	public void beginDecorateFirst(SymbolTable mainTable) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void beginDecorateFirst(SymbolTable mainTable) {
 		currentScope = mainTable.globals;
 
 		for(int i = 0; i < children.size(); i++){
@@ -99,7 +96,7 @@ public class Subtree {
 		}
 	}
 
-	public void beginDecorateSecond(SymbolTable mainTable)throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void beginDecorateSecond(SymbolTable mainTable) {
 		currentScope = mainTable.globals;
 
 		for(int i = 0; i < children.size(); i++){
@@ -212,7 +209,7 @@ public class Subtree {
 		return "";
 	}
 
-	public void setType(Scope e) throws UndefinedTypeException {;}  //temporary workaround
+	public void setType(Scope e) {;}  //temporary workaround
 
 	public Symbol makeArray(String n, SymbolType t, boolean [] l, int s, RecordSymbol r){
 		ArraySymbol arr = (r == null) ? new ArraySymbol(n, s, t) : new ArraySymbol(n, s, t, r);
@@ -272,7 +269,7 @@ class For extends Subtree{
 	}
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void decorateFirst(Scope enclosing) {
 		currentScope = new LocalScope(enclosing);
 		block = (Block)children.get(3);
 		block.decorateFirst(currentScope);
@@ -334,7 +331,7 @@ class While extends Subtree{
 	}
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void decorateFirst(Scope enclosing) {
 		currentScope = new LocalScope(enclosing);
 		block = (Block)children.get(1);
 		block.decorateFirst(currentScope);
@@ -396,7 +393,7 @@ class If extends Subtree{
 	}
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void decorateFirst(Scope enclosing) {
 		currentScope = new LocalScope(enclosing);
 		block = (Block)children.get(1);
 		block.decorateFirst(currentScope);
@@ -450,7 +447,7 @@ class Else extends Subtree{
 	}
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void decorateFirst(Scope enclosing) {
 		currentScope = new LocalScope(enclosing);
 		block = (Block)children.get(0);
 		block.decorateFirst(currentScope);
@@ -525,7 +522,7 @@ class Function extends Subtree {
 	}
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws AlreadyDefinedException, UndefinedTypeException, IllegalOperationException {
+	public void decorateFirst(Scope enclosing) {
 		String funcName = children.get(0).token.getName();
 		Symbol previouslyDefined = enclosing.resolve(funcName);
 		Subtree currentNode;
@@ -536,7 +533,7 @@ class Function extends Subtree {
 		boolean noReturnType = flags[1] ? false : true;
 
 		if(previouslyDefined != null) {
-			throw new AlreadyDefinedException(token.getTokenType());
+			throw new AlreadyDefinedError(token.getTokenType());
 		} else {
 			if(noReturnType) {
 				//if there is no return type, set type for this node to "void"
@@ -559,7 +556,7 @@ class Function extends Subtree {
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
 					if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
-						throw new UndefinedTypeException(((Name)nodeType).token.getName());
+						throw new UndefinedTypeError(((Name)nodeType).token.getName());
 					else{
 						symType = previouslyDefined.getType().getTypeName();
 
@@ -592,7 +589,7 @@ class Function extends Subtree {
 	}
 
 	@Override
-	public void decorateSecond(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+	public void decorateSecond(Scope enclosing) {
 		localScope = new LocalScope((FunctionSymbol)symbol);
 
 		if(flags[0] && flags[1])
@@ -699,14 +696,14 @@ class Var extends Subtree{
 		return new Var(this);
 	}
 
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+	public void decorateFirst(Scope enclosing) {
 		String symbolName = children.get(0).token.getName();
 		Symbol previouslyDefined = enclosing.resolve(symbolName);
 		String symType;
 		currentScope = enclosing;
 
 		if(previouslyDefined != null){
-			throw new AlreadyDefinedException(previouslyDefined.getName());
+			throw new AlreadyDefinedError(previouslyDefined.getName());
 		} else {
 			if(children.get(1) instanceof TypeDescriptor){
 				Subtree nodeType = children.get(1).children.get(0).children.get(0);
@@ -721,7 +718,7 @@ class Var extends Subtree{
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
 					if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
-						throw new UndefinedTypeException(((Name)nodeType).token.getName());
+						throw new UndefinedTypeError(((Name)nodeType).token.getName());
 					else{
 						symType = previouslyDefined.getType().getTypeName();
 
@@ -945,14 +942,14 @@ class Type extends Subtree{
 		return new Type(this);
 	}
 
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+	public void decorateFirst(Scope enclosing) {
 		String symbolName = children.get(0).token.getName();
 		String symType;
 		Symbol previouslyDefined = enclosing.resolve(symbolName);
 		currentScope = enclosing;
 
 		if(previouslyDefined != null){
-			throw new AlreadyDefinedException(previouslyDefined.getName());
+			throw new AlreadyDefinedError(previouslyDefined.getName());
 		} else {
 			Subtree nodeType = children.get(1).children.get(0).children.get(0);
 			boolean isArray = ((TypeDescriptor)children.get(1)).array;
@@ -966,7 +963,7 @@ class Type extends Subtree{
 				previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
 				if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
-					throw new UndefinedTypeException(children.get(1).token.getName());
+					throw new UndefinedTypeError(children.get(1).token.getName());
 				else{
 					symType = previouslyDefined.getType().getTypeName();
 
@@ -996,7 +993,7 @@ class Type extends Subtree{
 	}
 
 	//empty operation 
-	public void decorateSecond(Scope cur) throws UndefinedTypeException, AlreadyDefinedException {
+	public void decorateSecond(Scope cur) {
 		System.out.println("debugging: type decorateSecond() called");
 	}
 
@@ -1084,7 +1081,7 @@ class Block extends Subtree {
 	}
 
 	@Override
-	public void decorateFirst(Scope local) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+	public void decorateFirst(Scope local) {
 		currentScope = local;
 
 		for(int index = 0; index < children.size(); index++) {
@@ -1093,7 +1090,7 @@ class Block extends Subtree {
 	}
 
 	@Override
-	public void decorateSecond(Scope local) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+	public void decorateSecond(Scope local) {
 		currentScope = local;
 
 		for(int index = 0; index < children.size(); index++) {
@@ -1399,7 +1396,7 @@ class Params extends Subtree{
 		return new Params(this);
 	}
 
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, AlreadyDefinedException, IllegalOperationException {
+	public void decorateFirst(Scope enclosing) {
 		Subtree currentNode = null;
 
 		//decorateFirst and pass in the enclosing scope for the Param
@@ -1735,7 +1732,7 @@ class Expression extends Subtree {
 	*/
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, IllegalOperationException, AlreadyDefinedException {
+	public void decorateFirst(Scope enclosing) {
 		//first step is going to be to check that operands and operators are appropriate for the
 		//type of expression. This includes resolving the types of different identifiers.
 
@@ -1788,7 +1785,7 @@ class Expression extends Subtree {
 
 	}
 
-	public SymbolType validate(Subtree lhs, Subtree operator, Subtree rhs, Scope enclosing) throws UndefinedTypeException {
+	public SymbolType validate(Subtree lhs, Subtree operator, Subtree rhs, Scope enclosing) {
 		SymbolType result = null;				//result type to be returned
 
 
@@ -1804,9 +1801,9 @@ class Expression extends Subtree {
 		//checks that both the left and right side of the expressions have types
 		//that have been defined in this scope
 		if(left == null) {
-			throw new UndefinedTypeException(left.getTypeName());
+			throw new UndefinedTypeError(left.getTypeName());
 		} else if(right == null) {
-			throw new UndefinedTypeException(right.getTypeName());
+			throw new UndefinedTypeError(right.getTypeName());
 		}
 
 		//by this point we know that both lhs and rhs are valid BuiltInTypes.
@@ -1826,7 +1823,7 @@ class Expression extends Subtree {
 				}
 
 			} else {
-				throw new IllegalOperationException(operator.getClass().getName(), "");
+				throw new IllegalOperationError(operator.getClass().getName(), "");
 			}
 
 		} else if(operator instanceof BitWiseOp) {
@@ -1843,17 +1840,12 @@ class Expression extends Subtree {
 	}
 
 	protected void readExpression() {
-		if(isUnary()) {
+		if(isUnary())
 			addChild(new UnaryExpression(token, it));
-		}
-		else {
+		else
 			addOperandChild();
-		}
-		System.out.println("continueReading " + token.toString());
-		if(continueReading()) {
-			System.out.println("continueReading " + token.toString());
+		if(continueReading())
 			readRemainingExpr();
-		}
 	}
 
 	protected boolean isUnary() {
@@ -1887,7 +1879,6 @@ class Expression extends Subtree {
 			case "StringIdentifier":
 				addChild(new Identifier(token, it));
 				match("StringIdentifier");
-				System.out.println("Token n" + token.getTokenType());
 				disambiguate();
 				break;
 			case "OPEN_PARENTHESIS":
@@ -1936,7 +1927,6 @@ class Expression extends Subtree {
 				precedence = 1;
 				addChild(new Assignment(token, it));
 				match("ASSIGNMENT_OPERATOR");
-				System.out.println("rest of = " + token.toString());
 				Expression equals = new Expression(token, it);
 				addChild(equals);
 				break;
@@ -2049,7 +2039,6 @@ class Expression extends Subtree {
 		 	if(nextPrec > currPrec) {
 		 		Subtree operator = (children.get(children.size() - 1)).deepCopy();
 		 		Subtree leftHand = (children.get(children.size() - 2)).deepCopy();
-		 		System.out.println(token.toString() + currPrec);
 		 		SubExpression toAdd = new SubExpression(leftHand, operator, nextPrec, token, it);
 		 		children.remove(children.get(children.size() - 1));
 		 		children.remove(children.get(children.size() - 1));
@@ -2080,13 +2069,10 @@ class Expression extends Subtree {
 		//know it is of type record and we need to reference the record
 		//of a certain variable
 		} else if(token.getTokenType().equals("DOT")) {
-			System.out.println(token.getTokenType());
 			Identifier varName = (Identifier)children.get(children.size() - 1);
 			children.remove(children.size() - 1);
 			Variable variable = new Variable(varName, token, it);
-			//System.out.println(token.toString());
 			addChild(variable);
-			System.out.println("after add child " + token.toString());
 		}
 	}
 
@@ -2390,11 +2376,9 @@ class SubExpression extends Subtree {
 		//know it is of type record and we need to reference the record
 		//of a certain variable
 		} else if(token.getTokenType().equals("DOT")) {
-			System.out.println(token.getTokenType());
 			Identifier varName = (Identifier)children.get(children.size() - 1);
 			children.remove(children.size() - 1);
 			Variable variable = new Variable(varName, token, it);
-			System.out.println(token.getTokenType());
 			addChild(variable);
 		}
 	}
@@ -2542,17 +2526,19 @@ class Operand extends Subtree {
 	}
 }
 
+//--------------------- Identifier should be done -----------------------------
+
 class Identifier extends Operand {
 	Identifier(Token t, Iterator<Token> i){
 		super(t, i);
 	}
 
 	@Override
-	public void setType(Scope enclosing) throws UndefinedTypeException {
+	public void setType(Scope enclosing) throws UndefinedTypeError {
 		Symbol defined = enclosing.resolve((String)token.getVal());
 
 		if(defined == null) {
-			throw new UndefinedTypeException(toPrint());
+			throw new UndefinedTypeError(toPrint());
 		}
 
 		type = defined.getType();
@@ -2692,7 +2678,7 @@ class FunctionCall extends Operand {
 	}
 
 	@Override
-	public void decorateFirst(Scope enclosing) throws UndefinedTypeException, IllegalOperationException, AlreadyDefinedException {
+	public void decorateFirst(Scope enclosing) {
 		//gets the name of the identifier associated with the function call
 		String symbolName = (String)children.get(0).token.getVal();
 		//retrieves Symbol of function decl associated with symbolName
@@ -2701,7 +2687,7 @@ class FunctionCall extends Operand {
 
 		//function not declared in enclosing scope
 		if(previouslyDefined == null) {
-			throw new UndefinedTypeException(symbolName);
+			throw new UndefinedTypeError(symbolName);
 		}
 
 		//know that the function is defined in this scope
@@ -2730,12 +2716,12 @@ class FunctionCall extends Operand {
 	}
 
 	@Override
-	public void setType(Scope enclosing) throws UndefinedTypeException {
+	public void setType(Scope enclosing) {
 		String funcName = children.get(0).toPrint();
 		Symbol defined = enclosing.resolve(funcName);
 
 		if(defined == null)
-			throw new UndefinedTypeException(funcName);
+			throw new UndefinedTypeError(funcName);
 
 		type = defined.getType();
 	}
@@ -2779,7 +2765,6 @@ class Variable extends Operand {
 			hasRecord = true;
 			addFields();
 		}
-		System.out.println("In addField after addChild" + (String)token.getVal());
 	}
 
 	public void addFields() {
@@ -2809,18 +2794,17 @@ class Variable extends Operand {
 		match("ASSIGNMENT_OPERATOR");
 		Expression initializer = new Expression(token, it);
 		addChild(initializer);
-		System.out.println(token.toString());
 	}
 
 	@Override
-	public void setType(Scope enclosing) throws UndefinedTypeException {
+	public void setType(Scope enclosing) {
 		String varName = children.get(0).toPrint();
 		VarSymbol defined = (VarSymbol)enclosing.resolve(varName);
 		Symbol recordDecl = null;
 
 		//first checks if the variable is defined in the enclosing scope
 		if(defined == null)
-			throw new UndefinedTypeException(varName);
+			throw new UndefinedTypeError(varName);
 
 		//this var references a record and the previously defined var
 		//symbol indeed has a record of that type
@@ -2868,6 +2852,11 @@ class ArrayCall extends Operand {
 	public void addDimension() {
 		Dimension dimensions = new Dimension(token, it);
 		addChild(dimensions);
+	}
+
+	@Override
+	public void setType(Scope enclosing) {
+
 	}
 
 	@Override
@@ -3019,7 +3008,7 @@ class MathOp extends Subtree {
 		super(toCopy);
 	}
 
-	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {}
+	public void decorateExpr(Scope enclosing) {}
 
 	public boolean validOp(SymbolType operand) { return false; }
 
@@ -3234,17 +3223,17 @@ class GreaterThan extends Subtree {
 		return new GreaterThan(this);
 	}
 
-	public void decorateExpr(Scope enclosing) throws UndefinedTypeException, IllegalOperationException {
+	public void decorateExpr(Scope enclosing) {
 		if(token instanceof IntIdentifier) {
 		
 		} else if(token instanceof StringIdentifier) {
 			Symbol previouslyDefined = (BuiltInTypeSymbol)enclosing.resolve(token.getName());
 			if(previouslyDefined == null) {
-				throw new UndefinedTypeException(token.getName());
+				throw new UndefinedTypeError(token.getName());
 			} else if(previouslyDefined != null)
 			type = previouslyDefined.getType();
 		} else {
-			throw new IllegalOperationException("+", token.getTokenType());
+			throw new IllegalOperationError("+", token.getTokenType());
 		}
 
 	}
