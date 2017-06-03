@@ -56,6 +56,7 @@ public class BaseScope implements Scope {
 	 *	printing of symbol tables.
 	 *	
 	 *	@param	n	string for name to be set to.
+	 *	@see 		Scope
 	 *	@see 		BaseScope#getScopeName()
 	 */
 
@@ -63,19 +64,36 @@ public class BaseScope implements Scope {
 		return getScopeName() + ": ";
 	}
 
-	//public void add(String id, Type binding) {}
+	/*========================== Scope Interface ============================*/
 
-	/***************************Scope Interface*************************/
+	/**
+	 *	Returns the scope name. "" in BaseScope
+	 *	
+	 *	@return 	String 	""
+	 *	@see		Scope
+	 */
 
 	public String getScopeName(){
 		return ""; 
-		//collapse
 	}
+
+	/**
+	 *	Returns the enclosingScope
+	 *	
+	 *	@return 	""
+	 *	@see		Scope
+	 */
 
 	public Scope getEnclosingScope(){
 		return enclosingScope;
-		//collapse
 	}
+
+	/**
+	 *	Adds a new Symbol to the symbol table for this scope
+	 *	
+	 *	@param 	sym 	Symbol to be added to the symbol table
+	 *	@see		Scope
+	 */
 
 	public void define(Symbol sym){ 
 		syms.put(sym.name, sym); 
@@ -85,6 +103,15 @@ public class BaseScope implements Scope {
 		//to resolve whether or not a something could access a base class
 		//member.   No classes tho so nada
 	}
+
+	/**
+	 *	Checks if the name of a symbol to be added is already defined in
+	 *	the current scope (is defined in the symbol table).
+	 *	
+	 *	@param 	name 	name of the symbol to lookup
+	 *	@return 	the symbol object if previously defined, null otherwise
+	 *	@see		Scope
+	 */
 
 	public Symbol resolve(String name){
 		Symbol temp = syms.get(name);
