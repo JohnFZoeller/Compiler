@@ -12,7 +12,7 @@ public class Subtree {
 	SymbolType type = null;
 
 	String print = "", defaultInt = "-2147483648", defaultFloat = "-123456789.123456789";
-	String defaultRecord = "1111111", defaultArray = "2222222";
+	String defaultRecord = "1111111", defaultIntArray = "2222222", defFloatArr = "2222222.2222222";
 
 
 	public Subtree(){}
@@ -765,17 +765,23 @@ class Var extends Subtree{
 				instruction += "float_literal " + defaultFloat;
 			}
 			else if(symType == "array"){
-				//if(array type is an int)
-				instruction += "int_literal " + defaultArray;
-				consts.add(instruction);
-				instruction = "arraySize: \n\tint_literal " + "2";
-				System.out.println("load_label " + "arraySize");
-				System.out.println("load_mem_int \nalloc_int");
+				symType = ((VarSymbol)symbol).array.getType().getTypeName();
+
+				if(symType == "int32" || symType == "byte"){
+					instruction += "int_literal " + defaultIntArray;
+					consts.add(instruction);
+					instruction = "arraySize: \n\tint_literal "
+						+ Integer.toString(((VarSymbol)symbol).array.getSize());
+
+					System.out.println("load_label " + "arraySize\nload_mem_int \nalloc_int");
+				}else if(symType == "float64"){
+
+				}
 			}
 			else if(symType == "record"){
 				RecordSymbol tempRecord = ((VarSymbol)symbol).record;
 				instruction += "int_literal " + defaultRecord;
-				tempRecord.saveConstValues(consts);
+				tempRecord.saveConstValues(consts, null);
 			}
 		}
 		consts.add(instruction);

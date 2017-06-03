@@ -54,7 +54,7 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 			RecordSymbol record = new RecordSymbol(sName, this, 
 				nodeType.children.get(0).children);
 
-			t = (RecordSymbol)enclosing.resolve(nodeType.token.getTokenType());
+			t = (RecordSymbol)enclosing.resolve("record");
 
 			return (isArray) ? makeArray(sName, t, 4, record) : new VarSymbol(sName, t, record, null);
 		}
@@ -78,8 +78,8 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 		return resolve(declName);
 	}
 
-	public void saveConstValues(List<String> consts){
-		String instruction = getName() + ".";
+	public void saveConstValues(List<String> consts, String prefix){
+		String instruction = (prefix == null) ? getName() + "." : prefix + getName() + ".";
 		String symtype;
 
 		for (Map.Entry<String, Symbol> entry : members.entrySet()) {
@@ -98,7 +98,9 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 
 			}
 			else if(typeName == "record"){
-
+				RecordSymbol tempRecord = ((VarSymbol)value).record;
+				instruction += "int_literal " + defaultRecord;
+				tempRecord.saveConstValues(consts, getName() + ".");
 			}
 			consts.add(instruction);
 			instruction = getName() + ".";

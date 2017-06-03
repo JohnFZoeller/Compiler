@@ -1,6 +1,0 @@
-var john int32;
-var zoeller float64;
-var frederick byte;
-
-var destiny record a int32, b int32 end;
-var x = 5 + 2 * 6;
