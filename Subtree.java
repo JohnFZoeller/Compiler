@@ -1746,25 +1746,76 @@ class Expression extends Subtree {
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
 			System.out.println(currentNode.getClass());
+			
 			if(currentNode instanceof Variable) {
 				currentNode.decorateFirst(enclosing);
-			} else if(currentNode instanceof MathOp){
-			System.out.println("instance called in Expression");
-				//decorateMathOp()
-			} else if(currentNode instanceof BitWiseOp){
+			} 
+
+			else if(currentNode instanceof MathOp){
+				System.out.println("instance called in Expression");
+				decorateMathOp(enclosing);
+			} 
+
+			else if(currentNode instanceof BitWiseOp){
 				//decorateBitwiseOp()
-			} else if(currentNode instanceof FunctionCall){
+			} 
 
-			} else if(currentNode instanceof ArrayCall) {
+			else if(currentNode instanceof FunctionCall){
 
-			} else if (currentNode instanceof SubExpression) {
+			} 
+
+			else if(currentNode instanceof ArrayCall) {
+
+			} 
+
+			else if (currentNode instanceof SubExpression) {
 				currentNode.decorateFirst(enclosing);
-			} else if(currentNode instanceof Expression) {
+			} 
+
+			else if(currentNode instanceof Expression) {
 				currentNode.decorateFirst(enclosing);
 				//type = currentNode.getSymType();
 			}
 		}
 
+	}
+
+	public void decorateMathOp(Scope enclosing) {
+		//iterate over all children, and if they are not of type MathOp we want to
+		//resolve their type and ensure that they are all of float64 or int32 type
+		Subtree child = null;
+		SymbolType check = null;
+		boolean isValid = false;
+
+		for(int index = 0; index < children.size(); index++) {
+			child = children.get(index);
+			//if the child node is something other than a mathop
+			if(!(child instanceof MathOp)) {
+				check = child.type;
+				isValid = validOperand(check);
+				if(isValid)
+					System.out.println("isValid" + check.getTypeName());
+			}
+		}
+	}
+
+	private boolean validOperand(SymbolType symbolType) {
+		boolean isValid = false;
+		if(symbolType.getTypeName().equals("float64")) {
+			if(type == null || type.getTypeName().equals("int32") || type.getTypeName().equals("float64")) {
+				type = symbolType;
+			}
+			isValid = true;
+		} else if(symbolType.getTypeName().equals("int32")) {
+			if(type == null || type.getTypeName().equals("int32")) {
+				type = symbolType;
+			} else {
+				throw new AssignmentError("stand-in error for valid operand in Expression");
+			}
+			isValid = true;
+		}
+
+		return isValid;
 	}
 
 
@@ -2764,7 +2815,7 @@ class Variable extends Operand {
 	@Override
 	public void decorateFirst(Scope enclosing) {
 		setType(enclosing);
-		System.out.println("decorateFirst called in Variable");
+		System.out.println("decorateFirst for Expression Node ");
 		decorateAssignment(enclosing);
 	}
 
@@ -2795,22 +2846,24 @@ class Variable extends Operand {
 					throw new AssignmentError("left-hand side");
 				} else {
 					assignmentIndex = index;
-					break;
+					//break;
 				}
+			} else if(child instanceof Expression) {
+				child.decorateFirst(enclosing);
+				exprType = child.getSymType();
+				System.out.println("decorateAssignment, decorateFirst for Expression Node ");
 			}
 		}
-
-		//fetch type of expression
-		exprType = children.get(assignmentIndex + 1).getSymType();
 
 		if(exprType == null) {
 			throw new AssignmentError("right-hand side");
 		} else {
-			if(exprType != sym.type) {
-				if(!(exprType.getTypeName().equals(sym.name))) {
-					if(exprType.getTypeName().equals("int32") && sym.name.equals("int32")) {
+			if(exprType != symbol.type) {
+				if(!(exprType.getTypeName().equals(type.getTypeName()))) {
+					if(exprType.getTypeName().equals("int32") && type.getTypeName().equals("int32")) {
 						//cast exprType to float64
 					} else {
+						System.out.println("exprType: " + exprType.getTypeName() + " symType: " + type.getTypeName());
 						throw new AssignmentError("type mismatch between left and right sides");
 					}
 				}
@@ -2874,7 +2927,6 @@ class Variable extends Operand {
 			}
 		}
 		symbol = defined;
-		type = defined.getType();
 	}
 
 	@Override

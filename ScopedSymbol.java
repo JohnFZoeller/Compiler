@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public abstract class ScopedSymbol extends Symbol implements Scope{
+public abstract class ScopedSymbol extends Symbol implements Scope {
 	Scope enclosing;
 	Map<String, Symbol> members = new LinkedHashMap<String, Symbol>();
 

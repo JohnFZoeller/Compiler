@@ -1,55 +1,17 @@
-StringIdentifier john
-int32 null
-SEMICOLON null
-var null
-StringIdentifier zoeller
-float64 null
-SEMICOLON null
-var null
-StringIdentifier frederick
-byte null
-SEMICOLON null
-var null
 StringIdentifier destiny
 record null
 StringIdentifier a
-int32 null
+float64 null
 COMMA null
 StringIdentifier b
 int32 null
 end null
 SEMICOLON null
-var null
-StringIdentifier x
-ASSIGNMENT_OPERATOR null
-IntIdentifier null
-PLUS null
-IntIdentifier null
-ASTERISK null
-IntIdentifier null
-PLUS null
-OPEN_PARENTHESIS null
-IntIdentifier null
-PLUS null
-IntIdentifier null
-CLOSE_PARENTHESIS null
-SEMICOLON null
-var null
-StringIdentifier myArray
-int32 null
-OPEN_BRACKET null
-IntIdentifier null
-CLOSE_BRACKET null
-SEMICOLON null
 StringIdentifier destiny
 DOT null
-StringIdentifier a
+StringIdentifier b
 ASSIGNMENT_OPERATOR null
 IntIdentifier null
+PLUS null
+IntIdentifier null
 SEMICOLON null
-Exception in thread "main" java.lang.NullPointerException
-	at Var.emit(Subtree.java:758)
-	at Subtree.emitAssemblyCode(Subtree.java:111)
-	at SyntaxParser.decorate(SyntaxParser.java:38)
-	at Main.run(Main.java:20)
-	at Main.main(Main.java:6)
