@@ -1741,6 +1741,7 @@ class Expression extends Subtree {
 		//sets type for all children
 		setType(enclosing);
 		Subtree currentNode = null;
+		boolean oneChild = (children.size() == 1);
 		
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
@@ -1758,11 +1759,19 @@ class Expression extends Subtree {
 			} 
 
 			else if(currentNode instanceof FunctionCall){
-
+				currentNode.decorateFirst(enclosing);
+				if(oneChild) {
+					type = currentNode.type;
+					symbol = currentNode.symbol;
+				}
 			} 
 
 			else if(currentNode instanceof ArrayCall) {
-
+				currentNode.decorateFirst(enclosing);
+				if(oneChild) {
+					type = currentNode.type;
+					symbol = currentNode.symbol;
+				}
 			} 
 
 			else if (currentNode instanceof SubExpression) {
