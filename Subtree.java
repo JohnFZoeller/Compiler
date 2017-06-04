@@ -2738,6 +2738,7 @@ class FunctionCall extends Operand {
 }
 
 class Variable extends Operand {
+	VarSymbol sym = null;
 	boolean hasRecord = false;
 	
 	Variable(Token t, Iterator<Token> i){
@@ -2747,6 +2748,7 @@ class Variable extends Operand {
 	Variable(Variable toCopy) {
 		super(toCopy);
 		this.hasRecord = toCopy.hasRecord;
+		this.sym = toCopy.sym;
 	}
 
 	Variable(Identifier name, Token t, Iterator<Token> i) {
@@ -2761,6 +2763,7 @@ class Variable extends Operand {
 
 	@Override
 	public void decorateFirst(Scope enclosing) {
+		setType(enclosing);
 		System.out.println("decorateFirst called in Variable");
 		decorateAssignment(enclosing);
 	}
@@ -2782,22 +2785,37 @@ class Variable extends Operand {
 	public void decorateAssignment(Scope enclosing) {
 		SymbolType exprType = null;
 		int assignmentIndex = 0;
+		boolean isConst = ((VarSymbol)symbol).locks[1];
 
 		Subtree child = null;
 		for(int index = 0; index < children.size(); index++) {
 			child = children.get(index);
 			if(child instanceof Assignment) {
-				assignmentIndex = index;
-				break;
+				if(isConst) {
+					throw new AssignmentError("left-hand side");
+				} else {
+					assignmentIndex = index;
+					break;
+				}
 			}
 		}
 
+		//fetch type of expression
 		exprType = children.get(assignmentIndex + 1).getSymType();
 
-		//System.out.println(exprType.toString());
-
-		//for assignment the left hand of the assignment statement must be
-		//right-hand side of assignment statement must be an expression
+		if(exprType == null) {
+			throw new AssignmentError("right-hand side");
+		} else {
+			if(exprType != sym.type) {
+				if(!(exprType.getTypeName().equals(sym.name))) {
+					if(exprType.getTypeName().equals("int32") && sym.name.equals("int32")) {
+						//cast exprType to float64
+					} else {
+						throw new AssignmentError("type mismatch between left and right sides");
+					}
+				}
+			}
+		}
 
 	}
 
@@ -2835,7 +2853,6 @@ class Variable extends Operand {
 		String varName = children.get(0).toPrint();
 		VarSymbol defined = (VarSymbol)enclosing.resolve(varName);
 		Symbol recordDecl = null;
-
 		//first checks if the variable is defined in the enclosing scope
 		if(defined == null)
 			throw new UndefinedTypeError(varName);
@@ -2855,10 +2872,9 @@ class Variable extends Operand {
 					type = recordDecl.getType();
 				}
 			}
-		} else {
-			symbol = defined;
-			type = defined.getType();
 		}
+		symbol = defined;
+		type = defined.getType();
 	}
 
 	@Override
