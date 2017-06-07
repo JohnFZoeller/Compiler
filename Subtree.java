@@ -11,9 +11,9 @@ public class Subtree {
 	Symbol symbol = null;
 	SymbolType type = null;
 
-	String print = "", defaultInt = "-2147483648", defaultFloat = "-123456789.123456789";
-	String defaultRecord = "1111111", defaultIntArray = "2222222", defFloatArr = "2222222.2222222";
-	String defaultByte = "3333333";
+	String print = "", defaultInt = "-2147483648", defaultFloat = "-123456789.123456789",
+		defaultRecord = "1111111", defaultIntArray = "2222222", defaultFloatArray = "2222222.2222222",
+		defaultByte = "3333333", defaultByteArray = "4444444", defaultRecordArray = "5555555";
 
 
 	public Subtree(){}
@@ -111,13 +111,13 @@ public class Subtree {
 	}
 
 	public void emitAssemblyCode(List<String> consts){
-		System.out.println("ASSEMBLY CODE \n");
+		System.out.println("#ASSEMBLY CODE \n");
 
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts);
 		}
-
-		System.out.println("\n");
+		
+		System.out.println("load_label done\nbranch\n\ndone:\n\tload0\n\texit");
 		printConstants(consts);
 	}
 
@@ -752,13 +752,16 @@ class Var extends Subtree{
 				type = children.get(1).type;
 				symbol = new VarSymbol(symbolName, type, locks);
 			}
+
 			enclosing.define(symbol);
 		}		
 	}
 
+	//todo: multidimensional Arrays
 	@Override
 	public void emit(List<String> consts){
 		Subtree emitType = children.get(1);
+		String varName = children.get(0).token.getName();
 		String instruction = children.get(0).token.getName() + ":\n\t";
 		String symType = symbol.getType().getTypeName();
 
@@ -767,27 +770,45 @@ class Var extends Subtree{
 			//instruction += expressionType + default<>
 			;
 		} else {
-			if(symType == "int32"){
-				instruction += "int_literal " + defaultInt;
-			} 
-			else if(symType == "byte"){
-				instruction += "int_literal " + defaultByte;
-			}
-			else if(symType == "float64"){
-				instruction += "float_literal " + defaultFloat;
-			}
+			if(symType == "int32")
+				instruction += "int_literal " + defaultInt;						//add int
+			else if(symType == "byte")
+				instruction += "int_literal " + defaultByte;					//add byte
+			else if(symType == "float64")
+				instruction += "float_literal " + defaultFloat;					//add float
 			else if(symType == "array"){
-				symType = ((VarSymbol)symbol).array.getType().getTypeName();
+				symType = ((VarSymbol)symbol).array.getType().getTypeName();	//arrayType
 
 				if(symType == "int32" || symType == "byte"){
-					instruction += "int_literal " + defaultIntArray;
+					instruction += "int_literal ";								//print array name
+					instruction += (symType == "int32") ? defaultIntArray : defaultByteArray;
+					consts.add(instruction);									//add array name
+
+					instruction = children.get(0).token.getName() 				//print array size
+						+ "_size: \n\tint_literal " 
+						+ Integer.toString(((VarSymbol)symbol).array.getSize());
+																				//print array alloc
+					System.out.println("load_label " + varName + "_size\nload_mem_int \nalloc_int");
+
+				}else if(symType == "float64"){
+					instruction += "float_literal " + defaultFloatArray;		
 					consts.add(instruction);
-					instruction = "arraySize: \n\tint_literal "
+
+					instruction = children.get(0).token.getName() 		
+						+ "_size: \n\tint_literal " 
 						+ Integer.toString(((VarSymbol)symbol).array.getSize());
 
-					System.out.println("load_label " + "arraySize\nload_mem_int \nalloc_int");
-				}else if(symType == "float64"){
+					System.out.println("load_label " + varName + "_size\nload_mem_int \nalloc_float");
+				}
+				else if(symType == "record"){
+					instruction += "int_literal " + defaultRecordArray;		
+					consts.add(instruction);
 
+					instruction = children.get(0).token.getName() 		
+						+ "_size: \n\tint_literal " 
+						+ Integer.toString(((VarSymbol)symbol).array.getSize());
+
+					System.out.println("load_label " + varName + "_size\nload_mem_int \nalloc_int");
 				}
 			}
 			else if(symType == "record"){
@@ -796,7 +817,7 @@ class Var extends Subtree{
 				tempRecord.saveConstValues(consts, null);
 			}
 		}
-		
+
 		consts.add(instruction);
 	}
 
@@ -1003,7 +1024,7 @@ class Type extends Subtree{
 
 	//empty operation 
 	public void decorateSecond(Scope cur) {
-		System.out.println("debugging: type decorateSecond() called");
+		System.err.println("debugging: type decorateSecond() called");
 	}
 
 	@Override 

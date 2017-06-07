@@ -6,8 +6,9 @@ public class Symbol {
 	public SymbolType type;			//for built in types
 	public boolean isVar = false;
 	public boolean isTypeSymbol = false;
-	public String defaultInt = "-2147483648", defaultFloat = "-123456789.123456789",
-				  defaultRecord = "1111111", defaultArray = "2222222";
+	public String defaultInt = "-2147483648", defaultFloat = "-123456789.123456789", defaultRecordArray = "5555555",
+				  defaultRecord = "1111111", defaultArray = "2222222", defaultByte = "3333333",
+				  defaultIntArray = "2222222", defaultByteArray = "4444444", defaultFloatArray = "2222222.2222222";
 
 	Symbol(){
 		name = "";

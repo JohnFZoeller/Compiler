@@ -79,7 +79,7 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
 	}
 
 	public void saveConstValues(List<String> consts, String prefix){
-		String instruction = (prefix == null) ? getName() + "." : prefix + getName() + ".";
+		String instruction = (prefix == null) ? getName() + "_" : prefix + getName() + "_";
 		String symtype;
 
 		for (Map.Entry<String, Symbol> entry : members.entrySet()) {
@@ -89,21 +89,57 @@ public class RecordSymbol extends ScopedSymbol implements SymbolType, Scope{
     		instruction += entry.getKey() + ":\n\t";
 
 			if(typeName == "int32" || typeName == "byte"){
-				instruction += "int_literal " + defaultInt;
+				instruction += (typeName == "int32") ? "int_literal " + defaultInt 
+				: "int_literal " + defaultByte;
 			} 
 			else if(typeName == "float64"){
 				instruction += "float_literal " + defaultFloat;
 			}
 			else if(typeName == "array"){
+				typeName = ((VarSymbol)value).array.getType().getTypeName();	//arrayType
 
+				if(typeName == "int32" || typeName == "byte"){
+					instruction += "int_literal ";								//print array name
+					instruction += (typeName == "int32") ? defaultIntArray : defaultByteArray;
+					consts.add(instruction);									//add array name
+
+					instruction = getName() + "_" + entry.getKey() 				//print array size
+						+ "_size: \n\tint_literal " 
+						+ Integer.toString(((VarSymbol)value).array.getSize());
+																				//print array alloc
+					System.out.println("load_label " + getName() + "_" 
+						+ entry.getKey() + "_size\nload_mem_int \nalloc_int");
+				}
+				else if(typeName == "float64"){
+					instruction += "float_literal " + defaultFloatArray;		
+					consts.add(instruction);
+
+					instruction = getName() + "_" + entry.getKey()		
+						+ "_size: \n\tint_literal " 
+						+ Integer.toString(((VarSymbol)value).array.getSize());
+
+					System.out.println("load_label " + getName() + "_" 
+						+ entry.getKey() + "_size\nload_mem_int \nalloc_float");
+				}
+				else if(typeName == "record"){
+					instruction += "int_literal " + defaultRecordArray;		
+					consts.add(instruction);
+
+					instruction = getName() + "_" + entry.getKey()
+						+ "_size: \n\tint_literal " 
+						+ Integer.toString(((VarSymbol)value).array.getSize());
+
+					System.out.println("load_label " + getName() + "_" 
+						+ entry.getKey() + "_size\nload_mem_int \nalloc_int");
+				}
 			}
 			else if(typeName == "record"){
 				RecordSymbol tempRecord = ((VarSymbol)value).record;
 				instruction += "int_literal " + defaultRecord;
-				tempRecord.saveConstValues(consts, getName() + ".");
+				tempRecord.saveConstValues(consts, getName() + "_");
 			}
 			consts.add(instruction);
-			instruction = getName() + ".";
+			instruction = getName() + "_";
 		}
 
 

@@ -93,7 +93,7 @@ public class SyntaxParser {
 		}	
 
 		//this just becomes a debugging tool
-		root.printTree();
+		//root.printTree();
 		System.out.println('\n');
 	}
 

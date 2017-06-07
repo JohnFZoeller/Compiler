@@ -1,4 +1,5 @@
 #!/bin/bash
 
 javac *.java
-java Main 2> tokenDump.txt
+java Main > sample.txt
+./interpreter.py sample.txt

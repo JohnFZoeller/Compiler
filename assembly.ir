@@ -93,6 +93,8 @@ stringhello:
     int_literal 111
 byteTheLetterH:
 	int_literal 104
+two: 
+	int_literal 2
 
 #syntax notes:
 #sub	n m -- n-m 
