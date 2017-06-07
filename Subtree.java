@@ -13,6 +13,7 @@ public class Subtree {
 
 	String print = "", defaultInt = "-2147483648", defaultFloat = "-123456789.123456789";
 	String defaultRecord = "1111111", defaultIntArray = "2222222", defFloatArr = "2222222.2222222";
+	String defaultByte = "3333333";
 
 
 	public Subtree(){}
@@ -677,7 +678,6 @@ class Var extends Subtree{
 		}
 
 		match("var");
-
 		addChild(new Name(token));
 		match("StringIdentifier");
 
@@ -719,7 +719,7 @@ class Var extends Subtree{
 					symbol = (isArray) ? (VarSymbol)makeArray(symbolName, type, locks, 4, null) :
 						new VarSymbol(symbolName, type, locks);
 				}
-				else if(nodeType instanceof Name){//fix me to include records
+				else if(nodeType instanceof Name){
 					previouslyDefined = enclosing.resolve(nodeType.token.getName());
 
 					if(previouslyDefined == null || !previouslyDefined.getTypeSymbol())
@@ -767,9 +767,12 @@ class Var extends Subtree{
 			//instruction += expressionType + default<>
 			;
 		} else {
-			if(symType == "int32" || symType == "byte"){
+			if(symType == "int32"){
 				instruction += "int_literal " + defaultInt;
 			} 
+			else if(symType == "byte"){
+				instruction += "int_literal " + defaultByte;
+			}
 			else if(symType == "float64"){
 				instruction += "float_literal " + defaultFloat;
 			}
@@ -793,6 +796,7 @@ class Var extends Subtree{
 				tempRecord.saveConstValues(consts, null);
 			}
 		}
+		
 		consts.add(instruction);
 	}
 

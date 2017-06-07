@@ -1,0 +1,9 @@
+var john int32;
+var zoeller float64;
+var frederick byte;
+
+var myArray int32[4];
+
+var myRecord record a byte, b int32, c record d int32 end end;
+
+
