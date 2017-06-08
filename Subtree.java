@@ -115,7 +115,7 @@ public class Subtree {
 		System.out.println("#ASSEMBLY CODE \n");
 
 		for(int i = 0; i < children.size(); i++){
-			children.get(i).emit(consts);
+			children.get(i).emit(consts, null);
 		}
 
 		System.out.println("load_label done\nbranch\n\ndone:\n\tload0\n\texit");
@@ -129,7 +129,7 @@ public class Subtree {
 		}
 	}
 
-	public void emit(List<String> c){}
+	public void emit(List<String> c, String s){}
 
 	public void print(){;}
 
@@ -612,7 +612,7 @@ class Function extends Subtree {
 	}
 
 	@Override
-	public void emit(List<String> consts){
+	public void emit(List<String> consts, String optName){
 		String varName = "func_" + children.get(0).token.getName();
 		String instruction = varName + ":\n\t";
 		String symType = symbol.getType().getTypeName();
@@ -666,8 +666,12 @@ class Function extends Subtree {
 
 
 		consts.add(instruction);
-		//symbol.emitParams(consts);
-		block.emit(consts);
+		((FunctionSymbol)symbol).emitParams(consts);
+		block.emit(consts, varName);
+
+		instruction = children.get(0).token.getName() + ":\n\t#sample subroutine\n\t";
+		instruction += "load_label john\n\treturn";
+		consts.add(instruction);
 	}
 
 	@Override
@@ -804,9 +808,10 @@ class Var extends Subtree{
 
 	//todo: multidimensional Arrays
 	@Override
-	public void emit(List<String> consts){
+	public void emit(List<String> consts, String optName){
 		Subtree emitType = children.get(1);
-		String varName = children.get(0).token.getName();
+		String varName = (optName == null) ? children.get(0).token.getName() :
+			optName + "_" +  children.get(0).token.getName();
 		String instruction = varName + ":\n\t";
 		String symType = symbol.getType().getTypeName();
 
@@ -1174,9 +1179,10 @@ class Block extends Subtree {
 		}
 	}
 
-	@Override
-	public void emit(List<String> consts){
-
+	public void emit(List<String> consts, String name){
+		for(int i = 0; i < children.size(); i++){
+			children.get(i).emit(consts, name);
+		}
 	}
 
 	@Override

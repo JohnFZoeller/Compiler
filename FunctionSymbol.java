@@ -97,6 +97,33 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
 		return null;
 	}
 
+	public void emitParams(List<String> consts){
+		String instruction = "func_" + getName() + "_";
+
+		for (Map.Entry<String, Symbol> entry : members.entrySet()) {
+    		Symbol value = entry.getValue();
+    		String typeName = value.getType().getTypeName();
+
+    		instruction += (typeName == "record") ? "rec_" + entry.getKey() + ":\n\t"
+    			: entry.getKey() + ":\n\t";
+
+			if(typeName == "int32" || typeName == "byte"){
+				instruction += (typeName == "int32") ? "int_literal " + defaultInt 
+				: "int_literal " + defaultByte;
+			} 
+			else if(typeName == "float64"){
+				instruction += "float_literal " + defaultFloat;
+			}
+			else if(typeName == "record"){
+				RecordSymbol tempRecord = ((VarSymbol)value).record;
+				instruction += "int_literal " + defaultRecord;
+				tempRecord.saveConstValues(consts, "rec_" + getName() + "_");
+			}
+    		consts.add(instruction);
+    		instruction = "func_" + getName() + "_";
+    	}
+	}
+
 	public ParamSymbol makeArray(String n, SymbolType t, int s, RecordSymbol r, boolean [] l){
 		ArraySymbol arr = (r == null) ? new ArraySymbol(n, s, t) : new ArraySymbol(n, s, t, r);
 		SymbolType typ = (ArraySymbol)enclosing.resolve("array");

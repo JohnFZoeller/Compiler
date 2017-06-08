@@ -41,3 +41,17 @@ rec_nancy_c_size:
 	int_literal 4
 rec_nancy:
 	int_literal 1111111
+func_ko:
+	int_literal 8888888
+func_ko_a:
+	int_literal 3333333
+func_ko_b:
+	int_literal -2147483648
+func_ko_c:
+	float_literal -123456789.123456789
+func_ko_eric:
+	int_literal 3333333
+ko:
+	#sample subroutine
+	load_label john
+	return

@@ -3,7 +3,7 @@ type fred record a byte, b int32, c record d int32 end end;
 var nancy record a int32[4], b float64[4], c fred[4] end;
 
 
-function ko(a int32, b int32) int32{
+function ko(a byte, b int32, c float64) int32{
 	var eric byte;
 }
 
