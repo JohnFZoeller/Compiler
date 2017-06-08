@@ -284,6 +284,11 @@ class For extends Subtree{
 		currentScope = currentScope.getEnclosingScope();
 	}
 
+	@Override 
+	public void emit(List<String> consts, String s){
+		String loopRoutine = "for" + consts.size();
+	}
+
 	@Override
 	public void print(){
 		System.out.println(print + "(" + row + ", "
@@ -397,6 +402,14 @@ class If extends Subtree{
 	@Override
 	public If deepCopy() {
 		return new If(this);
+	}
+
+	@Override 
+	public void emit(List<String> consts, String s){
+		String loopRoutine = "if" + consts.size();
+
+		children.get(0).emit(consts, loopRoutine);
+		block.emit(consts, loopRoutine);
 	}
 
 	@Override
@@ -661,15 +674,11 @@ class Function extends Subtree {
 			tempRecord.saveConstValues(consts, null);
 		}
 
-
 		consts.add(instruction);
 		((FunctionSymbol)symbol).emitParams(consts);
+		//all blocks should be enclosed in subroutines
 		block.emit(consts, varName);
 
-
-		instruction = children.get(0).token.getName() + ":\n\t#sample subroutine\n\t";
-		instruction += "load_label rec_reed\n\treturn";
-		consts.add(instruction);
 	}
 
 	@Override
@@ -820,11 +829,26 @@ class Var extends Subtree{
 
 		if(emitType instanceof Expression){
 
+				if(emitType.children.get(0) instanceof Identifier){
+					if(optName != null) {
+						String sub = optName + ":" + "\n\tload_label " + optName + "_" + emitType.children.get(0).toPrint() 
+							+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
+
+						consts.add(sub);
+					}
+					else {
+						System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
+						"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
+					}
+
+				}
+
 				val = emitType.children.get(0).toPrint();
 
 				switch(symType){
 					case "int32":
-						instruction += (emitType.children.get(0) instanceof Identifier) ? 
+						instruction += (emitType.children.get(0) instanceof Identifier || 
+							emitType.children.get(0) instanceof FunctionCall) ? 
 							"int_literal " + defaultInt : "int_literal " + val;
 						break;
 					case "float64":
@@ -835,14 +859,7 @@ class Var extends Subtree{
 					default: 
 						break;
 				}
-
-				if(emitType.children.get(0) instanceof Identifier){
-					System.out.println("\tload_label " + emitType.children.get(0).toPrint() + 
-						"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
-				}
 			
-
-
 		} else {
 			if(symType == "int32")
 				instruction += "int_literal " + defaultInt;						//add int
@@ -939,6 +956,11 @@ class Retur extends Subtree{
 	}
 
 	@Override
+	public void emit(List<String> consts, String optName){
+
+	}
+
+	@Override
 	public Retur deepCopy() {
 		return new Retur(this);
 	}
@@ -975,12 +997,24 @@ class Print extends Subtree{
 		return new Print(this);
 	}
 
+
+	public void decorateFirst(Scope enclosing){
+		currentScope = enclosing;
+	}
+
 	@Override
 	public void emit(List<String> consts, String optName){
-		if(children.get(0).children.get(0) instanceof Identifier){
-			//if()
-			System.out.println("\n\tload_label " + children.get(0).children.get(0).toPrint() 
-				+ "\n\tload_mem_int\n\tprint_int");
+		Subtree emitNode = children.get(0).children.get(0);
+		Symbol emitSymbol = currentScope.resolve(emitNode.toPrint());
+
+		//cant just depend on first child of an expresssion being the one to emit
+		if(emitNode instanceof Identifier){
+
+			if(emitSymbol.getType().getTypeName() == "int32"){
+				System.out.println("\n\tload_label " + emitSymbol.getName()
+					+ "\n\tload_mem_int\n\tprint_int");
+			}
+
 		}
 	}
 
@@ -1210,13 +1244,10 @@ class Block extends Subtree {
 	}
 
 	public void emit(List<String> consts, String name){
-		//assuming the calling symbol was a func
+
 
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts, name);
-			if(children.get(i) instanceof Retur){
-
-			}
 		}
 	}
 
@@ -1830,6 +1861,11 @@ class Expression extends Subtree {
 
 	Expression(Expression toCopy) {
 		super(toCopy);
+	}
+
+	@Override
+	public void emit(List<String> consts, String eName){
+		
 	}
 
 
