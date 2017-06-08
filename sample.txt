@@ -11,6 +11,9 @@ alloc_float
 load_label rec_nancy_c_size
 load_mem_int 
 alloc_int
+load_label ko
+call
+
 load_label done
 branch
 
@@ -53,5 +56,5 @@ func_ko_eric:
 	int_literal 3333333
 ko:
 	#sample subroutine
-	load_label john
+	load_label rec_reed
 	return
