@@ -118,6 +118,8 @@ public class Subtree {
 			children.get(i).emit(consts, null);
 		}
 
+		System.out.println("load_label ko\ncall\n");
+
 		System.out.println("load_label done\nbranch\n\ndone:\n\tload0\n\texit");
 		printConstants(consts);
 	}
@@ -669,8 +671,9 @@ class Function extends Subtree {
 		((FunctionSymbol)symbol).emitParams(consts);
 		block.emit(consts, varName);
 
+
 		instruction = children.get(0).token.getName() + ":\n\t#sample subroutine\n\t";
-		instruction += "load_label john\n\treturn";
+		instruction += "load_label rec_reed\n\treturn";
 		consts.add(instruction);
 	}
 
@@ -800,6 +803,7 @@ class Var extends Subtree{
 			} else if(children.get(1) instanceof Expression){
 				children.get(1).decorateFirst(currentScope);
 				type = children.get(1).type;
+				
 				symbol = new VarSymbol(symbolName, type, locks);
 			}
 
@@ -817,8 +821,9 @@ class Var extends Subtree{
 		String symType = symbol.getType().getTypeName();
 
 		if(emitType instanceof Expression){
-			//getExpressionType();
-			//instruction += expressionType + default<>
+				//getExpressionType();
+				//instruction += expressionType + default<>
+			System.out.println("EXPRESH");
 			;
 		} else {
 			if(symType == "int32")
@@ -1183,8 +1188,13 @@ class Block extends Subtree {
 	}
 
 	public void emit(List<String> consts, String name){
+		//assuming the calling symbol was a func
+
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts, name);
+			if(children.get(i) instanceof Retur){
+
+			}
 		}
 	}
 
