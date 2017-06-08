@@ -2,7 +2,7 @@ var john = 4;
 var p = john;
 print p;
 
-if(john == 4){
-	var eric = 9;
-	var zill = eric;
+function poop(a int32) int32 {
+	var b = a;
+	return b;
 }

@@ -829,36 +829,36 @@ class Var extends Subtree{
 
 		if(emitType instanceof Expression){
 
-				if(emitType.children.get(0) instanceof Identifier){
-					if(optName != null) {
-						String sub = optName + ":" + "\n\tload_label " + optName + "_" + emitType.children.get(0).toPrint() 
-							+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
+			if(emitType.children.get(0) instanceof Identifier){
+				if(optName != null) {
+					String sub = optName + ":" + "\n\tload_label " + optName + "_" + emitType.children.get(0).toPrint() 
+						+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
 
-						consts.add(sub);
-					}
-					else {
-						System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
-						"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
-					}
-
+					consts.add(sub);
+				}
+				else {
+					System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
+					"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
 				}
 
-				val = emitType.children.get(0).toPrint();
+			}
 
-				switch(symType){
-					case "int32":
-						instruction += (emitType.children.get(0) instanceof Identifier || 
-							emitType.children.get(0) instanceof FunctionCall) ? 
-							"int_literal " + defaultInt : "int_literal " + val;
-						break;
-					case "float64":
-						instruction += "float_literal " + val;
-						break;
-					case "byte":
-						instruction += "int_literal " + val;
-					default: 
-						break;
-				}
+			val = emitType.children.get(0).toPrint();
+
+			switch(symType){
+				case "int32":
+					instruction += (emitType.children.get(0) instanceof Identifier || 
+						emitType.children.get(0) instanceof FunctionCall) ? 
+						"int_literal " + defaultInt : "int_literal " + val;
+					break;
+				case "float64":
+					instruction += "float_literal " + val;
+					break;
+				case "byte":
+					instruction += "int_literal " + val;
+				default: 
+					break;
+			}
 			
 		} else {
 			if(symType == "int32")
