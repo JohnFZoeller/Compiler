@@ -118,9 +118,7 @@ public class Subtree {
 			children.get(i).emit(consts, null);
 		}
 
-		System.out.println("load_label ko\ncall\n");
-
-		System.out.println("load_label done\nbranch\n\ndone:\n\tload0\n\texit");
+		System.out.println("\n\tload_label done\n\tbranch\n\ndone:\n\tload0\n\texit");
 		printConstants(consts);
 	}
 
@@ -486,9 +484,6 @@ class Else extends Subtree{
  *	CSS 448 Programming Language
  *
  *---------------------------------------------------------------------------*/
-
-// !----- DECORATE FIRST AND DECORATE SECOND SHOULD BE DONE FOR FUNCTION -------!
-
 																
 class Function extends Subtree {
 	public boolean [] flags = new boolean[2]; //[0] = params, [1] = type;
@@ -801,8 +796,11 @@ class Var extends Subtree{
 				}
 			} else if(children.get(1) instanceof Expression){
 				children.get(1).decorateFirst(currentScope);
-				type = children.get(1).type;
-				
+				type = children.get(1).children.get(0).type;
+
+				// if(type == null) System.err.println("Null expression type");
+				// else System.err.println(type + " from var decor1");
+
 				symbol = new VarSymbol(symbolName, type, locks);
 			}
 
@@ -818,12 +816,33 @@ class Var extends Subtree{
 			optName + "_" +  children.get(0).token.getName();
 		String instruction = varName + ":\n\t";
 		String symType = symbol.getType().getTypeName();
+		String val = "0";
 
 		if(emitType instanceof Expression){
-				//getExpressionType();
-				//instruction += expressionType + default<>
-			System.out.println("EXPRESH");
-			;
+
+				val = emitType.children.get(0).toPrint();
+
+				switch(symType){
+					case "int32":
+						instruction += (emitType.children.get(0) instanceof Identifier) ? 
+							"int_literal " + defaultInt : "int_literal " + val;
+						break;
+					case "float64":
+						instruction += "float_literal " + val;
+						break;
+					case "byte":
+						instruction += "int_literal " + val;
+					default: 
+						break;
+				}
+
+				if(emitType.children.get(0) instanceof Identifier){
+					System.out.println("\tload_label " + emitType.children.get(0).toPrint() + 
+						"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
+				}
+			
+
+
 		} else {
 			if(symType == "int32")
 				instruction += "int_literal " + defaultInt;						//add int
@@ -956,6 +975,15 @@ class Print extends Subtree{
 		return new Print(this);
 	}
 
+	@Override
+	public void emit(List<String> consts, String optName){
+		if(children.get(0).children.get(0) instanceof Identifier){
+			//if()
+			System.out.println("\n\tload_label " + children.get(0).children.get(0).toPrint() 
+				+ "\n\tload_mem_int\n\tprint_int");
+		}
+	}
+
 	@Override 
 	public void print(){
 		System.out.println(print + "(" + row + ", "
@@ -1001,9 +1029,6 @@ class Exit extends Subtree{
 		}
 	}
 }
-
-// !------------------- DECORATE FIRST SHOULD BE DONE FOR TYPE ---------------------!
-// !--------------------- DOES NOT REQUIRE DECORATE SECOND -------------------------!
 
 class Type extends Subtree{
 	Type(Token t, Iterator<Token> i){
@@ -1832,10 +1857,13 @@ class Expression extends Subtree {
 		
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
-			
+
 			if(currentNode instanceof Variable) {
 				currentNode.decorateFirst(enclosing);
 			} 
+			else if(currentNode instanceof IntLiteral){
+				// System.err.println("lal");
+			}
 
 			else if(currentNode instanceof MathOp){
 				decorateMathOp(enclosing);
@@ -1978,6 +2006,7 @@ class Expression extends Subtree {
 			addOperandChild();
 		if(continueReading())
 			readRemainingExpr();
+
 	}
 
 	protected boolean isUnary() {
@@ -2679,6 +2708,7 @@ class Identifier extends Operand {
 	@Override
 	public String toPrint() {
 		return (String)token.getVal();
+
 	}
 }
 

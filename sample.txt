@@ -2,59 +2,22 @@
 
 #ASSEMBLY CODE 
 
-load_label rec_nancy_a_size
-load_mem_int 
-alloc_int
-load_label rec_nancy_b_size
-load_mem_int 
-alloc_float
-load_label rec_nancy_c_size
-load_mem_int 
-alloc_int
-load_label ko
-call
+	load_label john
+	load_mem_int
+	load_label p
+	store_mem_int
 
-load_label done
-branch
+	load_label p
+	load_mem_int
+	print_int
+
+	load_label done
+	branch
 
 done:
 	load0
 	exit
-rec_reed_a:
-	int_literal 3333333
-rec_reed_b:
-	int_literal -2147483648
-rec_reed_rec_c_d:
-	int_literal -2147483648
-rec_reed_rec_c:
-	int_literal 1111111
-rec_reed:
-	int_literal 1111111
-rec_nancy_a:
-	int_literal 2222222
-rec_nancy_a_size: 
+john:
 	int_literal 4
-rec_nancy_b:
-	float_literal 2222222.2222222
-rec_nancy_b_size: 
-	int_literal 4
-rec_nancy_c:
-	int_literal 5555555
-rec_nancy_c_size: 
-	int_literal 4
-rec_nancy:
-	int_literal 1111111
-func_ko:
-	int_literal 8888888
-func_ko_a:
-	int_literal 3333333
-func_ko_b:
+p:
 	int_literal -2147483648
-func_ko_c:
-	float_literal -123456789.123456789
-func_ko_eric:
-	int_literal 3333333
-ko:
-	#sample subroutine
-	load_label rec_reed
-	return
