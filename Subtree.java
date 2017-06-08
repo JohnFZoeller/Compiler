@@ -13,7 +13,8 @@ public class Subtree {
 
 	String print = "", defaultInt = "-2147483648", defaultFloat = "-123456789.123456789",
 		defaultRecord = "1111111", defaultIntArray = "2222222", defaultFloatArray = "2222222.2222222",
-		defaultByte = "3333333", defaultByteArray = "4444444", defaultRecordArray = "5555555";
+		defaultByte = "3333333", defaultByteArray = "4444444", defaultRecordArray = "5555555",
+		byteFunc = "0000000", floatFunc = "9999999", intFunc = "8888888", recordFunc = "7777777";
 
 
 	public Subtree(){}
@@ -116,7 +117,7 @@ public class Subtree {
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts);
 		}
-		
+
 		System.out.println("load_label done\nbranch\n\ndone:\n\tload0\n\texit");
 		printConstants(consts);
 	}
@@ -612,16 +613,60 @@ class Function extends Subtree {
 
 	@Override
 	public void emit(List<String> consts){
-		String instruction = children.get(0).token.getName() + ":\n\t";
+		String varName = "func_" + children.get(0).token.getName();
+		String instruction = varName + ":\n\t";
 		String symType = symbol.getType().getTypeName();
 
-		if(symType == "int32" || symType == "byte"){
-				instruction += "int_literal " + defaultInt;
-		} else {
-				instruction += "float_literal " + defaultFloat;
+		if(symType == "int32")
+			instruction += "int_literal " + intFunc;						//add int
+		else if(symType == "byte")
+			instruction += "int_literal " + byteFunc;					//add byte
+		else if(symType == "float64")
+			instruction += "float_literal " + floatFunc;					//add float
+		else if(symType == "array"){
+			symType = ((FunctionSymbol)symbol).array.getType().getTypeName();	//arrayType
+
+			if(symType == "int32" || symType == "byte"){
+				instruction += "int_literal ";								//print array name
+				instruction += (symType == "int32") ? defaultIntArray : defaultByteArray;
+				consts.add(instruction);									//add array name
+
+				instruction = children.get(0).token.getName() 				//print array size
+					+ "_size: \n\tint_literal " 
+					+ Integer.toString(((FunctionSymbol)symbol).array.getSize());
+																			//print array alloc
+				System.out.println("load_label " + varName + "_size\nload_mem_int \nalloc_int");
+
+			}else if(symType == "float64"){
+				instruction += "float_literal " + defaultFloatArray;		
+				consts.add(instruction);
+
+				instruction = children.get(0).token.getName() 		
+					+ "_size: \n\tint_literal " 
+					+ Integer.toString(((FunctionSymbol)symbol).array.getSize());
+
+				System.out.println("load_label " + varName + "_size\nload_mem_int \nalloc_float");
+			}
+			else if(symType == "record"){
+				instruction += "int_literal " + defaultRecordArray;		
+				consts.add(instruction);
+
+				instruction = children.get(0).token.getName() 		
+					+ "_size: \n\tint_literal " 
+					+ Integer.toString(((FunctionSymbol)symbol).array.getSize());
+
+				System.out.println("load_label " + varName + "_size\nload_mem_int \nalloc_int");
+			}
+		}
+		else if(symType == "record"){
+			RecordSymbol tempRecord = ((FunctionSymbol)symbol).record;
+			instruction += "int_literal " + defaultRecord;
+			tempRecord.saveConstValues(consts, null);
 		}
 
+
 		consts.add(instruction);
+		//symbol.emitParams(consts);
 		block.emit(consts);
 	}
 
@@ -762,7 +807,7 @@ class Var extends Subtree{
 	public void emit(List<String> consts){
 		Subtree emitType = children.get(1);
 		String varName = children.get(0).token.getName();
-		String instruction = children.get(0).token.getName() + ":\n\t";
+		String instruction = varName + ":\n\t";
 		String symType = symbol.getType().getTypeName();
 
 		if(emitType instanceof Expression){
@@ -813,7 +858,8 @@ class Var extends Subtree{
 			}
 			else if(symType == "record"){
 				RecordSymbol tempRecord = ((VarSymbol)symbol).record;
-				instruction += "int_literal " + defaultRecord;
+
+				instruction = "rec_" + varName + ":\n\tint_literal " + defaultRecord;
 				tempRecord.saveConstValues(consts, null);
 			}
 		}

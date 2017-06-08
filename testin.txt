@@ -1,10 +1,9 @@
-var intArr int32[4];
-var myArray float64[4];
-var myArr byte[4];
-
-var aRecord record a byte, b int32, c record d int32 end end;
-type myRecord record a byte, b int32, c record d int32 end end;
-var bRec record a int32[4], b float64[4], c myRecord[4] end;
+var reed record a byte, b int32, c record d int32 end end;
+type fred record a byte, b int32, c record d int32 end end;
+var nancy record a int32[4], b float64[4], c fred[4] end;
 
 
+function ko(a int32, b int32) int32{
+	var eric byte;
+}
 

@@ -2,22 +2,13 @@
 
 #ASSEMBLY CODE 
 
-load_label intArr_size
+load_label rec_nancy_a_size
 load_mem_int 
 alloc_int
-load_label myArray_size
+load_label rec_nancy_b_size
 load_mem_int 
 alloc_float
-load_label myArr_size
-load_mem_int 
-alloc_int
-load_label bRec_a_size
-load_mem_int 
-alloc_int
-load_label bRec_b_size
-load_mem_int 
-alloc_float
-load_label bRec_c_size
+load_label rec_nancy_c_size
 load_mem_int 
 alloc_int
 load_label done
@@ -26,39 +17,27 @@ branch
 done:
 	load0
 	exit
-intArr:
-	int_literal 2222222
-intArr_size: 
-	int_literal 4
-myArray:
-	float_literal 2222222.2222222
-myArray_size: 
-	int_literal 4
-myArr:
-	int_literal 4444444
-myArr_size: 
-	int_literal 4
-aRecord_a:
+rec_reed_a:
 	int_literal 3333333
-aRecord_b:
+rec_reed_b:
 	int_literal -2147483648
-aRecord_c_d:
+rec_reed_rec_c_d:
 	int_literal -2147483648
-aRecord_c:
+rec_reed_rec_c:
 	int_literal 1111111
-aRecord:
+rec_reed:
 	int_literal 1111111
-bRec_a:
+rec_nancy_a:
 	int_literal 2222222
-bRec_a_size: 
+rec_nancy_a_size: 
 	int_literal 4
-bRec_b:
+rec_nancy_b:
 	float_literal 2222222.2222222
-bRec_b_size: 
+rec_nancy_b_size: 
 	int_literal 4
-bRec_c:
+rec_nancy_c:
 	int_literal 5555555
-bRec_c_size: 
+rec_nancy_c_size: 
 	int_literal 4
-bRec:
+rec_nancy:
 	int_literal 1111111

@@ -95,6 +95,12 @@ byteTheLetterH:
 	int_literal 104
 two: 
 	int_literal 2
+func:
+	int_literal 4
+func_p1:
+	int_literal 3
+	
+
 
 #syntax notes:
 #sub	n m -- n-m 

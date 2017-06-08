@@ -1,0 +1,54 @@
+
+load_label three
+load_mem_int
+load_label func_ko_a
+store_mem_int
+
+load_label five
+load_mem_int
+load_label func_ko_b
+store_mem_int
+
+load_label ko
+call
+load_label func_ko
+load_mem_int
+load_label john
+store_mem_int
+
+load_label john
+load_mem_int
+print_int
+
+load_label done
+branch
+
+done:
+	load0
+	exit
+
+
+
+ko:
+	load_label func_ko_curr
+	load_mem_int
+	load_label func_ko
+	store_mem_int
+	return
+
+func_ko_b:
+	int_literal 1111111
+func_ko_a:
+	int_literal 1111111
+func_ko:
+	int_literal 1111111
+func_ko_curr:
+	int_literal 1
+john:
+	int_literal 2222222
+three:
+	int_literal 3
+five:
+	int_literal 5
+
+
