@@ -1,9 +1,8 @@
-var reed record a byte, b int32, c record d int32 end end;
-type fred record a byte, b int32, c record d int32 end end;
-var nancy record a int32[4], b float64[4], c fred[4] end;
+var john = 4;
+var p = john;
+print p;
 
-function ko(a byte, b int32, c float64) int32{
-	var eric byte;
+function poop(a int32) int32 {
+	var b = a;
 	return b;
 }
-

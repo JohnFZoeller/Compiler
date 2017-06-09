@@ -118,9 +118,7 @@ public class Subtree {
 			children.get(i).emit(consts, null);
 		}
 
-		System.out.println("load_label ko\ncall\n");
-
-		System.out.println("load_label done\nbranch\n\ndone:\n\tload0\n\texit");
+		System.out.println("\n\tload_label done\n\tbranch\n\ndone:\n\tload0\n\texit");
 		printConstants(consts);
 	}
 
@@ -286,6 +284,11 @@ class For extends Subtree{
 		currentScope = currentScope.getEnclosingScope();
 	}
 
+	@Override 
+	public void emit(List<String> consts, String s){
+		String loopRoutine = "for" + consts.size();
+	}
+
 	@Override
 	public void print(){
 		System.out.println(print + "(" + row + ", "
@@ -401,6 +404,14 @@ class If extends Subtree{
 		return new If(this);
 	}
 
+	@Override 
+	public void emit(List<String> consts, String s){
+		String loopRoutine = "if" + consts.size();
+
+		children.get(0).emit(consts, loopRoutine);
+		block.emit(consts, loopRoutine);
+	}
+
 	@Override
 	public void decorateFirst(Scope enclosing) {
 		currentScope = new LocalScope(enclosing);
@@ -486,9 +497,6 @@ class Else extends Subtree{
  *	CSS 448 Programming Language
  *
  *---------------------------------------------------------------------------*/
-
-// !----- DECORATE FIRST AND DECORATE SECOND SHOULD BE DONE FOR FUNCTION -------!
-
 																
 class Function extends Subtree {
 	public boolean [] flags = new boolean[2]; //[0] = params, [1] = type;
@@ -666,15 +674,11 @@ class Function extends Subtree {
 			tempRecord.saveConstValues(consts, null);
 		}
 
-
 		consts.add(instruction);
 		((FunctionSymbol)symbol).emitParams(consts);
+		//all blocks should be enclosed in subroutines
 		block.emit(consts, varName);
 
-
-		instruction = children.get(0).token.getName() + ":\n\t#sample subroutine\n\t";
-		instruction += "load_label rec_reed\n\treturn";
-		consts.add(instruction);
 	}
 
 	@Override
@@ -802,8 +806,11 @@ class Var extends Subtree{
 				}
 			} else if(children.get(1) instanceof Expression){
 				children.get(1).decorateFirst(currentScope);
-				type = children.get(1).type;
-				
+				type = children.get(1).children.get(0).type;
+
+				// if(type == null) System.err.println("Null expression type");
+				// else System.err.println(type + " from var decor1");
+
 				symbol = new VarSymbol(symbolName, type, locks);
 			}
 
@@ -819,12 +826,41 @@ class Var extends Subtree{
 			optName + "_" +  children.get(0).token.getName();
 		String instruction = varName + ":\n\t";
 		String symType = symbol.getType().getTypeName();
+		String val = "0";
 
 		if(emitType instanceof Expression){
-				//getExpressionType();
-				//instruction += expressionType + default<>
-			System.out.println("EXPRESH");
-			;
+
+			if(emitType.children.get(0) instanceof Identifier){
+				if(optName != null) {
+					String sub = optName + ":" + "\n\tload_label " + optName + "_" + emitType.children.get(0).toPrint() 
+						+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
+
+					consts.add(sub);
+				}
+				else {
+					System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
+					"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
+				}
+
+			}
+
+			val = emitType.children.get(0).toPrint();
+
+			switch(symType){
+				case "int32":
+					instruction += (emitType.children.get(0) instanceof Identifier || 
+						emitType.children.get(0) instanceof FunctionCall) ? 
+						"int_literal " + defaultInt : "int_literal " + val;
+					break;
+				case "float64":
+					instruction += "float_literal " + val;
+					break;
+				case "byte":
+					instruction += "int_literal " + val;
+				default: 
+					break;
+			}
+			
 		} else {
 			if(symType == "int32")
 				instruction += "int_literal " + defaultInt;						//add int
@@ -922,6 +958,11 @@ class Retur extends Subtree{
 	}
 
 	@Override
+	public void emit(List<String> consts, String optName){
+
+	}
+
+	@Override
 	public Retur deepCopy() {
 		return new Retur(this);
 		//collapse
@@ -957,6 +998,27 @@ class Print extends Subtree{
 	@Override
 	public Print deepCopy() {
 		return new Print(this);
+	}
+
+
+	public void decorateFirst(Scope enclosing){
+		currentScope = enclosing;
+	}
+
+	@Override
+	public void emit(List<String> consts, String optName){
+		Subtree emitNode = children.get(0).children.get(0);
+		Symbol emitSymbol = currentScope.resolve(emitNode.toPrint());
+
+		//cant just depend on first child of an expresssion being the one to emit
+		if(emitNode instanceof Identifier){
+
+			if(emitSymbol.getType().getTypeName() == "int32"){
+				System.out.println("\n\tload_label " + emitSymbol.getName()
+					+ "\n\tload_mem_int\n\tprint_int");
+			}
+
+		}
 	}
 
 	@Override 
@@ -1004,9 +1066,6 @@ class Exit extends Subtree{
 		}
 	}
 }
-
-// !------------------- DECORATE FIRST SHOULD BE DONE FOR TYPE ---------------------!
-// !--------------------- DOES NOT REQUIRE DECORATE SECOND -------------------------!
 
 class Type extends Subtree{
 	Type(Token t, Iterator<Token> i){
@@ -1188,13 +1247,10 @@ class Block extends Subtree {
 	}
 
 	public void emit(List<String> consts, String name){
-		//assuming the calling symbol was a func
+
 
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts, name);
-			if(children.get(i) instanceof Retur){
-
-			}
 		}
 	}
 
@@ -1810,6 +1866,11 @@ class Expression extends Subtree {
 		super(toCopy);
 	}
 
+	@Override
+	public void emit(List<String> consts, String eName){
+		
+	}
+
 
 	/*
 		A const-expression is an expression whose operands are literals and/or variables declared
@@ -1835,10 +1896,13 @@ class Expression extends Subtree {
 		
 		for(int index = 0; index < children.size(); index++) {
 			currentNode = children.get(index);
-			
+
 			if(currentNode instanceof Variable) {
 				currentNode.decorateFirst(enclosing);
 			} 
+			else if(currentNode instanceof IntLiteral){
+				// System.err.println("lal");
+			}
 
 			else if(currentNode instanceof MathOp){
 				decorateMathOp(enclosing);
@@ -1981,6 +2045,7 @@ class Expression extends Subtree {
 			addOperandChild();
 		if(continueReading())
 			readRemainingExpr();
+
 	}
 
 	protected boolean isUnary() {
@@ -2682,6 +2747,7 @@ class Identifier extends Operand {
 	@Override
 	public String toPrint() {
 		return (String)token.getVal();
+
 	}
 }
 
