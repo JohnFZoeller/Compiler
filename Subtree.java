@@ -185,7 +185,10 @@ public class Subtree {
 	}
 
 	//this eventually needs to be changed to an actual condition
-	public boolean isExpresh(){ return true; }
+	public boolean isExpresh(){ 
+		//COLLAPSE
+		return !token.getTokenType().equals("SEMICOLON"); 
+	}
 
 	public boolean hasWilds(){
 		return token.getTokenType().equals("OPEN_BRACKET");

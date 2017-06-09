@@ -6,3 +6,23 @@ function poop(a int32) int32 {
 	var b = a;
 	return b;
 }
+
+//
+var a = 3 * 4;	//this generates all below
+//
+
+load_label three
+load_mem_int
+load_label four
+load_mem_int
+add
+load_label a
+store_mem_int
+
+
+three:
+	int_literal 3
+four:
+	int_literal 4
+a:
+	int_literal 1111111
