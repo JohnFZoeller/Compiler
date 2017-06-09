@@ -755,6 +755,7 @@ class Var extends Subtree{
 	@Override
 	public Var deepCopy() {
 		return new Var(this);
+		//collapse
 	}
 
 	public void decorateFirst(Scope enclosing) {
@@ -954,6 +955,7 @@ class Retur extends Subtree{
 
 	Retur(Retur toCopy) {
 		super(toCopy);
+		//collapse
 	}
 
 	@Override
@@ -964,6 +966,7 @@ class Retur extends Subtree{
 	@Override
 	public Retur deepCopy() {
 		return new Retur(this);
+		//collapse
 	}
 
 	@Override 

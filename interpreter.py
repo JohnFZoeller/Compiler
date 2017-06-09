@@ -481,7 +481,7 @@ class VM(object):
 
     def ne_f(self):
         value1, value2 = self.stack.pop_float2()
-        self.stack.push(int(value1 <> value2))
+        self.stack.push(int(value1, "<>" ,value2))
 
     def is_inf(self):
         value = self.stack.pop_float()
