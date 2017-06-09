@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 
+
 public class Subtree {
 	Token token = null;
 	Iterator<Token> it = null;
@@ -138,6 +139,10 @@ public class Subtree {
 	}
 
 	public void emit(List<String> c, String n, List<String> s){}
+
+	public String emitExpr(List<String> c, String s, List<String> p){
+		return "";
+	}
 
 	public void print(){;}
 
@@ -844,6 +849,26 @@ class Var extends Subtree{
 		//if there is an expresssion, must add the label, then emit assembly 
 		if(emitType instanceof Expression){
 
+			// //PART 1: EMIT ASSEMBLY
+			// if(emitType.children.get(0) instanceof Identifier){
+
+			// 	//if enclosed in a block
+			// 	if(optName != null) {
+			// 		//name of subroutine - example
+			// 		String sub = optName + ":"; 
+
+			// 		//rest of subroutine - also just an example
+			// 		sub += "\n\tload_label " + optName + "_" 
+			// 			+ emitType.children.get(0).toPrint() 
+			// 			+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
+
+			// 		//add to consts list
+			// 		consts.add(sub);
+
+					//what will really happen---------------------
+					
+				emitType.emit(consts, optName, sRoutines);
+
 			//PART 1: EMIT ASSEMBLY
 
 				//if enclosed in a block
@@ -866,15 +891,22 @@ class Var extends Subtree{
 
 					//after that im still trying to figure it out
 
-				}
+			 	}
 
-				//not enclosed in a block
+			// 	//not enclosed in a block
 				else {
+			// 		System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
+			// 		"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
+			 	}
+
+			// }
+				//not enclosed in a block
+				//else {
 					//emitType.children.get(0).emit(mainCode, null);
 					//
 					// System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
 					// "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
-				}
+				//}
 
 			
 
@@ -883,6 +915,7 @@ class Var extends Subtree{
 
 			switch(symType){
 				case "int32":
+					instruction += "int_literal" + val;
 					instruction += "int_literal " + val;
 					break;
 				case "float64":
@@ -892,8 +925,8 @@ class Var extends Subtree{
 					instruction += "int_literal " + val;
 				default: 
 					break;
+			//}
 			}
-			
 		} else {
 			if(symType == "int32")
 				instruction += "int_literal " + defaultInt;						//add int
@@ -1901,8 +1934,23 @@ class Expression extends Subtree {
 	}
 	//should be emit(List<String> consts, String eName, List<String> sRoutines)
 	@Override
-	public void emit(List<String> consts, String eName){
-		
+	public void emit(List<String> consts, String exprString, List<String> sRoutines){
+		Subtree child = null;
+		String eString = "";
+		if(exprString == null)
+			exprString = "";
+
+		for(int index = 0; index < children.size(); index++) {
+			child = children.get(index);
+
+			if(child instanceof Operand) {
+				exprString += child.emitExpr(consts, exprString, sRoutines);
+			} else if(child instanceof MathOp) {
+				eString += child.emitExpr(consts, exprString, sRoutines);
+			}
+		}
+		exprString += eString;
+		consts.add(exprString);
 	}
 
 
@@ -2817,7 +2865,17 @@ class IntLiteral extends Operand {
 
 	IntLiteral(IntLiteral toCopy) {
 		super(toCopy);
+		//collapse
 	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\tload_label " + this.toPrint()
+			+ "\tload_mem_int\r\n";
+
+		return sub;
+	}
+
 
 	@Override
 	public IntLiteral deepCopy() {
@@ -2843,6 +2901,14 @@ class FloatLiteral extends Operand {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "load_label\t" + this.toPrint() + "\n"
+			+ "load_mem_float";
+
+		return sub;
+	}
+
+	@Override
 	public FloatLiteral deepCopy() {
 		return new FloatLiteral(this);
 	}
@@ -2863,6 +2929,14 @@ class CharLit extends Operand {
 
 	CharLit(CharLit toCopy) {
 		super(toCopy);
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "load_label\t" + this.toPrint() + "\n"
+			+ "load_mem_byte";
+
+		return sub;
 	}
 
 	@Override
@@ -3339,6 +3413,13 @@ class Addition extends MathOp {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tadd";
+
+		return sub;
+	}
+
+	@Override
 	public Addition deepCopy() {
 		return new Addition(this);
 	}
@@ -3375,6 +3456,13 @@ class Subtraction extends MathOp {
 	@Override
 	public Subtraction deepCopy() {
 		return new Subtraction(this);
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\nsub";
+
+		return sub;
 	}
 
 	@Override
