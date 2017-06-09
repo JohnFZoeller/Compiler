@@ -111,15 +111,23 @@ public class Subtree {
 		}
 	}
 
-	public void emitAssemblyCode(List<String> consts){
+	public void emitAssemblyCode(List<String> consts, List<String> sRountines){
 		System.out.println("#ASSEMBLY CODE \n");
 
 		for(int i = 0; i < children.size(); i++){
-			children.get(i).emit(consts, null);
+			children.get(i).emit(consts, null, sRountines);
 		}
 
 		System.out.println("\n\tload_label done\n\tbranch\n\ndone:\n\tload0\n\texit");
+		printSubroutines(sRountines);
 		printConstants(consts);
+	}
+
+	public void printSubroutines(List<String> sRoutines){
+
+		for(int i = 0; i < sRoutines.size(); i++){
+			System.out.println(sRoutines.get(i));
+		}
 	}
 
 	public void printConstants(List<String> consts){
@@ -129,7 +137,7 @@ public class Subtree {
 		}
 	}
 
-	public void emit(List<String> c, String s){}
+	public void emit(List<String> c, String n, List<String> s){}
 
 	public void print(){;}
 
@@ -288,7 +296,7 @@ class For extends Subtree{
 	}
 
 	@Override 
-	public void emit(List<String> consts, String s){
+	public void emit(List<String> consts, String s, List<String> sRountines){
 		String loopRoutine = "for" + consts.size();
 	}
 
@@ -408,11 +416,11 @@ class If extends Subtree{
 	}
 
 	@Override 
-	public void emit(List<String> consts, String s){
+	public void emit(List<String> consts, String s, List<String> sRoutines){
 		String loopRoutine = "if" + consts.size();
 
-		children.get(0).emit(consts, loopRoutine);
-		block.emit(consts, loopRoutine);
+		children.get(0).emit(consts, loopRoutine, sRoutines);
+		block.emit(consts, loopRoutine, sRoutines);
 	}
 
 	@Override
@@ -625,7 +633,7 @@ class Function extends Subtree {
 	}
 
 	@Override
-	public void emit(List<String> consts, String optName){
+	public void emit(List<String> consts, String optName, List<String> sRoutines){
 		String varName = "func_" + children.get(0).token.getName();
 		String instruction = varName + ":\n\t";
 		String symType = symbol.getType().getTypeName();
@@ -680,7 +688,7 @@ class Function extends Subtree {
 		consts.add(instruction);
 		((FunctionSymbol)symbol).emitParams(consts);
 		//all blocks should be enclosed in subroutines
-		block.emit(consts, varName);
+		block.emit(consts, varName, sRoutines);
 
 	}
 
@@ -823,7 +831,7 @@ class Var extends Subtree{
 
 	//todo: multidimensional Arrays
 	@Override
-	public void emit(List<String> consts, String optName){
+	public void emit(List<String> consts, String optName, List<String> sRoutines){
 		Subtree emitType = children.get(1);
 		String varName = (optName == null) ? children.get(0).token.getName() :
 			optName + "_" +  children.get(0).token.getName();
@@ -837,24 +845,23 @@ class Var extends Subtree{
 		if(emitType instanceof Expression){
 
 			//PART 1: EMIT ASSEMBLY
-			if(emitType.children.get(0) instanceof Identifier){
 
 				//if enclosed in a block
 				if(optName != null) {
 					//name of subroutine - example
-					String sub = optName + ":"; 
+					// String sub = optName + ":"; 
 
-					//rest of subroutine - also just an example
-					sub += "\n\tload_label " + optName + "_" 
-						+ emitType.children.get(0).toPrint() 
-						+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
+					// //rest of subroutine - also just an example
+					// sub += "\n\tload_label " + optName + "_" 
+					// 	+ emitType.children.get(0).toPrint() 
+					// 	+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
 
-					//add to consts list
-					consts.add(sub);
+					// //add to consts list
+					// consts.add(sub);
 
 					//what will really happen---------------------
-					
-					//emitType.children.get(0).emit(consts, optName);
+
+					emitType.emit(consts, optName, sRoutines);
 						//write your assembly code with System.out.println for now
 
 					//after that im still trying to figure it out
@@ -863,20 +870,20 @@ class Var extends Subtree{
 
 				//not enclosed in a block
 				else {
-					System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
-					"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
+					//emitType.children.get(0).emit(mainCode, null);
+					//
+					// System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
+					// "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
 				}
 
-			}
+			
 
 			//PART 2: ADD DECLARATION TO LIST<STRING> CONSTS
-			val = emitType.children.get(0).toPrint();
+			val = emitType.toPrint();
 
 			switch(symType){
 				case "int32":
-					instruction += (emitType.children.get(0) instanceof Identifier || 
-						emitType.children.get(0) instanceof FunctionCall) ? 
-						"int_literal " + defaultInt : "int_literal " + val;
+					instruction += "int_literal " + val;
 					break;
 				case "float64":
 					instruction += "float_literal " + val;
@@ -984,7 +991,7 @@ class Retur extends Subtree{
 	}
 
 	@Override
-	public void emit(List<String> consts, String optName){
+	public void emit(List<String> consts, String optName, List<String> sRoutines){
 
 	}
 
@@ -1032,7 +1039,7 @@ class Print extends Subtree{
 	}
 
 	@Override
-	public void emit(List<String> consts, String optName){
+	public void emit(List<String> consts, String optName, List<String> sRoutines){
 		Subtree emitNode = children.get(0).children.get(0);
 		Symbol emitSymbol = currentScope.resolve(emitNode.toPrint());
 
@@ -1272,11 +1279,12 @@ class Block extends Subtree {
 		}
 	}
 
-	public void emit(List<String> consts, String name){
-
+	public void emit(List<String> consts, String name, List<String> sRoutines){
+		//special case
+		consts.add(name + "_routine:");
 
 		for(int i = 0; i < children.size(); i++){
-			children.get(i).emit(consts, name);
+			children.get(i).emit(consts, name, sRoutines);
 		}
 	}
 
@@ -1891,7 +1899,7 @@ class Expression extends Subtree {
 	Expression(Expression toCopy) {
 		super(toCopy);
 	}
-
+	//should be emit(List<String> consts, String eName, List<String> sRoutines)
 	@Override
 	public void emit(List<String> consts, String eName){
 		

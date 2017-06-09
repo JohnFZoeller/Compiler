@@ -1,9 +1,5 @@
-var john = 4;
-var p = john;
-print p;
+
 
 function poop(a int32) int32 {
-	var b = a;
-	var c byte;
-	return b;
+	type john byte;
 }

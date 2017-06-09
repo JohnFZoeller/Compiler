@@ -9,6 +9,7 @@ public class SyntaxParser {
 	private int row, col;
 	private Subtree root;
 	List<String> constantValues = new ArrayList<String>();
+	List<String> subroutines = new ArrayList<String>();
 
 
 	public SyntaxParser(Lex lex){
@@ -35,7 +36,7 @@ public class SyntaxParser {
 		//throw new Error("terminated");
 		root.beginDecorateFirst(mainTable);
 		root.beginDecorateSecond(mainTable);
-		root.emitAssemblyCode(constantValues);
+		root.emitAssemblyCode(constantValues, subroutines);
 	}
 
 	//the string identifier case (along with a new byte identifier case) 
