@@ -4,5 +4,6 @@ print p;
 
 function poop(a int32) int32 {
 	var b = a;
+	var c byte;
 	return b;
 }

@@ -827,20 +827,33 @@ class Var extends Subtree{
 		Subtree emitType = children.get(1);
 		String varName = (optName == null) ? children.get(0).token.getName() :
 			optName + "_" +  children.get(0).token.getName();
+
 		String instruction = varName + ":\n\t";
 		String symType = symbol.getType().getTypeName();
 		String val = "0";
 
+		//if not an Expression, only have to add label to List<String> const 
+		//if there is an expresssion, must add the label, then emit assembly 
 		if(emitType instanceof Expression){
 
+			//PART 1: EMIT ASSEMBLY
 			if(emitType.children.get(0) instanceof Identifier){
+
+				//if enclosed in a block
 				if(optName != null) {
-					String sub = optName + ":" + "\n\tload_label " + optName + "_" 
+					//name of subroutine
+					String sub = optName + ":";
+
+					//rest of subroutine
+					sub += "\n\tload_label " + optName + "_" 
 						+ emitType.children.get(0).toPrint() 
 						+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
 
+					//add to consts list
 					consts.add(sub);
 				}
+
+				//not enclosed in a block
 				else {
 					System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
 					"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
@@ -848,6 +861,7 @@ class Var extends Subtree{
 
 			}
 
+			//PART 2: ADD DECLARATION TO LIST<STRING> CONSTS
 			val = emitType.children.get(0).toPrint();
 
 			switch(symType){
