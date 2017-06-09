@@ -1,5 +1,7 @@
+var john int32;
 
 
 function poop(a int32) int32 {
-	type john byte;
+	var zoeller int32;
+	zoeller = 4;
 }

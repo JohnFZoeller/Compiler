@@ -2,34 +2,21 @@
 
 #ASSEMBLY CODE 
 
-
-	load_label p
+	load_label c4
 	load_mem_int
-	print_int
 
 	load_label done
 	branch
 
 done:
 	load0
-	exit
-	load_label 4	load_mem_int
-	load_label 6	load_mem_int
+	exit 
 
-	add
-john:
-	int_literal4+6
-
-p:
-	int_literaljohn
+c4:
+	int_literal 3
 func_poop:
 	int_literal 8888888
 func_poop_a:
 	int_literal -2147483648
-func_poop	load_label 6	load_mem_int
+ppoop:
 
-	add
-func_poop_b:
-	int_literala+6
-func_poop_c:
-	int_literal 3333333
