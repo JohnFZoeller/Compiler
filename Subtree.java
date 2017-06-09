@@ -185,7 +185,10 @@ public class Subtree {
 	}
 
 	//this eventually needs to be changed to an actual condition
-	public boolean isExpresh(){ return true; }
+	public boolean isExpresh(){ 
+		//COLLAPSE
+		return !token.getTokenType().equals("SEMICOLON"); 
+	}
 
 	public boolean hasWilds(){
 		return token.getTokenType().equals("OPEN_BRACKET");
@@ -832,7 +835,8 @@ class Var extends Subtree{
 
 			if(emitType.children.get(0) instanceof Identifier){
 				if(optName != null) {
-					String sub = optName + ":" + "\n\tload_label " + optName + "_" + emitType.children.get(0).toPrint() 
+					String sub = optName + ":" + "\n\tload_label " + optName + "_" 
+						+ emitType.children.get(0).toPrint() 
 						+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
 
 					consts.add(sub);

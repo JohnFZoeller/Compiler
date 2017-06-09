@@ -28,8 +28,10 @@
 #add/sub/mult/div two values (also works for and/or/</>... any binary op)
 	load_label one
 	load_mem_int
+	
 	load_label four
 	load_mem_int
+
 	add
 
 
