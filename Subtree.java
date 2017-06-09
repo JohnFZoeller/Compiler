@@ -2783,7 +2783,9 @@ class IntLiteral extends Operand {
 
 	IntLiteral(IntLiteral toCopy) {
 		super(toCopy);
+		//collapse
 	}
+
 
 	@Override
 	public IntLiteral deepCopy() {

@@ -2,6 +2,7 @@
 
 #ASSEMBLY CODE 
 
+
 	load_label john
 	load_mem_int
 	load_label p
@@ -20,4 +21,15 @@ done:
 john:
 	int_literal 4
 p:
+	int_literal -2147483648
+func_poop:
+	int_literal 8888888
+func_poop_a:
+	int_literal -2147483648
+func_poop:
+	load_label func_poop_a
+	load_mem_int
+	load_label func_poop_b
+	store_mem_int
+func_poop_b:
 	int_literal -2147483648
