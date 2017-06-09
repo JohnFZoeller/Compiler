@@ -1,9 +1,9 @@
-var john = 4;
+var john = 4 + 6;
 var p = john;
 print p;
 
 function poop(a int32) int32 {
-	var b = a;
+	var b = a + 6;
 	var c byte;
 	return b;
 }
