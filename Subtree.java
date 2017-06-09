@@ -841,16 +841,24 @@ class Var extends Subtree{
 
 				//if enclosed in a block
 				if(optName != null) {
-					//name of subroutine
-					String sub = optName + ":";
+					//name of subroutine - example
+					String sub = optName + ":"; 
 
-					//rest of subroutine
+					//rest of subroutine - also just an example
 					sub += "\n\tload_label " + optName + "_" 
 						+ emitType.children.get(0).toPrint() 
 						+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
 
 					//add to consts list
 					consts.add(sub);
+
+					//what will really happen---------------------
+					
+					//emitType.children.get(0).emit(consts, optName);
+						//write your assembly code with System.out.println for now
+
+					//after that im still trying to figure it out
+
 				}
 
 				//not enclosed in a block
