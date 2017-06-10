@@ -2,6 +2,7 @@
 
 #ASSEMBLY CODE 
 
+<<<<<<< HEAD
 load_label john_size
 load_mem_int 
 alloc_int
@@ -11,6 +12,9 @@ alloc_float
 load_label zoeller_size
 load_mem_int 
 alloc_int
+=======
+func_poop
+>>>>>>> cb538027cc082b383b2942a4e096dc3df622f9be
 
 	load_label done
 	branch
@@ -19,6 +23,7 @@ done:
 	load0
 	exit
 
+<<<<<<< HEAD
 john:
 	int_literal 2222222
 john_size: 
@@ -31,3 +36,14 @@ zoeller:
 	int_literal 4444444
 zoeller_size: 
 	int_literal 4
+=======
+func_poop_routine:
+john:
+	int_literal -2147483648
+func_poop:
+	int_literal 8888888
+func_poop_a:
+	int_literal -2147483648
+func_poop_zoeller:
+	int_literal -2147483648
+>>>>>>> cb538027cc082b383b2942a4e096dc3df622f9be

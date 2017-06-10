@@ -858,7 +858,7 @@ class Var extends Subtree{
 
 			switch(symType){
 				case "int32":
-					instruction += "int_literal" + val;
+					instruction += "int_literal " + val;
 					break;
 				case "float64":
 					instruction += "float_literal " + val;
@@ -1894,7 +1894,7 @@ class Expression extends Subtree {
 			}
 		}
 		exprString += eString;
-		consts.add(exprString);
+		System.out.println(exprString);
 	}
 
 
@@ -2814,12 +2814,14 @@ class IntLiteral extends Operand {
 
 	@Override
 	public String emitExpr(List<String> consts, String optName, List<String> l){
-		String sub = "\tload_label " + this.toPrint()
-			+ "\tload_mem_int\r\n";
+		String label = "i" + this.toPrint() + ":  \n\tint_literal " + this.toPrint();
+		String sub = "\n\tload_label i" + this.toPrint()
+			+ "\r\n\tload_mem_int";
+
+		consts.add(label);
 
 		return sub;
 	}
-
 
 	@Override
 	public IntLiteral deepCopy() {
@@ -2845,9 +2847,15 @@ class FloatLiteral extends Operand {
 	}
 
 	@Override
-	public String emitExpr(List<String> consts, String optName, List<String> l){
-		String sub = "load_label\t" + this.toPrint() + "\n"
-			+ "load_mem_float";
+	public String emitExpr(List<String> consts, String optName, List<String> l) {
+
+		String label = "f" + this.toPrint().substring(0,1) + ":  \n\tfloat_literal " + this.toPrint();
+		
+
+		String sub = "\n\tload_label f" +  this.toPrint().substring(0,1) 
+			+ "\r\n\tload_mem_float";
+
+		consts.add(label);
 
 		return sub;
 	}
@@ -2877,8 +2885,11 @@ class CharLit extends Operand {
 
 	@Override
 	public String emitExpr(List<String> consts, String optName, List<String> l){
-		String sub = "load_label\t" + this.toPrint() + "\n"
-			+ "load_mem_byte";
+		String label = "c" + this.toPrint() + ":  \n\tint_literal " + this.toPrint();
+		String sub = "\n\tload_label c" + this.toPrint()
+			+ "\r\n\tload_mem_int";
+
+		consts.add(label);
 
 		return sub;
 	}
