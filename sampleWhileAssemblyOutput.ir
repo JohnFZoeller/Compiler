@@ -1,0 +1,57 @@
+
+
+#ASSEMBLY CODE 
+
+
+	load_label i2
+	load_mem_int
+	load_label john
+	store_mem_int
+
+	load_label i4
+	load_mem_int
+	load_label poop
+	store_mem_int
+start4:
+
+	load_label john
+	load_mem_int
+	to_float
+	load_label poop
+	load_mem_int
+	to_float
+	ne_f
+	load_label while4_routine
+	branch_nonzero
+back4:
+
+	load_label done
+	branch
+
+done:
+	load0
+	exit
+
+while4_routine:
+
+	load_label john
+	load_mem_int
+	load_label i1
+	load_mem_int
+	add
+
+	load_label john
+	store_mem_int
+	load_label start4
+	branch
+
+i2:  
+	int_literal 2
+john:
+	int_literal -2147483648
+i4:  
+	int_literal 4
+poop:
+	int_literal -2147483648
+i1:  
+	int_literal 1

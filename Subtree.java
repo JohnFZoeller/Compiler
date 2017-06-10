@@ -306,19 +306,24 @@ class For extends Subtree{
 		int sss = consts.size();
 		String loopRoutine = "For" + sss;
 
-		System.out.println("start" + sss + ":");
 
-		for(int i = 0; i < 3; i++)
+		for(int i = 0; i < 3; i++){
+			if(i == 1)
+				System.out.println("start" + sss + ":");
+
 			children.get(i).emit(consts, null, sRoutines);
 
-		// System.out.println("\tload_label " + loopRoutine + "_routine"
-		// 	+ "\n\tbranch_nonzero");
+			if(i == 1)
+				System.out.println("\tload_label " + loopRoutine + "_routine\n\t"
+					+ "branch_nonzero\n\tload_label end" + sss + "\n\tbranch\nincrement" + sss + ":");
+		}
 
-		// block.emit(consts, loopRoutine, sRoutines);
+		System.out.println("\tload_label start" + sss + "\n\tbranch\nend" +
+			sss + ":");
 
-		// sRoutines.add("\tload_label start" + sss + "\n\tbranch");
+		block.emit(consts, loopRoutine, sRoutines);
 
-		// System.out.println("back" + sss + ":");
+		sRoutines.add("\tload_label increment" + sss + "\n\tbranch");
 	}
 
 	@Override
@@ -461,22 +466,31 @@ class If extends Subtree{
 	@Override 
 	public void emit(List<String> consts, String s, List<String> sRoutines){
 		int sss = consts.size();
+		String builder = "";
 		String loopRoutine = "if" + consts.size();
 
-		children.get(0).emit(consts, null, sRoutines);
-		System.out.println("\tload_label " + loopRoutine + "_routine"
-			+ "\n\tbranch_nonzero");
+		children.get(0).emit(consts, s, sRoutines);
+		builder += "\tload_label " + loopRoutine + "_routine"
+			+ "\n\tbranch_nonzero";
+
+		if(s != null)
+			sRoutines.add(builder);
+		else System.out.println(builder);
+
+		sRoutines.add("\tload_label back" + sss + "\n\tbranch");
+
 
 		block.emit(consts, loopRoutine, sRoutines);
 
-		sRoutines.add("\tload_label back" + sss + "\n\tbranch");
 
 		if(el)
 			children.get(2).emit(consts, s, sRoutines);
 
-		System.out.println("back" + sss + ":");
 
-
+		if(s != null)
+			sRoutines.add("back" + sss + ":");
+		else 
+			System.out.println("back" + sss + ":");
 
 	}
 
@@ -1112,18 +1126,12 @@ class Print extends Subtree{
 
 	@Override
 	public void emit(List<String> consts, String optName, List<String> sRoutines){
-		Subtree emitNode = children.get(0).children.get(0);
-		Symbol emitSymbol = currentScope.resolve(emitNode.toPrint());
+		children.get(0).emit(consts, optName, sRoutines);
 
-		//cant just depend on first child of an expresssion being the one to emit
-		if(emitNode instanceof Identifier){
+		System.out.println("\tprint_int");
+		//cant figure out how to do float
 
-			if(emitSymbol.getType().getTypeName() == "int32"){
-				System.out.println("\n\tload_label " + emitSymbol.getName()
-					+ "\n\tload_mem_int\n\tprint_int");
-			}
 
-		}
 	}
 
 	@Override 
@@ -1139,12 +1147,16 @@ class Print extends Subtree{
 }
 
 class Exit extends Subtree{
+	Boolean ex = false;
+
 	public Exit(Token t, Iterator<Token> i){
 		super(t, i);
 		match("exit");
 
-		if(isExpresh())
+		if(isExpresh()){
 			addChild(new Expression(token, it));
+			ex = true;
+		}
 
 		match("SEMICOLON");
 	}
@@ -1152,6 +1164,14 @@ class Exit extends Subtree{
 	Exit(Exit toCopy) {
 		super(toCopy);
 	}
+
+	@Override
+	public void emit(List<String> consts, String optName, List<String> sRoutines){
+		if(ex) children.get(0).emit(consts, optName, sRoutines);
+
+	}
+
+
 
 	@Override
 	public Exit deepCopy() {
@@ -2009,7 +2029,10 @@ class Expression extends Subtree {
 
 		exprString += eString;
 
-		if(blockName == null) System.out.println(exprString);
+		if(blockName == null) {
+			System.out.println(exprString);
+
+		}
 		else sRoutines.add(exprString);
 
 	}

@@ -1,6 +1,8 @@
-var john = 2;
+var john int32;
 var poop = 4;
 
-while(john != poop){
-	john = john + 1;
+for(john = 0; john < poop; john = john + 2){
+	if(4 == 4){
+		poop = poop + 1;
+	}
 }

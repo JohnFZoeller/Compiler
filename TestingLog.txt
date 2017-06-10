@@ -1,3 +1,7 @@
+/*all of these work from lexing to ir gen*/
+
+
+
 /*record testing*/
 
 /*array testing*/
@@ -81,3 +85,23 @@ var poop = 4;
 while(john != poop){
 	john = john + 1;
 }
+
+/*for*/
+var john int32;
+var poop = 4;
+
+for(john = 0; john < poop; john = john + 2){
+	poop = poop + 1;
+}
+
+/*for nested if*/
+var john int32;
+var poop = 4;
+
+for(john = 0; john < poop; john = john + 2){
+	if(4 == 4){
+		poop = poop + 1;
+	}
+}
+
+
