@@ -2,12 +2,24 @@
 
 #ASSEMBLY CODE 
 
-func_poop
-	load_label i4
+
+	load_label i8
 	load_mem_int
-	load_label i6
+	load_label func_nancy_b
+	store_mem_int
+
+	load_label func_nancy_routine
+	call
+	load_label func_nancy
 	load_mem_int
-	add
+
+
+	load_label ok
+	store_mem_int
+
+	load_label ok
+	load_mem_int
+	print_int
 
 	load_label done
 	branch
@@ -16,16 +28,28 @@ done:
 	load0
 	exit
 
-func_poop_routine:
-john:
-	int_literal -2147483648
-func_poop:
+func_nancy_routine:
+
+	load_label func_nancy_b
+	load_mem_int
+
+	load_label func_nancy_john
+	store_mem_int
+
+	load_label func_nancy_john
+	load_mem_int
+	load_label func_nancy
+	store_mem_int
+	return
+
+
+func_nancy:
 	int_literal 8888888
-func_poop_a:
+func_nancy_b:
 	int_literal -2147483648
-i4:  
-	int_literal 4
-i6:  
-	int_literal 6
-func_poop_zoeller:
-	int_literal 4+6
+func_nancy_john:
+	int_literal -2147483648
+i8:  
+	int_literal 8
+ok:
+	int_literal -2147483648

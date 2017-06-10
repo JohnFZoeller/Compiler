@@ -1,6 +1,7 @@
-var john int32;
 
-
-function poop(a int32) int32 {
-	var zoeller = 4 + 6;
+function nancy(b int32) int32{
+	var john = b;
+	return john;
 }
+
+var ok = nancy(8);

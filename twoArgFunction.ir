@@ -1,20 +1,32 @@
-
+#do params
+#load label of argument
 load_label three
+#load val of arg
 load_mem_int
+#load label of parameter
 load_label func_ko_a
+#store new val
 store_mem_int
 
+#next parameter
 load_label five
 load_mem_int
 load_label func_ko_b
 store_mem_int
 
+#call the function
 load_label ko
 call
+
+#get the returned value
 load_label func_ko
 load_mem_int
+
+#store it to the calling var
 load_label john
 store_mem_int
+
+
 
 load_label john
 load_mem_int

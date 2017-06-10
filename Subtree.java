@@ -119,8 +119,10 @@ public class Subtree {
 			children.get(i).emit(consts, null, sRountines);
 		}
 
+		System.out.println("\n\tload_label ok\n\tload_mem_int\n\tprint_int");
 		System.out.println("\n\tload_label done\n\tbranch\n\ndone:\n\tload0\n\texit\n");
 		printSubroutines(sRountines);
+		System.out.println("\n");
 		printConstants(consts);
 	}
 
@@ -694,6 +696,7 @@ class Function extends Subtree {
 		//all blocks should be enclosed in subroutines
 		block.emit(consts, varName, sRoutines);							//new subroutine
 
+
 	}
 
 	@Override
@@ -847,28 +850,39 @@ class Var extends Subtree{
 		//if not an Expression, only have to add label to List<String> const 
 		//if there is an expresssion, must add the label, then emit assembly 
 		if(emitType instanceof Expression){
-
 			//PART 1: EMIT ASSEMBLY
 			emitType.emit(consts, optName, sRoutines);
+
+
+
 			
 			//PART 2: ADD DECLARATION TO LIST<STRING> CONSTS
 			val = emitType.toPrint();
 
-			if(symType == null) symType = "int32";
+			//if(symType == null) symType = "int32";
 
 			switch(symType){
 				case "int32":
-					instruction += "int_literal " + val;
+					instruction += "int_literal " + defaultInt;
 					break;
 				case "float64":
-					instruction += "float_literal " + val;
+					instruction += "float_literal " + defaultFloat;
 					break;
 				case "byte":
-					instruction += "int_literal " + val;
+					instruction += "int_literal " + defaultByte;
 				default: 
 					break;
 
 			}
+
+			if(optName == null){						//not in a subroutine
+				System.out.println("\n\tload_label " + varName + "\n\tstore_mem_int");
+			}else{
+				sRoutines.add("\n\tload_label " + varName + "\n\tstore_mem_int");
+			}
+
+
+			
 		} else {
 			if(symType == "int32")
 				instruction += "int_literal " + defaultInt;						//add int
@@ -965,9 +979,20 @@ class Retur extends Subtree{
 		//collapse
 	}
 
+	public void decorateFirst(Scope enclosing){
+		currentScope = enclosing;
+	}
+
 	@Override
 	public void emit(List<String> consts, String optName, List<String> sRoutines){
+		//need optName : save value of returnValue to the return function
+		Symbol returnValue = currentScope.resolve(children.get(0).toPrint());
 
+		//working only with ints for now
+
+		sRoutines.add("\n\tload_label " + optName + "_" + returnValue.getName() 
+			+ "\n\tload_mem_int\n\tload_label " + optName + "\n\tstore_mem_int" 
+			+ "\n\treturn");
 	}
 
 	@Override
@@ -1261,6 +1286,7 @@ class Block extends Subtree {
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts, name, sRoutines);
 		}
+
 	}
 
 	@Override
@@ -1879,20 +1905,25 @@ class Expression extends Subtree {
 	public void emit(List<String> consts, String exprString, List<String> sRoutines){
 		Subtree child = null;
 		String eString = "";
-		if(exprString == null)
+		String blockName = exprString;
+		exprString = "";
+		if(blockName == null)
 			exprString = "";
 
 		for(int index = 0; index < children.size(); index++) {
 			child = children.get(index);
 
 			if(child instanceof Operand) {
-				exprString += child.emitExpr(consts, exprString, sRoutines);
+				exprString += child.emitExpr(consts, blockName, sRoutines);
 			} else if(child instanceof MathOp) {
 				eString += child.emitExpr(consts, exprString, sRoutines);
 			}
 		}
 		exprString += eString;
-		System.out.println(exprString);
+
+		if(blockName == null) System.out.println(exprString);
+		else sRoutines.add(exprString);
+
 	}
 
 
@@ -2760,12 +2791,27 @@ class Identifier extends Operand {
 	@Override
 	public void setType(Scope enclosing) throws UndefinedTypeError {
 		Symbol defined = enclosing.resolve((String)token.getVal());
+		currentScope = enclosing;
 
 		if(defined == null) {
 			throw new UndefinedTypeError(toPrint());
 		}
 
 		type = defined.getType();
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		Symbol defined = currentScope.resolve((String)token.getVal());
+		
+		if(defined == null)
+			throw new UndefinedTypeError(toPrint());
+
+		optName = (optName == null) ? "" : optName + "_";
+
+		String sub = "\n\tload_label " + optName + toPrint() + "\n\tload_mem_int";
+
+		return sub;
 	}
 
 	@Override
@@ -2929,11 +2975,37 @@ class FunctionCall extends Operand {
 		addParams();
 	}
 
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String label = "";
+		List<Subtree> args = children.get(1).children;
+		List<String> params = new ArrayList<String>();
+
+		for (Map.Entry<String, Symbol> entry : ((FunctionSymbol)symbol).getMembers().entrySet()) {
+    		Symbol value = entry.getValue();
+    		String typeName = value.getType().getTypeName();
+    		params.add(value.getName());
+    	}
+
+		//create labels for each argument
+		for(int i = 0; i < args.size(); i++){
+			args.get(0).emit(consts, optName, l);
+			System.out.println("\tload_label func_" + symbol.getName() 
+				+ "_" + params.get(i) + "\n\tstore_mem_int");
+		}
+
+		System.out.println("\n\tload_label " + "func_" + symbol.getName()
+			+ "_routine\n\tcall" + "\n\tload_label " + "func_" + symbol.getName()
+			+ "\n\tload_mem_int");
+
+		return label;
+	}
+
 	public void addParams() {
 		match("OPEN_PARENTHESIS");
 		if(!(token.getTokenType().equals("CLOSE_PARENTHESIS"))) {
 			hasParams = true;
-			Expressions params = new Expressions(token, it);
+			Expressions params = new Expressions(token, it); //
 			addChild(params);
 		}
 		match("CLOSE_PARENTHESIS");
@@ -3459,6 +3531,13 @@ class Multiplication extends MathOp {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tmul";
+
+		return sub;
+	}
+
+	@Override
 	public boolean validOp(SymbolType operand) {
 		boolean isValid = false;
 
@@ -3493,6 +3572,13 @@ class Division extends MathOp {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tdiv";
+
+		return sub;
+	}
+
+	@Override
 	public boolean validOp(SymbolType operand) {
 		boolean isValid = false;
 
@@ -3517,6 +3603,13 @@ class Tilde extends Subtree {		//bitwise not
 	@Override
 	public Tilde deepCopy() {
 		return new Tilde(this);
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tnot";
+
+		return sub;
 	}
 
 	@Override
@@ -3564,6 +3657,13 @@ class GreaterThan extends Subtree {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tgt_f";
+
+		return sub;
+	}
+
+	@Override
 	public GreaterThan deepCopy() {
 		return new GreaterThan(this);
 	}
@@ -3599,6 +3699,13 @@ class GreaterThanEqual extends Subtree {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tge_f";
+
+		return sub;
+	}
+
+	@Override
 	public GreaterThanEqual deepCopy() {
 		return new GreaterThanEqual(this);
 	}
@@ -3616,6 +3723,13 @@ class LessThan extends Subtree {
 
 	LessThan(LessThan toCopy) {
 		super(toCopy);
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tlt_f";
+
+		return sub;
 	}
 
 	@Override
@@ -3639,6 +3753,13 @@ class LessThanEqual extends Subtree {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tle_f";
+
+		return sub;
+	}
+
+	@Override
 	public LessThanEqual deepCopy() {
 		return new LessThanEqual(this);
 	}
@@ -3656,6 +3777,13 @@ class BitwiseAnd extends Subtree {
 
 	BitwiseAnd(BitwiseAnd toCopy) {
 		super(toCopy);
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tand";
+
+		return sub;
 	}
 
 	@Override
@@ -3678,6 +3806,13 @@ class LogicalAnd extends Subtree {
 	public String toPrint() {
 		return "&&";
 	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\t";
+
+		return sub;
+	}
 }
 
 class BitwiseOr extends MathOp {
@@ -3687,6 +3822,13 @@ class BitwiseOr extends MathOp {
 
 	BitwiseOr(BitwiseOr toCopy) {
 		super(toCopy);
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tor";
+
+		return sub;
 	}
 
 	@Override
@@ -3750,6 +3892,13 @@ class XoR extends MathOp {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\txor";
+
+		return sub;
+	}
+
+	@Override
 	public XoR deepCopy() {
 		return new XoR(this);
 	}
@@ -3767,6 +3916,13 @@ class Inequality extends MathOp {
 
 	Inequality(Inequality toCopy) {
 		super(toCopy);
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tne_f";
+
+		return sub;
 	}
 
 	@Override
@@ -3790,6 +3946,13 @@ class LeftShift extends MathOp {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tshift_left";
+
+		return sub;
+	}
+
+	@Override
 	public LeftShift deepCopy() {
 		return new LeftShift(this);
 	}
@@ -3810,6 +3973,13 @@ class RightShift extends MathOp {
 	}
 
 	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\tshift_right";
+
+		return sub;
+	}
+
+	@Override
 	public RightShift deepCopy() {
 		return new RightShift(this);
 	}
@@ -3827,6 +3997,13 @@ class Equality extends MathOp {
 
 	Equality(Equality toCopy) {
 		super(toCopy);
+	}
+
+	@Override
+	public String emitExpr(List<String> consts, String optName, List<String> l){
+		String sub = "\n\teq_f";
+
+		return sub;
 	}
 
 	@Override

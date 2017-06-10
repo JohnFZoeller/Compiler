@@ -1,0 +1,18 @@
+/*array testing*/
+
+var john int32[3];
+
+/*expression testing*/
+
+var john = 4;
+var fred = john + 3;
+
+/*function testing*/
+
+
+function nancy(b int32) int32{
+	var ret = b;
+	return ret;
+}
+
+var ok = nancy(4);
