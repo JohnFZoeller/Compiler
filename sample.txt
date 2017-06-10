@@ -2,9 +2,7 @@
 
 #ASSEMBLY CODE 
 
-
-	load_label f5
-	load_mem_float
+func_poop
 
 	load_label done
 	branch
@@ -12,12 +10,13 @@
 done:
 	load0
 	exit
-f5:  
-	float_literal 5345344.5
-destiny:
-	float_literal 5345344.5
+
+func_poop_routine:
+john:
+	int_literal -2147483648
 func_poop:
 	int_literal 8888888
 func_poop_a:
 	int_literal -2147483648
-func_poop_routine:
+func_poop_zoeller:
+	int_literal -2147483648

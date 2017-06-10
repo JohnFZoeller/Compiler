@@ -8,67 +8,87 @@
 #var john int32;	->john declared (as default int, below)
 #john = 4;			->john reinitialized as 4
 		#get address of four
-	load_label four
-		#derefernce, pushing the value 4 onto stack
-	load_mem_int
-		#get address of john
-	load_label john
-		#store 4 into address of john
-	store_mem_int
+# 	load_label four
+# 		#derefernce, pushing the value 4 onto stack
+# 	load_mem_int
+# 		#get address of john
+# 	load_label john
+# 		#store 4 into address of john
+# 	store_mem_int
 
 
-#222222222222222222
-#print john;
-	load_label john
-	load_mem_int
-	print_int
+# #222222222222222222
+# #print john;
+# 	load_label john
+# 	load_mem_int
+# 	print_int
 
 
 #3333333333333333333
 #add/sub/mult/div two values (also works for and/or/</>... any binary op)
-	load_label one
+
+#var john = 3 * 4 + 2;
+	load_label three
 	load_mem_int
-	
+
 	load_label four
 	load_mem_int
 
+	mul
+
+	load_label two
+	load_mem_int
+
 	add
+
+	#store new val
+	load_label john
+	store_mem_int
+
+
+	#print new val
+	load_label john
+	load_mem_int
+	print_int
+
+	load_label done
+	branch
 
 
 #4444444444444444444
 #basic loop
-loop:
-	load_label iter
-	load_mem_int
-	load_label four
-	load_mem_int
-	sub
-	load_label done
-		#if sub produced a zero on top of stack, branch to "done: "
-	branch_zero
-	load_label iter
-	load_mem_int
-	load1
-		#increments iter
-	add
-	load_label iter
-		#stores incremented value
-	store_mem_int
-	load_label loop
-	branch
+# loop:
+# 	load_label iter
+# 	load_mem_int
+# 	load_label four
+# 	load_mem_int
+# 	sub
+# 	load_label done
+# 		#if sub produced a zero on top of stack, branch to "done: "
+# 	branch_zero
+# 	load_label iter
+# 	load_mem_int
+# 	load1
+# 		#increments iter
+# 	add
+# 	load_label iter
+# 		#stores incremented value
+# 	store_mem_int
+# 	load_label loop
+# 	branch
 
 
-#555555555555555555
-#unary op
-	load_label four
-	load_mem_int
-	not
+# #555555555555555555
+# #unary op
+# 	load_label four
+# 	load_mem_int
+# 	not
 
-#666666666666666666
-#type  conversion
-	load_label four
-	load_mem_int
-	to_float
+# #666666666666666666
+# #type  conversion
+# 	load_label four
+# 	load_mem_int
+# 	to_float
 
 
 #exit the code
@@ -100,6 +120,8 @@ two:
 func:
 	int_literal 4
 func_p1:
+	int_literal 3
+three:
 	int_literal 3
 	
 

@@ -119,7 +119,7 @@ public class Subtree {
 			children.get(i).emit(consts, null, sRountines);
 		}
 
-		System.out.println("\n\tload_label done\n\tbranch\n\ndone:\n\tload0\n\texit");
+		System.out.println("\n\tload_label done\n\tbranch\n\ndone:\n\tload0\n\texit\n");
 		printSubroutines(sRountines);
 		printConstants(consts);
 	}
@@ -197,7 +197,6 @@ public class Subtree {
 		return col;
 	}
 
-	//this eventually needs to be changed to an actual condition
 	public boolean isExpresh(){ 
 		//COLLAPSE
 		return !token.getTokenType().equals("SEMICOLON"); 
@@ -690,10 +689,10 @@ class Function extends Subtree {
 			tempRecord.saveConstValues(consts, null);
 		}
 
-		consts.add(instruction);
-		((FunctionSymbol)symbol).emitParams(consts);
+		consts.add(instruction);										//add return type
+		((FunctionSymbol)symbol).emitParams(consts);					//add parameters
 		//all blocks should be enclosed in subroutines
-		block.emit(consts, varName, sRoutines);
+		block.emit(consts, varName, sRoutines);							//new subroutine
 
 	}
 
@@ -849,69 +848,13 @@ class Var extends Subtree{
 		//if there is an expresssion, must add the label, then emit assembly 
 		if(emitType instanceof Expression){
 
-			// //PART 1: EMIT ASSEMBLY
-			// if(emitType.children.get(0) instanceof Identifier){
-
-			// 	//if enclosed in a block
-			// 	if(optName != null) {
-			// 		//name of subroutine - example
-			// 		String sub = optName + ":"; 
-
-			// 		//rest of subroutine - also just an example
-			// 		sub += "\n\tload_label " + optName + "_" 
-			// 			+ emitType.children.get(0).toPrint() 
-			// 			+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
-
-			// 		//add to consts list
-			// 		consts.add(sub);
-
-					//what will really happen---------------------
-					
-				emitType.emit(consts, optName, sRoutines);
-
 			//PART 1: EMIT ASSEMBLY
-
-				//if enclosed in a block
-				if(optName != null) {
-					//name of subroutine - example
-					// String sub = optName + ":"; 
-
-					// //rest of subroutine - also just an example
-					// sub += "\n\tload_label " + optName + "_" 
-					// 	+ emitType.children.get(0).toPrint() 
-					// 	+ "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int";
-
-					// //add to consts list
-					// consts.add(sub);
-
-					//what will really happen---------------------
-
-					emitType.emit(consts, optName, sRoutines);
-						//write your assembly code with System.out.println for now
-
-					//after that im still trying to figure it out
-
-			 	}
-
-			// 	//not enclosed in a block
-				else {
-			// 		System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
-			// 		"\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
-			 	}
-
-			// }
-				//not enclosed in a block
-				//else {
-					//emitType.children.get(0).emit(mainCode, null);
-					//
-					// System.out.println("\n\tload_label " + emitType.children.get(0).toPrint() + 
-					// "\n\tload_mem_int\n\tload_label " + varName + "\n\tstore_mem_int");
-				//}
-
+			emitType.emit(consts, optName, sRoutines);
 			
-
 			//PART 2: ADD DECLARATION TO LIST<STRING> CONSTS
 			val = emitType.toPrint();
+
+			if(symType == null) symType = "int32";
 
 			switch(symType){
 				case "int32":
@@ -924,7 +867,7 @@ class Var extends Subtree{
 					instruction += "int_literal " + val;
 				default: 
 					break;
-			//}
+
 			}
 		} else {
 			if(symType == "int32")
@@ -1313,7 +1256,7 @@ class Block extends Subtree {
 
 	public void emit(List<String> consts, String name, List<String> sRoutines){
 		//special case
-		consts.add(name + "_routine:");
+		sRoutines.add(name + "_routine:");
 
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts, name, sRoutines);
