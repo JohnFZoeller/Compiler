@@ -43,3 +43,35 @@ var eric int32;
 if(poo == lol){
 	eric = 2;
 }
+
+var john = 4;
+var eric int32;
+var poop = 4;
+
+if(john == poop){
+	eric = 1;
+}
+if(john != poop){
+	eric = 1;
+}
+if(john <= poop){
+	eric = 1;
+}
+if(john >= poop){
+	eric = 1;
+}
+if(john > poop){
+	eric = 1;
+}
+if(john < poop){
+	eric = 1;
+}
+
+
+if(john != poop){
+	eric = 1;
+} else{
+	eric = 2;
+}
+
+/**/

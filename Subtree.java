@@ -394,6 +394,7 @@ class While extends Subtree{
 
 class If extends Subtree{
 	Block block;
+	Boolean el = false;
 
 	If(Token t, Iterator<Token> i){
 		super(t, i);
@@ -407,8 +408,10 @@ class If extends Subtree{
 
 		addChild(new Block(token, it));
 
-		if(isElse())
+		if(isElse()){
 			addChild(new Else(token, it));
+			el = true;
+		}
 	}
 
 	If(If toCopy) {
@@ -428,11 +431,18 @@ class If extends Subtree{
 
 		children.get(0).emit(consts, null, sRoutines);
 		System.out.println("\tload_label " + loopRoutine + "_routine"
-			+ "\n\tbranch_nonzero\nback" + consts.size() + ":");
+			+ "\n\tbranch_nonzero");
 
 		block.emit(consts, loopRoutine, sRoutines);
 
 		sRoutines.add("\tload_label back" + sss + "\n\tbranch");
+
+		if(el)
+			children.get(2).emit(consts, s, sRoutines);
+
+		System.out.println("back" + sss + ":");
+
+
 
 	}
 
@@ -443,6 +453,8 @@ class If extends Subtree{
 		block.decorateFirst(currentScope);
 		block.decorateSecond(currentScope);
 		currentScope = currentScope.getEnclosingScope();
+		if(el)
+			children.get(2).decorateFirst(currentScope);
 	}
 
 	@Override
@@ -483,6 +495,20 @@ class Else extends Subtree{
 	Else(Else toCopy) {
 		super(toCopy);
 		this.block = toCopy.block.deepCopy();
+	}
+
+	@Override 
+	public void emit(List<String> consts, String s, List<String> sRoutines){
+		int sss = consts.size() - 1;
+		String loopRoutine = "else" + (consts.size() - 1);
+		System.out.println("\tload_label " + loopRoutine + "_routine"
+		 	+ "\n\tbranch");
+
+		block.emit(consts, loopRoutine, sRoutines);
+
+		sRoutines.add("\tload_label back" + sss + "\n\tbranch");
+
+
 	}
 
 	@Override
@@ -1938,9 +1964,11 @@ class Expression extends Subtree {
 				eString += addOn + child.emitExpr(consts, blockName, sRoutines);
 
 			} else if(child instanceof Assignment){
-				//exprString += "\n\t"
+				//cuts off the last load_mem_int/load_mem_float
+				exprString = exprString.substring(0, exprString.lastIndexOf("\n"));
+				eString = "\n\tstore_mem_int";
 			} else if(child instanceof Expression){
-				//
+				child.emit(consts, blockName, sRoutines);
 			}
 		}
 
@@ -2918,7 +2946,8 @@ class IntLiteral extends Operand {
 		String sub = "\n\tload_label i" + this.toPrint()
 			+ "\r\n\tload_mem_int";
 
-		consts.add(label);
+		if(!consts.contains(label))
+			consts.add(label);
 
 		return sub;
 	}
@@ -3764,7 +3793,7 @@ class Assignment extends Subtree {
  *		(aka only int32 types are accepted)
  */
 
-class GreaterThan extends Subtree {
+class GreaterThan extends Booly {
 	GreaterThan(Token t, Iterator<Token> i){
 		super(t, i);
 	}
@@ -3806,7 +3835,7 @@ class GreaterThan extends Subtree {
 	}
 }
 
-class GreaterThanEqual extends Subtree {
+class GreaterThanEqual extends Booly {
 	GreaterThanEqual(Token t, Iterator<Token> i){
 		super(t, i);
 	}
@@ -3833,7 +3862,7 @@ class GreaterThanEqual extends Subtree {
 	}
 }
 
-class LessThan extends Subtree {
+class LessThan extends Booly {
 	LessThan(Token t, Iterator<Token> i){
 		super(t, i);
 	}
@@ -3860,7 +3889,7 @@ class LessThan extends Subtree {
 	}
 }
 
-class LessThanEqual extends Subtree {
+class LessThanEqual extends Booly {
 	LessThanEqual(Token t, Iterator<Token> i){
 		super(t, i);
 	}
@@ -4026,7 +4055,7 @@ class XoR extends MathOp {
 	}
 }
 
-class Inequality extends MathOp {
+class Inequality extends Booly {
 	Inequality(Token t, Iterator<Token> i){
 		super(t, i);
 	}

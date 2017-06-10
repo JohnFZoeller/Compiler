@@ -3,23 +3,28 @@
 #ASSEMBLY CODE 
 
 
-	load_label i8
+	load_label i4
 	load_mem_int
-	load_label func_nancy_b
+	load_label john
 	store_mem_int
 
-	load_label func_nancy_routine
-	call
-	load_label func_nancy
+	load_label i4
 	load_mem_int
-
-
-	load_label ok
+	load_label poop
 	store_mem_int
 
-	load_label ok
+	load_label john
 	load_mem_int
-	print_int
+	to_float
+	load_label poop
+	load_mem_int
+	to_float
+	ne_f
+	load_label if4_routine
+	branch_nonzero
+	load_label else4_routine
+	branch
+back4:
 
 	load_label done
 	branch
@@ -28,28 +33,34 @@ done:
 	load0
 	exit
 
-func_nancy_routine:
+if4_routine:
 
-	load_label func_nancy_b
+	load_label i1
 	load_mem_int
 
-	load_label func_nancy_john
+	load_label eric
 	store_mem_int
+	load_label back4
+	branch
+else4_routine:
 
-	load_label func_nancy_john
+	load_label i2
 	load_mem_int
-	load_label func_nancy
+
+	load_label else4_eric
 	store_mem_int
-	return
+	load_label back4
+	branch
 
-
-func_nancy:
-	int_literal 8888888
-func_nancy_b:
+i4:  
+	int_literal 4
+john:
 	int_literal -2147483648
-func_nancy_john:
+eric:
 	int_literal -2147483648
-i8:  
-	int_literal 8
-ok:
+poop:
 	int_literal -2147483648
+i1:  
+	int_literal 1
+i2:  
+	int_literal 2
