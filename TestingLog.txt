@@ -3,6 +3,7 @@
 
 
 /*record testing*/
+var a record b byte, c int32, d record f int32 end end;
 
 /*array testing*/
 

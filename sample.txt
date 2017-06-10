@@ -13,7 +13,7 @@
 
 	load_label john
 	store_mem_int
-start3:
+start8:
 
 	load_label john
 	load_mem_int
@@ -22,11 +22,11 @@ start3:
 	load_mem_int
 	to_float
 	lt_f
-	load_label For3_routine
+	load_label For8_routine
 	branch_nonzero
-	load_label end3
+	load_label end8
 	branch
-increment3:
+increment8:
 
 	load_label john
 	load_mem_int
@@ -36,9 +36,9 @@ increment3:
 
 	load_label john
 	store_mem_int
-	load_label start3
+	load_label start8
 	branch
-end3:
+end8:
 
 	load_label done
 	branch
@@ -47,7 +47,7 @@ done:
 	load0
 	exit
 
-For3_routine:
+For8_routine:
 
 	load_label i4
 	load_mem_int
@@ -56,11 +56,11 @@ For3_routine:
 	load_mem_int
 	to_float
 	eq_f
-	load_label if5_routine
+	load_label if10_routine
 	branch_nonzero
-	load_label back5
+	load_label back10
 	branch
-if5_routine:
+if10_routine:
 
 	load_label poop
 	load_mem_int
@@ -70,10 +70,20 @@ if5_routine:
 
 	load_label poop
 	store_mem_int
-back5:
-	load_label increment3
+back10:
+	load_label increment8
 	branch
 
+rec_a_b:
+	int_literal 3333333
+rec_a_c:
+	int_literal -2147483648
+rec_a_rec_d_f:
+	int_literal -2147483648
+rec_a_rec_d:
+	int_literal 1111111
+rec_a:
+	int_literal 1111111
 john:
 	int_literal -2147483648
 i4:  
