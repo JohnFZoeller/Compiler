@@ -877,9 +877,14 @@ class Var extends Subtree{
 			}
 
 			if(optName == null){						//not in a subroutine
-				System.out.println("\tload_label " + varName + "\n\tstore_mem_int");
+				if(symType == "float64")
+					System.out.println("\tload_label " + varName + "\n\tstore_mem_float");
+				else System.out.println("\tload_label " + varName + "\n\tstore_mem_int");
+
 			}else{
-				sRoutines.add("\n\tload_label " + varName + "\n\tstore_mem_int");
+				if(symType == "float64")
+					sRoutines.add("\n\tload_label " + varName + "\n\tstore_mem_float");
+				else sRoutines.add("\n\tload_label " + varName + "\n\tstore_mem_int");
 			}
 
 
@@ -1831,7 +1836,8 @@ class Expressions extends Subtree {
 	private void addAllChildren() {
 		while(keepReading(token)) {
 			Expression child = new Expression(token, it);
-			addChild(child);
+			if(!token.getTokenType().equals("COMMA"))
+				addChild(child);
 			if(token.getTokenType().equals("COMMA")) {
 				match("COMMA");
 			}
@@ -1917,7 +1923,7 @@ class Expression extends Subtree {
 			} else if(child instanceof MathOp) {
 				eString += child.emitExpr(consts, exprString, sRoutines);
 			} else if(child instanceof Booly){
-
+				//if last was not a float must cast to float, same with next
 			}
 		}
 		exprString += eString;
@@ -1964,6 +1970,10 @@ class Expression extends Subtree {
 				decorateMathOp(enclosing);
 			} 
 
+			else if(currentNode instanceof Booly){
+				decorateBooly(enclosing);
+			}
+
 			else if(currentNode instanceof BitWiseOp){
 				//decorateBitwiseOp()
 			} 
@@ -2004,9 +2014,9 @@ class Expression extends Subtree {
 		for(int index = 0; index < children.size(); index++) {
 			child = children.get(index);
 			//if the child node is something other than a mathop
-			if(!(child instanceof MathOp)) {
+			if(!(child instanceof Booly)) {
 				check = child.type;
-				validOperand(check);
+				//validOperand(check);
 			}
 		}
 	}
@@ -3025,6 +3035,7 @@ class FunctionCall extends Operand {
 		String label = "";
 		List<Subtree> args = children.get(1).children;
 		List<String> params = new ArrayList<String>();
+		String sType = null;
 
 		for (Map.Entry<String, Symbol> entry : ((FunctionSymbol)symbol).getMembers().entrySet()) {
     		Symbol value = entry.getValue();
@@ -3034,20 +3045,27 @@ class FunctionCall extends Operand {
 
 		//create labels for each argument
 		for(int i = 0; i < args.size(); i++){
-			args.get(0).emit(consts, optName, l);
+			args.get(i).emit(consts, optName, l);
 			
-			int temp = emitType(params.get(i));
-			if(temp == 1) {
-				System.out.println("\tload_label func_" + symbol.getName() 
-				+ "_" + params.get(i) + "\n\tstore_mem_int");
+			System.out.println("\tload_label func_" + symbol.getName() 
+				+ "_" + params.get(i));
+
+			sType = ((FunctionSymbol)symbol).resolve(params.get(i)).type.getTypeName();
+
+			if(sType != "float64") {
+				System.out.println("\tstore_mem_int");
+			} else if (sType == "float64"){
+				System.out.println("\tstore_mem_float");
 			}
 		}
 
-
-
 		System.out.println("\n\tload_label " + "func_" + symbol.getName()
-			+ "_routine\n\tcall" + "\n\tload_label " + "func_" + symbol.getName()
-			+ "\n\tload_mem_int");
+			+ "_routine\n\tcall" + "\n\tload_label " + "func_" + symbol.getName());
+
+		if(type.getTypeName() == "float64")
+			System.out.println("\tload_mem_float");
+		else System.out.println("\tload_mem_int");
+
 
 		return label;
 	}

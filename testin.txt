@@ -1,9 +1,7 @@
-var lol = 2;
-var poo = 8;
+var john = 4;
 var eric int32;
+var poop = 3;
 
-if(poo == lol){
-	eric = 2;
+if(john == poop){
+	eric = 1;
 }
-
-

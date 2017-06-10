@@ -1,3 +1,5 @@
+/*record testing*/
+
 /*array testing*/
 
 var john int32[3];
@@ -16,3 +18,28 @@ function nancy(b int32) int32{
 }
 
 var ok = nancy(4);
+
+
+function nancy(b int32, c float64, d int32) int32{
+	var ret = b;
+	return ret;
+}
+
+var ok = nancy(4, 3.0, 2);
+
+function nancy(b int32, c float64, d int32) float64{
+	var ret = b;
+	return ret;
+}
+
+var ok = nancy(4, 3.0, 2);
+
+
+/*if loop testing*/
+var lol = 2;
+var poo = 8;
+var eric int32;
+
+if(poo == lol){
+	eric = 2;
+}
