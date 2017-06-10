@@ -2,19 +2,24 @@
 
 #ASSEMBLY CODE 
 
-<<<<<<< HEAD
-load_label john_size
-load_mem_int 
-alloc_int
-load_label frederick_size
-load_mem_int 
-alloc_float
-load_label zoeller_size
-load_mem_int 
-alloc_int
-=======
-func_poop
->>>>>>> cb538027cc082b383b2942a4e096dc3df622f9be
+
+	load_label i8
+	load_mem_int
+	load_label func_nancy_b
+	store_mem_int
+
+	load_label func_nancy_routine
+	call
+	load_label func_nancy
+	load_mem_int
+
+
+	load_label ok
+	store_mem_int
+
+	load_label ok
+	load_mem_int
+	print_int
 
 	load_label done
 	branch
@@ -23,27 +28,28 @@ done:
 	load0
 	exit
 
-<<<<<<< HEAD
-john:
-	int_literal 2222222
-john_size: 
-	int_literal 4
-frederick:
-	float_literal 2222222.2222222
-frederick_size: 
-	int_literal 4
-zoeller:
-	int_literal 4444444
-zoeller_size: 
-	int_literal 4
-=======
-func_poop_routine:
-john:
-	int_literal -2147483648
-func_poop:
+func_nancy_routine:
+
+	load_label func_nancy_b
+	load_mem_int
+
+	load_label func_nancy_john
+	store_mem_int
+
+	load_label func_nancy_john
+	load_mem_int
+	load_label func_nancy
+	store_mem_int
+	return
+
+
+func_nancy:
 	int_literal 8888888
-func_poop_a:
+func_nancy_b:
 	int_literal -2147483648
-func_poop_zoeller:
+func_nancy_john:
 	int_literal -2147483648
->>>>>>> cb538027cc082b383b2942a4e096dc3df622f9be
+i8:  
+	int_literal 8
+ok:
+	int_literal -2147483648

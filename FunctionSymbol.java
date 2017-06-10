@@ -122,6 +122,7 @@ class FunctionSymbol extends ScopedSymbol implements Scope {
     		consts.add(instruction);
     		instruction = "func_" + getName() + "_";
     	}
+
 	}
 
 	public ParamSymbol makeArray(String n, SymbolType t, int s, RecordSymbol r, boolean [] l){
