@@ -3,9 +3,8 @@
 #ASSEMBLY CODE 
 
 
-	load_label p
-	load_mem_int
-	print_int
+	load_label f5
+	load_mem_float
 
 	load_label done
 	branch
@@ -13,23 +12,12 @@
 done:
 	load0
 	exit
-	load_label 4	load_mem_int
-	load_label 6	load_mem_int
-
-	add
-john:
-	int_literal4+6
-
-p:
-	int_literaljohn
+f5:  
+	float_literal 5345344.5
+destiny:
+	float_literal 5345344.5
 func_poop:
 	int_literal 8888888
 func_poop_a:
 	int_literal -2147483648
-func_poop	load_label 6	load_mem_int
-
-	add
-func_poop_b:
-	int_literala+6
-func_poop_c:
-	int_literal 3333333
+func_poop_routine:

@@ -1,4 +1,4 @@
-
+var destiny = 5345344.28;
 
 function poop(a int32) int32 {
 	type john byte;
