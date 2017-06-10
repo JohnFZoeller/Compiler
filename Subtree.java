@@ -869,6 +869,7 @@ class Var extends Subtree{
 					break;
 
 			}
+			
 		} else {
 			if(symType == "int32")
 				instruction += "int_literal " + defaultInt;						//add int
@@ -1261,6 +1262,7 @@ class Block extends Subtree {
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts, name, sRoutines);
 		}
+
 	}
 
 	@Override

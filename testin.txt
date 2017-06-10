@@ -1,7 +1,7 @@
-var john int32;
+var john int32[4];
+var frederick float64[4];
+var zoeller byte[4];
 
+var reed record z int32 end[4];
 
-function poop(a int32) int32 {
-	var zoeller int32;
-	zoeller = 4;
-}
+var nancy record a byte, b int32[3], c record d int32 end[4] end;

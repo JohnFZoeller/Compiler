@@ -2,21 +2,32 @@
 
 #ASSEMBLY CODE 
 
-	load_label c4
-	load_mem_int
+load_label john_size
+load_mem_int 
+alloc_int
+load_label frederick_size
+load_mem_int 
+alloc_float
+load_label zoeller_size
+load_mem_int 
+alloc_int
 
 	load_label done
 	branch
 
 done:
 	load0
-	exit 
+	exit
 
-c4:
-	int_literal 3
-func_poop:
-	int_literal 8888888
-func_poop_a:
-	int_literal -2147483648
-ppoop:
-
+john:
+	int_literal 2222222
+john_size: 
+	int_literal 4
+frederick:
+	float_literal 2222222.2222222
+frederick_size: 
+	int_literal 4
+zoeller:
+	int_literal 4444444
+zoeller_size: 
+	int_literal 4
