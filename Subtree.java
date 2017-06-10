@@ -119,10 +119,9 @@ public class Subtree {
 			children.get(i).emit(consts, null, sRountines);
 		}
 
-		System.out.println("\n\tload_label ok\n\tload_mem_int\n\tprint_int");
 		System.out.println("\n\tload_label done\n\tbranch\n\ndone:\n\tload0\n\texit\n");
 		printSubroutines(sRountines);
-		System.out.println("\n");
+		System.out.println("");
 		printConstants(consts);
 	}
 
@@ -215,6 +214,7 @@ public class Subtree {
 	}
 
 	public boolean isElse(){
+		if(!it.hasNext()) return false;
 		return token.getTokenType().equals("else");
 		//collapse
 	}
@@ -425,7 +425,8 @@ class If extends Subtree{
 	public void emit(List<String> consts, String s, List<String> sRoutines){
 		String loopRoutine = "if" + consts.size();
 
-		children.get(0).emit(consts, loopRoutine, sRoutines);
+		children.get(0).emit(consts, null, sRoutines);
+
 		block.emit(consts, loopRoutine, sRoutines);
 	}
 
@@ -876,7 +877,7 @@ class Var extends Subtree{
 			}
 
 			if(optName == null){						//not in a subroutine
-				System.out.println("\n\tload_label " + varName + "\n\tstore_mem_int");
+				System.out.println("\tload_label " + varName + "\n\tstore_mem_int");
 			}else{
 				sRoutines.add("\n\tload_label " + varName + "\n\tstore_mem_int");
 			}
@@ -1907,8 +1908,6 @@ class Expression extends Subtree {
 		String eString = "";
 		String blockName = exprString;
 		exprString = "";
-		if(blockName == null)
-			exprString = "";
 
 		for(int index = 0; index < children.size(); index++) {
 			child = children.get(index);
@@ -1917,6 +1916,8 @@ class Expression extends Subtree {
 				exprString += child.emitExpr(consts, blockName, sRoutines);
 			} else if(child instanceof MathOp) {
 				eString += child.emitExpr(consts, exprString, sRoutines);
+			} else if(child instanceof Booly){
+
 			}
 		}
 		exprString += eString;
@@ -1993,6 +1994,21 @@ class Expression extends Subtree {
 			}
 		}
 
+	}
+
+	public void decorateBooly(Scope enclosing){
+		SymbolType check = null;
+		Subtree child = null;
+
+
+		for(int index = 0; index < children.size(); index++) {
+			child = children.get(index);
+			//if the child node is something other than a mathop
+			if(!(child instanceof MathOp)) {
+				check = child.type;
+				validOperand(check);
+			}
+		}
 	}
 
 	public void decorateMathOp(Scope enclosing) {
@@ -2790,8 +2806,10 @@ class Identifier extends Operand {
 
 	@Override
 	public void setType(Scope enclosing) throws UndefinedTypeError {
+
 		Symbol defined = enclosing.resolve((String)token.getVal());
 		currentScope = enclosing;
+
 
 		if(defined == null) {
 			throw new UndefinedTypeError(toPrint());
@@ -2801,13 +2819,17 @@ class Identifier extends Operand {
 	}
 
 	@Override
-	public String emitExpr(List<String> consts, String optName, List<String> l){
-		Symbol defined = currentScope.resolve((String)token.getVal());
-		
-		if(defined == null)
-			throw new UndefinedTypeError(toPrint());
+	public String emitExpr(List<String> consts, String optName, List<String> l)throws UndefinedTypeError{
+		Symbol defined = null;
 
-		optName = (optName == null) ? "" : optName + "_";
+		if(currentScope != null){
+			defined = currentScope.resolve((String)token.getVal());
+				if(defined == null)
+					throw new UndefinedTypeError(toPrint());
+		}
+
+		optName = (optName == null || optName.charAt(0) == 'i') 
+			? "" : optName + "_";
 
 		String sub = "\n\tload_label " + optName + toPrint() + "\n\tload_mem_int";
 
@@ -3401,6 +3423,30 @@ class Negative extends Subtree {
 
 //-------------------------- MathOp should be done ----------------------------
 //shell class for differentiating operands from operators.
+
+class Booly extends Subtree{
+	Booly(Token t, Iterator<Token> i){
+		super(t, i);
+	}
+
+	Booly(Booly toCopy) {
+		super(toCopy);
+	}
+
+	public void decorateExpr(Scope enclosing) { currentScope = enclosing; }
+
+	public boolean validOp(SymbolType operand) { return false; }
+
+	@Override
+	public Booly deepCopy() {
+		return new Booly(this);
+	}
+
+	@Override
+	public String toPrint() {
+		return token.getTokenType();
+	}
+}
 
 class MathOp extends Subtree {
 	MathOp(Token t, Iterator<Token> i){

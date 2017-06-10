@@ -1,7 +1,9 @@
+var lol = 2;
+var poo = 8;
+var eric int32;
 
-function nancy(b int32) int32{
-	var john = b;
-	return john;
+if(poo == lol){
+	eric = 2;
 }
 
-var ok = nancy(8);
+

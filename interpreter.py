@@ -85,27 +85,20 @@ class VM(object):
         self.labels = {}
         self.opcodes = {
             'nop': (0, self.nop, "--", 'no operation'),
-
             'alloc_int': (0, self.alloc_int, 'n -- address', 'allocate n int values in memory'),
             'alloc_float': (0, self.alloc_float, 'n -- address', 'allocate n floating-point values in memory'),
-
             'int_literal': (1, self.int_literal, '-- ', 'emit int value in instruction stream') ,
             'float_literal': (1, self.float_literal, '-- x', 'emit floating-point value in instruction stream'),
-
             'exit': (0, self.exit, 'n --', 'exit with status n'),
-
             'print_byte': (0, self.print_byte, 'n --', 'print character'),
             'print_int': (0, self.print_int, 'n --', 'format and print int value'),
             'print_float': (0, self.print_float, 'x --', 'format and print floating-point value'),
-
             'branch': (0, self.branch, 'address --', 'branch to address'),
             'branch_zero': (0, self.branch_zero, 'flag address --', 'branch to address if flag is zero'),
             'branch_nonzero': (0, self.branch_nonzero, 'flag address --', 'branch to address if flag is nonzero'),
             'branch_negative': (0, self.branch_negative, 'flag address --', 'branch to address if flag is negative'),
-
             'call': (0, self.call, 'address --', 'branch to subroutine'),
             'return': (0, self.return_, '--', 'return from subroutine'),
-
             'load0': (0, self.load0, '-- 0', 'push zero onto the stack'),
             'load1': (0, self.load1, '-- 1', 'push one onto the stack'),
             'load_mem_int': (0, self.load_mem_int, 'address -- n', 'load int value from memory'),
@@ -115,12 +108,10 @@ class VM(object):
             'load_label': (1, self.make_load_label, '-- address', 'push address onto the stack'),
             'load_sp': (0, self.load_sp, '-- sp', 'push value of stack pointer onto stack'),
             'pop_frame': (0, self.pop_frame, 'address --', 'reset the stack pointer'),
-
             'store_mem_int': (0, self.store_mem_int, 'n address --', 'store integer value into memory'),
             'store_mem_float': (0, self.store_mem_float, 'x address --', 'store floating-point value into memory'),
             'store_stack_int': (0, self.store_stack_int, 'n address --', 'store integer value into the stack'),
             'store_stack_float': (0, self.store_stack_float, 'x address --', 'store floating-point value into the stack'),
-
             'drop': (0, self.drop, 'n --', 'remove top int from the stack'),
             'drop': (0, self.drop, 'n --', 'remove top floating-point value from the stack'),
             'dup': (0, self.dup, 'n -- n n', 'duplicate the top int on the stack'),
@@ -138,15 +129,12 @@ class VM(object):
             'overf': (0, self.over, 'x y -- x y x', 'push the second float element on the the stack'),
             'pick': (0, self.pick, 'an an-1 .. a0 i -- an an-1 .. a0 ai', 'pick int element relative to top of stack'),
             'pickf': (0, self.pickf, 'an an-1 .. a0 i -- an an-1 .. a0 ai', 'pick float element relative to top of stack'),
-
             'and': (0, self.and_, 'n1 n2 -- m', 'bitwise and'),
             'or': (0, self.or_, 'n1 n2 -- m', 'bitwise or'),
             'xor': (0, self.xor, 'n1 n2 -- m', 'bitwise exclusive or'),
             'not': (0, self.not_, 'n -- m', 'bitwise complement'),
-
             'shift_right': (0, self.shift_right, 'n -- m', 'signed logical shift right'),
             'shift_left': (0, self.shift_left, 'n -- m', 'logical shift left'),
-
             'add': (0, self.add, 'n m -- n+m', 'int addition'),
             'add_f': (0, self.add_f, 'x y -- x+y', 'floating-point addition'),
             'sub': (0, self.sub, 'n m -- n-m', 'int subtraction'),
@@ -155,17 +143,14 @@ class VM(object):
             'mul_f': (0, self.mul_f, 'x y -- x*y', 'floating-point multiplication'),
             'div': (0, self.div, 'n m -- n/m', 'int division'),
             'div_f': (0, self.div_f, 'x y -- x/y', 'floating-point division'),
-
             'lt_f': (0, self.lt_f, 'x y -- flag', 'floating-point less-than x < y'),
             'le_f': (0, self.le_f, 'x y -- flag', 'floating-point less-than-or-equals x <= y'),
             'eq_f': (0, self.eq_f, 'x y -- flag', 'floating-point equals x == y'),
             'ge_f': (0, self.ge_f, 'x y -- flag', 'floating-point greater-than-or-equals x >= y'),
             'gt_f': (0, self.gt_f, 'x y -- flag', 'floating-point greater-than x > y'),
             'ne_f': (0, self.ne_f, 'x y -- flag', 'floating-point not-equals x <> y'),
-
             'is_inf': (0, self.is_inf, 'x -- flag', 'floating-point x is positive or negative infinity'),
             'is_nan': (0, self.is_nan, 'x -- flag', 'floating-point x is not-a-number (NaN)'),
-
             'to_float': (0, self.to_float, 'n -- x', 'int to floating-point value'),
             'to_int': (0, self.to_int, 'x -- n', 'floating-point to int value'),
         }
@@ -175,13 +160,13 @@ class VM(object):
 
     def alloc_int(self):
         n = self.stack.pop_int()
-        p = len(self.stack)
+        p = len(self.memory)
         self.memory.extend([0] * n)
         self.stack.push(p)
 
     def alloc_float(self):
         n = self.stack.pop_int()
-        p = len(self.stack)
+        p = len(self.memory)
         self.memory.extend([0.0] * n)
         self.stack.push(p)
 
@@ -481,7 +466,7 @@ class VM(object):
 
     def ne_f(self):
         value1, value2 = self.stack.pop_float2()
-        self.stack.push(int(value1, "<>" ,value2))
+        self.stack.push(int(value1 <> value2))
 
     def is_inf(self):
         value = self.stack.pop_float()
@@ -525,9 +510,6 @@ class VM(object):
         return True
 
     def read(self):
-        #check 3 
-        print("check 3")
-
         for line in fileinput.input():
             sys.stderr.write(line)
             line = line.strip()
@@ -541,14 +523,11 @@ class VM(object):
             if self.make_op(line):
                 continue
             raise ParseError(line)
-
-        #check 4
         return self
 
     def run(self, entry_point=0):
         sys.stderr.write('entry at %d\n' % (entry_point,))
         self.program_counter = entry_point
-
         while True:
             pc = self.program_counter
             self.program_counter += 1
@@ -567,6 +546,3 @@ if __name__ == '__main__':
             VM().help()
             sys.exit(1)
     VM().read().run()
-
-
-
