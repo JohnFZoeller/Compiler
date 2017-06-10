@@ -2975,6 +2975,29 @@ class FunctionCall extends Operand {
 		addParams();
 	}
 
+	public int emitType(String toCheck) {
+		int retVal = 0;
+		for(int index = 0; index < toCheck.length(); index++) {
+			if(Character.isDigit(toCheck.charAt(index))) {
+				retVal++;
+			} else if(toCheck.charAt(index) == '.') {
+				retVal--;
+			}
+		}
+		//returns 1 if input is a digit
+		if(retVal + 1 == toCheck.length()) {
+			return 1;
+
+		//returns two if a float
+		} else if(retVal + 2 == toCheck.length()) {
+			return 2;
+
+		//returns 0 for anything else
+		} else {
+			return 0;
+		}
+	}
+
 	@Override
 	public String emitExpr(List<String> consts, String optName, List<String> l){
 		String label = "";
@@ -2990,9 +3013,15 @@ class FunctionCall extends Operand {
 		//create labels for each argument
 		for(int i = 0; i < args.size(); i++){
 			args.get(0).emit(consts, optName, l);
-			System.out.println("\tload_label func_" + symbol.getName() 
+			
+			int temp = emitType(params.get(i));
+			if(temp == 1) {
+				System.out.println("\tload_label func_" + symbol.getName() 
 				+ "_" + params.get(i) + "\n\tstore_mem_int");
+			}
 		}
+
+
 
 		System.out.println("\n\tload_label " + "func_" + symbol.getName()
 			+ "_routine\n\tcall" + "\n\tload_label " + "func_" + symbol.getName()
