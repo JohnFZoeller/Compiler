@@ -1,9 +1,6 @@
-var john = 4;
-var eric int32;
+var john = 2;
 var poop = 4;
 
-if(john != poop){
-	eric = 1;
-} else{
-	eric = 2;
+while(john != poop){
+	john = john + 1;
 }

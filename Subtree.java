@@ -302,8 +302,23 @@ class For extends Subtree{
 	}
 
 	@Override 
-	public void emit(List<String> consts, String s, List<String> sRountines){
-		String loopRoutine = "for" + consts.size();
+	public void emit(List<String> consts, String s, List<String> sRoutines){
+		int sss = consts.size();
+		String loopRoutine = "For" + sss;
+
+		System.out.println("start" + sss + ":");
+
+		for(int i = 0; i < 3; i++)
+			children.get(i).emit(consts, null, sRoutines);
+
+		// System.out.println("\tload_label " + loopRoutine + "_routine"
+		// 	+ "\n\tbranch_nonzero");
+
+		// block.emit(consts, loopRoutine, sRoutines);
+
+		// sRoutines.add("\tload_label start" + sss + "\n\tbranch");
+
+		// System.out.println("back" + sss + ":");
 	}
 
 	@Override
@@ -357,6 +372,25 @@ class While extends Subtree{
 	While(While toCopy) {
 		super(toCopy);
 		this.block = toCopy.block.deepCopy();
+	}
+
+	@Override 
+	public void emit(List<String> consts, String s, List<String> sRoutines){
+		int sss = consts.size();
+		String loopRoutine = "while" + consts.size();
+
+		System.out.println("start" + sss + ":");
+
+		children.get(0).emit(consts, null, sRoutines);
+
+		System.out.println("\tload_label " + loopRoutine + "_routine"
+			+ "\n\tbranch_nonzero");
+
+		block.emit(consts, loopRoutine, sRoutines);
+
+		sRoutines.add("\tload_label start" + sss + "\n\tbranch");
+
+		System.out.println("back" + sss + ":");
 	}
 
 	@Override
@@ -2889,7 +2923,9 @@ class Identifier extends Operand {
 				intFloat = "\n\tload_mem_float";
 		}
 
-		optName = (optName == null || optName.charAt(0) == 'i') 
+		optName = (optName == null || optName.charAt(0) == 'i'
+			|| optName.charAt(0) == 'e' || optName.charAt(0) == 'w'
+			|| optName.charAt(0) == 'F') 
 			? "" : optName + "_";
 
 

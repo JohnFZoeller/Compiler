@@ -74,4 +74,10 @@ if(john != poop){
 	eric = 2;
 }
 
-/**/
+/*while*/
+var john = 2;
+var poop = 4;
+
+while(john != poop){
+	john = john + 1;
+}
