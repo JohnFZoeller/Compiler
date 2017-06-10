@@ -423,11 +423,17 @@ class If extends Subtree{
 
 	@Override 
 	public void emit(List<String> consts, String s, List<String> sRoutines){
+		int sss = consts.size();
 		String loopRoutine = "if" + consts.size();
 
 		children.get(0).emit(consts, null, sRoutines);
+		System.out.println("\tload_label " + loopRoutine + "_routine"
+			+ "\n\tbranch_nonzero\nback" + consts.size() + ":");
 
 		block.emit(consts, loopRoutine, sRoutines);
+
+		sRoutines.add("\tload_label back" + sss + "\n\tbranch");
+
 	}
 
 	@Override
@@ -1288,6 +1294,7 @@ class Block extends Subtree {
 	public void emit(List<String> consts, String name, List<String> sRoutines){
 		//special case
 		sRoutines.add(name + "_routine:");
+		//passing in the name might be a bad idea in the case of an "if"
 
 		for(int i = 0; i < children.size(); i++){
 			children.get(i).emit(consts, name, sRoutines);
@@ -1914,6 +1921,7 @@ class Expression extends Subtree {
 		String eString = "";
 		String blockName = exprString;
 		exprString = "";
+		String addOn = "";
 
 		for(int index = 0; index < children.size(); index++) {
 			child = children.get(index);
@@ -1922,10 +1930,21 @@ class Expression extends Subtree {
 				exprString += child.emitExpr(consts, blockName, sRoutines);
 			} else if(child instanceof MathOp) {
 				eString += child.emitExpr(consts, exprString, sRoutines);
-			} else if(child instanceof Booly){
-				//if last was not a float must cast to float, same with next
+			} else if((child instanceof Booly) && (index % 2 == 1)){
+				addOn = "\n\tto_float";
+
+				if(exprString.charAt(exprString.length() - 2) != 'a')
+					exprString += addOn;
+				eString += addOn + child.emitExpr(consts, blockName, sRoutines);
+
+			} else if(child instanceof Assignment){
+				//exprString += "\n\t"
+			} else if(child instanceof Expression){
+				//
 			}
 		}
+
+
 		exprString += eString;
 
 		if(blockName == null) System.out.println(exprString);
@@ -2810,6 +2829,7 @@ class Operand extends Subtree {
 //--------------------- Identifier should be done -----------------------------
 
 class Identifier extends Operand {
+
 	Identifier(Token t, Iterator<Token> i){
 		super(t, i);
 	}
@@ -2831,17 +2851,21 @@ class Identifier extends Operand {
 	@Override
 	public String emitExpr(List<String> consts, String optName, List<String> l)throws UndefinedTypeError{
 		Symbol defined = null;
+		String intFloat = "\n\tload_mem_int";
 
 		if(currentScope != null){
 			defined = currentScope.resolve((String)token.getVal());
 				if(defined == null)
 					throw new UndefinedTypeError(toPrint());
+			if(defined.type.getTypeName() == "float64")
+				intFloat = "\n\tload_mem_float";
 		}
 
 		optName = (optName == null || optName.charAt(0) == 'i') 
 			? "" : optName + "_";
 
-		String sub = "\n\tload_label " + optName + toPrint() + "\n\tload_mem_int";
+
+		String sub = "\n\tload_label " + optName + toPrint() + intFloat;
 
 		return sub;
 	}
@@ -4083,7 +4107,7 @@ class RightShift extends MathOp {
 	}
 }
 
-class Equality extends MathOp {
+class Equality extends Booly {
 	Equality(Token t, Iterator<Token> i){
 		super(t, i);
 	}
