@@ -3,6 +3,11 @@
 #ASSEMBLY CODE 
 
 func_poop
+	load_label i4
+	load_mem_int
+	load_label i6
+	load_mem_int
+	add
 
 	load_label done
 	branch
@@ -18,5 +23,9 @@ func_poop:
 	int_literal 8888888
 func_poop_a:
 	int_literal -2147483648
+i4:  
+	int_literal 4
+i6:  
+	int_literal 6
 func_poop_zoeller:
-	int_literal -2147483648
+	int_literal 4+6

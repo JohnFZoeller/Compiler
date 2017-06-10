@@ -2,6 +2,5 @@ var john int32;
 
 
 function poop(a int32) int32 {
-	var zoeller int32;
-	zoeller = 4;
+	var zoeller = 4 + 6;
 }
