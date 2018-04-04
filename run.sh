@@ -2,6 +2,6 @@
 
 javac *.java;
 java Main > sample.txt;
-python interpreter.py sample.txt;
+#python interpreter.py sample.txt;
 
-$SHELL
+#$SHELL

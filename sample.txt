@@ -8,38 +8,6 @@
 	load_label poop
 	store_mem_int
 
-	load_label i0
-	load_mem_int
-
-	load_label john
-	store_mem_int
-start8:
-
-	load_label john
-	load_mem_int
-	to_float
-	load_label poop
-	load_mem_int
-	to_float
-	lt_f
-	load_label For8_routine
-	branch_nonzero
-	load_label end8
-	branch
-increment8:
-
-	load_label john
-	load_mem_int
-	load_label i2
-	load_mem_int
-	add
-
-	load_label john
-	store_mem_int
-	load_label start8
-	branch
-end8:
-
 	load_label done
 	branch
 
@@ -47,32 +15,6 @@ done:
 	load0
 	exit
 
-For8_routine:
-
-	load_label i4
-	load_mem_int
-	to_float
-	load_label i4
-	load_mem_int
-	to_float
-	eq_f
-	load_label if10_routine
-	branch_nonzero
-	load_label back10
-	branch
-if10_routine:
-
-	load_label poop
-	load_mem_int
-	load_label i1
-	load_mem_int
-	add
-
-	load_label poop
-	store_mem_int
-back10:
-	load_label increment8
-	branch
 
 rec_a_b:
 	int_literal 3333333
@@ -90,9 +32,3 @@ i4:
 	int_literal 4
 poop:
 	int_literal -2147483648
-i0:  
-	int_literal 0
-i2:  
-	int_literal 2
-i1:  
-	int_literal 1

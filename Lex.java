@@ -18,7 +18,7 @@ class Lex implements Iterable<Token> {
  	************************************************************************************************/
 
 	private String OSName = System.getProperty("os.name");			//stores OS name
-	private boolean windowsMachine = OSName.startsWith("Windows");		//true if OS is Windows
+	private boolean windowsMachine = OSName.startsWith("Windows");	//true if OS is Windows
 	private boolean unixMachine = OSName.startsWith("Linux");		//true if OS is Unix
 
 	private Reader input;											//BufferedStream reader

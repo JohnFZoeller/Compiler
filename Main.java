@@ -1,6 +1,9 @@
 import java.io.*;
 import java.util.*;
 
+/**
+* @ISSUE : LEXER NOT PERFECT : semicolons not read if on last line
+**/
 public class Main{
 	public static void main(String[] args) {
 		new Main().run("testin.txt");
@@ -28,13 +31,5 @@ public class Main{
 		//  	if(temp != null)
 		//   		System.out.println(temp.getTokenType() + "    " + temp.getName());
 		// }
-
 	}
 }
-
-/*-------Please dont delete below, still need to debug Lexer--------*/
-
-// if(lexer.leftOverSemi()){
-// 	temp = new Op("SEMICOLON", lexer.getLastRow(), lexer.getLastCol());
-// 	System.err.println(temp);
-// }

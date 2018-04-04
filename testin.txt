@@ -1,10 +1,5 @@
+
 var a record b byte, c int32, d record f int32 end end;
 
 var john int32;
 var poop = 4;
-
-for(john = 0; john < poop; john = john + 2){
-	if(4 == 4){
-		poop = poop + 1;
-	}
-}
