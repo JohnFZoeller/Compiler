@@ -1,0 +1,609 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0073)http://courses.washington.edu/css448/bernstein/project/language-spec.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>CSS 448/548 (Spring 2017): Introduction to Compilers</title>
+  
+  <meta http-equiv="last-modified" content="2017-04-16T11:21:54.988129">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+  <meta name="copyright" content="© 2013-2017 Systems Deployment, LLC">
+  <link rel="stylesheet" type="text/css" href="./LanguageSpec_files/css448.css">
+  <link rel="icon" type="image/png" href="http://courses.washington.edu/css448/bernstein/project/systems-deployment-favicon.png">
+</head>
+
+<body>
+
+<a name="top"></a>
+
+  <div class="logo">
+    <a href="http://www.uwb.edu/css" target="_blank">
+      <img src="./LanguageSpec_files/csslogo.jpg" alt="UWB and UW Seal" title="University of Washington | Bothell">
+    </a>
+  </div>
+  <hr class="logo">
+<div class="menu">
+  <p>
+    <a href="http://courses.washington.edu/css448/bernstein/index.html">Home</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/syllabus.html">Syllabus</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/lectures/index.html">Lecture Notes</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/project/index.html">Assignments</a>
+    |
+    <a href="http://www.washington.edu/online/privacy" target="_blank">Privacy Policy</a>
+    |
+    <a href="http://www.washington.edu/online/terms" target="_blank">Terms of Use</a>
+  </p>
+</div>
+
+
+<h1>CSS 448 Language Specification</h1>
+
+<h2>Lexical Elements</h2>
+
+<p>
+  The language shall support C++ comment syntax.
+</p>
+
+<p>
+  Reserved words and operators are as described in the grammar.
+</p>
+
+<p>
+  An
+  <em>identifier</em>
+  is a maximal sequence of letters, digits, and underscores, starting
+  with a letter.  Identifiers are case-sensitive.
+</p>
+
+<p>
+  A character literal is an ASCII character, other than a single
+  quote, enclosed in single quotes.
+  Backslash escaping may be used for the following characters:
+  <code>\0</code> (0x00),
+  <code>\n</code> (0x0a),
+  <code>\"</code> (0x22),
+  <code>\'</code> (0x27),
+  <code>\\</code> (0x5c),
+  <code>\x<em>dd</em></code> (0xdd).
+  A malformed escape or multiple characters in the literal shall cause
+  a compile-time error.
+</p>
+
+<p>
+  An integer is a maximal sequence of decimal digits optionally preceded with a minus sign.
+</p>
+
+<p>
+  A floating-point number is one of the following:
+</p>
+<div><pre>  <code>-</code>? <em>digit</em>+ <code>.</code> <em>digit</em>* ( <code>e</code> <em>digit</em>+ )?
+  <code>-</code>? <code>.</code> <em>digit</em>+ ( <code>e</code> <em>digit</em>+ )?
+  <code>-</code>? <em>digit</em>+ <code>e</code> <em>digit</em>+
+</pre></div>
+
+<p>
+  A string literal is a sequence of characters, other than a double
+  quote, enclosed in double quotes.  Any of the character escape codes
+  may be used.
+</p>
+
+
+<h2>Grammar</h2>
+
+<div><pre><em>program</em> ::= <em>statement</em>*
+
+<em>statement</em> ::=
+  <em>declaration-statement</em>
+  <em>block-statement</em>
+  <em>for-statement</em>
+  <em>while-statement</em>
+  <em>if-statement</em>
+  <em>print-statement</em>
+  <em>return-statement</em>
+  <em>exit-statement</em>
+  <em>expression-statement</em>
+
+<em>declaration-statement</em> ::=
+  <em>type-declaration</em>
+  <em>function-declaration</em>
+  <em>variable-declaration</em>
+
+<em>type-declaration</em> ::= <code>type</code> <em>identifier</em> <em>type-descriptor</em> <code>;</code>
+
+<em>type-descriptor</em> ::= <em>non-array-type-descriptor</em> <em>dimension</em><sub>opt</sub>
+
+<em>non-array-type-descriptor</em> ::=
+  <em>record-descriptor</em>
+  <em>identifier</em>
+  <em>basic-type</em>
+
+<em>record-descriptor</em> ::= <code>record</code> field-declarations <code>end</code>
+
+<em>field-declarations</em> ::= (<em>field-declaration</em> <code>,</code> )* <em>field-declaration</em>
+
+<em>field-declaration</em> ::= <em>identifier</em> <em>type-descriptor</em>
+
+<em>basic-type<em> ::= <code>byte</code> | <code>int32</code> | <code>float64</code>
+
+<em>dimension</em> ::= <code>[</code> expressions <code>]</code>
+
+<em>function-declaration</em> ::=
+  <code>function</code> <em>identifier</em> <code>(</code> <em>parameters</em><sub>opt</sub> <code>)</code> <em>type-descriptor</em><sub>opt</sub> <em>block-statement</em>
+
+<em>parameters<em> ::= ( <em>parameters</em> <code>,</code> )* <em>parameter</em>
+
+<em>parameter</em> ::=
+    <code>ref</code><sub>opt</sub> <code>const</code><sub>opt</sub> <em>identifier</em> <em>non-array-type-descriptor</em> <em>dimension-wildcards</em><sub>opt</sub>
+    <code>ref</code><sub>opt</sub> <code>const</code><sub>opt</sub> <em>identifier</em> <code>=</code> <em>expression</em>
+
+<em>dimension-wildcards</em> ::= <code>[</code> ( <em>dimension-wildcards</em> <code>,</code> ) <code>*</code> <code>]</code>
+
+<em>variable-declaration</em> ::=
+  <code>static</code><sub>opt</sub> <code>const</code><sub>opt</sub> <code>var</code> <em>identifier</em> <em>type-descriptor</em> <code>;</code>
+  <code>static</code><sub>opt</sub> <code>const</code><sub>opt</sub> <code>var</code> <em>identifier</em> <code>=</code> <em>expression</em> <code>;</code>
+
+<em>block-statement</em> ::= <code>{</code> <em>statement</em>* <code>}</code>
+
+<em>for-statement</em> ::= <code>for</code> <code>(</code> <em>expression</em> <code>;</code> <em>expression</em> <code>;</code> <em>expression</em> <code>)</code> <em>block-statement</em>
+
+<em>while-statement</em> ::= <code>while</code> <code>(</code> <em>expression</em> <code>)</code> <em>block-statement</em>
+
+<em>if-statement</em> ::= <code>if</code> <code>(</code> <em>expression</em> <code>)</code> <em>block-statement<em> ( <code>else</code> <em>block-statement<em> )<sub>opt</sub>
+
+<em>print-statement</em> ::= <code>print</code> <em>expression</em> <code>;</code>
+
+<em>return-statement</em> ::= <code>return</code> <em>expression</em><sub>opt</sub> <code>;</code>
+
+<em>exit-statement</em> ::= <code>exit</code> <em>expression</em><sub>opt</sub> <code>;</code>
+
+<em>expression-statement</em> ::= <em>expression</em> <code>;</code>
+
+<em>expressions</em> ::= ( <em>expression</em> <code>,</code> )* expression
+
+<em>expression</em> ::=
+  <em>variable</em> <code>=</code> <em>expression</em>
+  <code>!</code> <em>expression</em>
+  <code>~</code> <em>expression</em>
+  <code>-</code> <em>expression</em>
+  <em>expression</em> <code>+</code> <em>expression</em>
+  <em>expression</em> <code>-</code> <em>expression</em>
+  <em>expression</em> <code>*</code> <em>expression</em>
+  <em>expression</em> <code>/</code> <em>expression</em>
+  <em>expression</em> <code>|</code> <em>expression</em>
+  <em>expression</em> <code>&amp;</code> <em>expression</em>
+  <em>expression</em> <code>^</code> <em>expression</em>
+  <em>expression</em> <code>&lt;&lt;</code> <em>expression</em>
+  <em>expression</em> <code>&gt;&gt;</code> <em>expression</em>
+  <em>expression</em> <code>==</code> <em>expression</em>
+  <em>expression</em> <code>!=</code> <em>expression</em>
+  <em>expression</em> <code>&lt;</code> <em>expression</em>
+  <em>expression</em> <code>&lt;=</code> <em>expression</em>
+  <em>expression</em> <code>&gt;</code> <em>expression</em>
+  <em>expression</em> <code>&gt;=</code> <em>expression</em>
+  <em>expression</em> <code>&amp;&amp;</code> <em>expression</em>
+  <em>expression</em> <code>||</code> <em>expression</em>
+  <em>type-cast</em>
+  <em>function-call</em>
+  <em>variable</em>
+  <em>number</em>
+  <em>string</em>
+  <code>(</code> <em>expression</em> <code>)</code>
+
+<em>type-cast</em> ::= <em>basic-type</em> <code>(</code> <em>expression</em> <code>)</code>
+
+<em>function-call</em> ::= <em>identifier</em> <code>(</code> <em>expressions</em><sub>opt</sub> <code>)</code>
+
+<em>variable</em> ::= <em>identifier</em> <em>subscript</em><sub>opt</sub> ( <code>.</code> variable )*
+
+<em>subscript</em> ::=  <code>[</code> expressions <code>]</code>
+
+<em>number</em> ::= <em>character-literal</em> | <em>integer-literal</em> | <em>float-literal</em>
+</em></em></em></em></em></em></em></em></pre></div><em><em>
+
+
+<h2>Operator Precedence</h2>
+
+<ol>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    (unary) <code>-</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>!</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>~</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>*</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>/</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>+</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>-</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>&lt;&lt;</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>&gt;&gt;</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>&lt;</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>&lt;=</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>&gt;</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>&gt;=</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>==</code>
+    &nbsp;&nbsp;&nbsp;
+    <code>!=</code>
+  </li><li>
+    &nbsp;&nbsp;&nbsp;
+    <code>&amp;</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>^</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>|</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>&amp;&amp;</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>||</code>
+  </li>
+  <li>
+    &nbsp;&nbsp;&nbsp;
+    <code>=</code> (right-associative)
+  </li>
+</ol>
+
+
+<h2>Types</h2>
+
+
+<h3>Primitive Types</h3>
+
+<p>
+  The primitive types are
+  <code>byte</code>,
+  <code>int32</code>,
+  and
+  <code>float64</code>.
+</p>
+
+<p>
+  The usual math operations may be performed on
+  <code>int32</code>,
+  and
+  <code>float64</code>
+  but not on
+  <code>byte</code>
+  values.
+</p>
+
+<p>
+  A binary operator, except assignment, where one of the operands is
+  an integer type and the other floating point shall automatically
+  convert the integer operand to floating point, and the type of the
+  expression shall be floating point.
+  Assignment of an integer value to a floating-point lvalue is
+  permitted and the value shall be converted.
+</p>
+
+<p>
+  All other primitive-type conversions require an explicit cast.
+  There is no type conversion for non-primitive types.
+</p>
+
+
+<h3>Records</h3>
+
+<p>
+  An expression of type
+  <code>record</code>
+  may be assigned to a variable of the same type.
+</p>
+
+<p>
+  Individual fields of a record may be accessed and assigned-to.
+</p>
+
+<p>
+  A field of type array must have constant dimensions (see
+  <em>constant expressions</em>).
+</p>
+
+<p>
+  Records with the same structure but different names are considered
+  to be of different types.
+</p>
+
+
+<h3>Arrays</h3>
+
+<p>
+  An expression of type array may be assigned to a variable of type
+  array if the rank (number of dimensions) and dimension values are
+  compatible and they have the same element type.  A compile-time
+  error shell be issued if the ranks are not compatible.  A
+  compile-time error shall be issued if the dimensions are const
+  expressions and unequal.  If the dimensions are non-const and
+  unequal, a runtime error shall be occur.
+</p>
+
+<p>
+  A formal parameter of type array may use
+  <code>*</code>
+  for its dimension(s).
+  The variable will take on the dimensions of its argument.
+  Rank must be compatible.
+  The parameter and argument must have the
+  same rank and base type.
+</p>
+
+<p>
+  The dimensions of an array must be of type
+  <code>int32</code>.
+</p>
+
+<p>
+  Array indexing begins at 0.
+</p>
+
+<p>
+  If an array is subscripted by an out-of-range index value, a runtime
+  error shall occur.
+</p>
+
+
+<h3>Strings</h3>
+
+<p>
+  String literals may be used only in
+  assignment to
+  <code>byte</code>
+  arrays and in print statements.
+</p>
+
+<p>
+  If a string literal being assigned to an array is shorter than the
+  array, the array shall be zero
+  (<code>NUL</code>-byte)
+  filled.
+</p>
+
+<p>
+  If the literal
+  is longer than the array
+  the string will be truncated.
+  Furthermore if the size of the array is given by a const expression,
+  a compile-time warning shall be issued.
+</p>
+
+
+<h2>Print Statements</h2>
+
+<p>
+  If the expression of a print statement is of type
+  <code>byte</code>,
+  the byte value shall be sent to standard output, including
+  <code>NUL</code>
+  values.
+</p>
+
+<p>
+  When printing an array of type
+  <code>byte</code>
+  (or string literal),
+  each character in the array up to but excluding the first
+  <code>NUL</code>
+  byte shall be printed.
+</p>
+
+<p>
+  If the expression is of type
+  <code>int32</code>
+  or
+  <code>float64</code>,
+  the string representation of the value shall be printed.
+</p>
+
+<p>
+  Arrays of type other than
+  <code>byte</code>
+  shall be printed as the elements of the array separated by a single
+  space.
+</p>
+
+<p>
+  Records shall be printed as the value of each field separated by a
+  single space.
+</p>
+
+
+<h2>Function Declarations</h2>
+
+<p>
+  A function definition introduces a new lexical scope.  All variables
+  and functions in the outer lexical scopes are visible within the
+  function.  In particular, when two functions are defined in the
+  same lexical scope, either one may call the other.
+</p>
+
+<p>
+  Formal parameters declared
+  <code>var</code>
+  shall be passed by reference.
+  Otherwise, parameters shall be passed by value.
+</p>
+
+<p>
+  If a formal parameter is assigned a default value, all parameters to
+  its right must also have default values.  The parameter takes on the
+  type of the default value expression.
+</p>
+
+<p>
+  Default values shall be evaluated in the lexical scope immediately
+  enclosing the function.  The expression is evaluated at the time the
+  function is called if no argument is supplied.
+</p>
+
+
+<h2>Variable Declarations</h2>
+
+<p>
+  A variable declared
+  <code>const</code>
+  may not be assigned to except in its declaration statement.
+</p>
+
+<p>
+  If a variable is declared by assignment, the type of the variable
+  shall be the type of the expression on the right-hand side of the
+  assignment, and the variable shall be initialized with the value of
+  the expression.
+</p>
+
+
+<h2>Block Statements</h2>
+
+<p>
+  Each block statement introduces a new lexical scope.
+</p>
+
+<p>
+  Formal parameters have the same scope as the function body.
+</p>
+
+
+<h2>Scope</h2>
+
+<p>
+  Declaring a name in a scope temporarily masks (hides) entities of the
+  same name from outer scopes.  Otherwise,
+  types, functions, and variable in the current and outer lexical
+  scopes are visible.
+</p>
+
+<p>
+  A compile-time error shall be issued if the same name is declared
+  more than once in the same scope.
+</p>
+
+
+<h2>Expressions</h2>
+
+<p>
+  A
+  <em>const-expression</em>
+  is an expression whose operands are literals and/or
+  variables declared
+  <code>const</code>
+  <em>and</em>
+  are initialized by
+  <em>const-expression</em>s.
+</p>
+
+<p>
+  A compile-time error shall be issued if the operand to a bitwise or
+  boolean operator is of floating-point type.
+</p>
+
+
+<h2>Appendix: Reserved Words</h2>
+
+<ul>
+  <li>
+    <code>byte</code>
+  </li>
+  <li>
+    <code>const</code>
+  </li>
+  <li>
+    <code>else</code>
+  </li>
+  <li>
+    <code>end</code>
+  </li>
+  <li>
+    <code>exit</code>
+  </li>
+  <li>
+    <code>float64</code>
+  </li>
+  <li>
+    <code>for</code>
+  </li>
+  <li>
+    <code>function</code>
+  </li>
+  <li>
+    <code>if</code>
+  </li>
+  <li>
+    <code>int32</code>
+  </li>
+  <li>
+    <code>print</code>
+  </li>
+  <li>
+    <code>record</code>
+  </li>
+  <li>
+    <code>ref</code>
+  </li>
+  <li>
+    <code>return</code>
+  </li>
+  <li>
+    <code>static</code>
+  </li>
+  <li>
+    <code>type</code>
+  </li>
+  <li>
+    <code>var</code>
+  </li>
+  <li>
+    <code>while</code>
+  </li>
+</ul>
+
+
+
+
+
+
+<div class="menu">
+  <p>
+    <a href="http://courses.washington.edu/css448/bernstein/index.html">Home</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/syllabus.html">Syllabus</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/lectures/index.html">Lecture Notes</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/project/index.html">Assignments</a>
+    |
+    <a href="http://www.washington.edu/online/privacy" target="_blank">Privacy Policy</a>
+    |
+    <a href="http://www.washington.edu/online/terms" target="_blank">Terms of Use</a>
+  </p>
+</div>
+
+</em></em></body></html>

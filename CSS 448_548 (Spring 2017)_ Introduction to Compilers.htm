@@ -1,0 +1,633 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0065)http://courses.washington.edu/css448/bernstein/project/index.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>CSS 448/548 (Spring 2017): Introduction to Compilers</title>
+  
+  <meta http-equiv="last-modified" content="2017-04-16T11:21:54.928536">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+  <meta name="copyright" content="© 2013-2017 Systems Deployment, LLC">
+  <link rel="stylesheet" type="text/css" href="./CSS 448_548 (Spring 2017)_ Introduction to Compilers_files/css448.css">
+  <link rel="icon" type="image/png" href="http://courses.washington.edu/css448/bernstein/project/systems-deployment-favicon.png">
+</head>
+
+<body>
+
+<a name="top"></a>
+
+  <div class="logo">
+    <a href="http://www.uwb.edu/css" target="_blank">
+      <img src="./CSS 448_548 (Spring 2017)_ Introduction to Compilers_files/csslogo.jpg" alt="UWB and UW Seal" title="University of Washington | Bothell">
+    </a>
+  </div>
+  <hr class="logo">
+<div class="menu">
+  <p>
+    <a href="http://courses.washington.edu/css448/bernstein/index.html">Home</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/syllabus.html">Syllabus</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/lectures/index.html">Lecture Notes</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/project/index.html">Assignments</a>
+    |
+    <a href="http://www.washington.edu/online/privacy" target="_blank">Privacy Policy</a>
+    |
+    <a href="http://www.washington.edu/online/terms" target="_blank">Terms of Use</a>
+  </p>
+</div>
+
+
+<h1>CSS 448 Project</h1>
+
+<p>
+  Implement a translator for the newly-defined
+  <a href="http://courses.washington.edu/css448/bernstein/project/language-spec.html">CSS448 Programming Language</a>.
+  The target will be the
+  <code>CSS448 Virtual Machine</code>,
+  a stack-based intermediate-level representation.
+  An assembler/interpreter for the VM has been implemented in
+  <a href="http://courses.washington.edu/css448/bernstein/project/src/interpreter/interpreter.py">interpreter.py</a><a name="text_1"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#footnote_1" class="footnote_link"><sup class="footnote">1</sup></a>.
+</p>
+
+<p>
+  The project may be completed individually or in groups of two or
+  three.  Make your choice by Thursday, April 6 and let your
+  instructor know who is on your team.  Choose wisely because your
+  fate will be inextricably linked to your partner(s).  If a partner
+  lets you down, you will have to shoulder the extra burden while the
+  partner gets a free ride.  This shall not be the instructor's
+  problem.
+</p>
+
+<p>
+  Turn in your project using
+  <a href="https://canvas.uw.edu/courses/1151901" target="_blank">Canvas</a>.
+  Submit a single compressed
+  <code>tar</code>
+  or
+  <code>zip</code>
+  archive containing all source code and sample input &amp; output files.
+  Include a
+  <code>README</code>
+  file containing any relevant notes and discussion, plus
+  <code>BUILD</code>
+  and
+  <code>RUN</code>
+  scripts that compile the sources and run your tests.
+  Do not include compiled executables or large data files.
+</p>
+
+<p>
+  The project and intermediate milestones should be submitted by 11:30
+  pm on the due date. Only one submission per team.
+</p>
+
+<p>
+  Milestones will be graded on a pass/fail basis.  Passing a milestone
+  means that you are substantially on the right track, but not
+  necessarily that the component is complete or ready for final
+  submission.
+  It is likely that you will have to do some reworking or refactoring
+  of code written in previous
+  milestones<a name="text_3"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#footnote_3" class="footnote_link"><sup class="footnote">3</sup></a>.
+</p>
+
+<p>
+  The milestones account for a relatively small portion of the project
+  grade, so missing any or all milestone will not be
+  intrinsically fatal.
+  Don't panic.
+</p>
+
+<p>
+  <em>But</em>,
+  if you do miss milestone(s), especially the first or second ones,
+  do
+  <em>carefully</em>
+  consider the reasons for the setback and
+  whether you have sufficient runway to catch up.
+  If you are considering dropping the class, seek the advice of
+  your humble professor.  At best, you'll find a workable path to
+  success; at worse you'll get a useful post-mortem.
+</p>
+
+<p>
+  Above all, it is imperative that you make steady progress over the
+  course of the quarter.  Leaving things until the last minute and
+  trying to do an all-nighter is a recipe for abject disaster.  Later
+  milestones depend on the prior ones: if you let yourself fall
+  behind, you will have difficulty catching up.
+</p>
+
+<p>
+  The project is to be implemented in C++ or
+  Java<a name="text_4"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#footnote_4" class="footnote_link"><sup class="footnote">4</sup></a>.
+  You may use the
+  full power of the language and the standard library
+  <em>except</em>
+  the regular expression package.
+  Be particularly careful with your string handling to avoid
+  introducing unnecessary
+  <em>inefficiencies</em>
+  into the
+  implementation.
+  Do
+  <em>not</em>
+  use compiler generator tools such as
+  <code>bison</code>
+  (<code>yacc</code>)
+  or
+  <code>ANTLR</code>.
+</p>
+
+<p>
+  Use whatever development tools &amp; environments you prefer, but
+  the project must be runnable on the machines in the Linux lab
+  (UW1-320).  The project must include scripts to automatically build,
+  run and test your implementation.  Do the final testing on a Linux
+  machine.  There are a few subtle differences between the toolsets
+  under *BSD (including Mac) and Linux.  The assignments will be
+  graded on the instructor's Linux laptop, but any subtle conflicts or
+  incompatabilities will be resolved using the lab machines.
+</p>
+
+<p>
+  The project will be graded by considering the readability of
+  yoursource code, correctness of the generated output, completeness
+  of the implementation, algorithmic efficiency of the compilation
+  process, and the quality of your test data.  Quality of the
+  generated code will likely not be a
+  consideration<a name="text_5"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#footnote_5" class="footnote_link"><sup class="footnote">5</sup></a>.
+</p>
+
+
+<h2>Milestone 1: Lexical Analyzer</h2>
+
+<p>
+  Write a stand-alone program that reads an input stream and emits a
+  stream of token objects.  The output should be a text representation
+  of the tokens.
+</p>
+
+<p>
+  Since the output is, essentially, debug information, your token dump
+  routine should print to standard error.
+  Or better, give it a file parameter that defaults to standard error.
+  Your dump routines may become a useful debugging tool later on.
+</p>
+
+<p>
+  The tokens should include a kind value (typically an
+  <code>enum</code>),
+  source information (i.e. line &amp; column number) to provide useful
+  error messages, plus additional data depending on the token kind.
+</p>
+
+<p>
+  Simple tokens, such as operators and keywords, do not require
+  auxilliary data; identifiers and literals do.  You will have to
+  decide how to represent symbols and literals.
+</p>
+
+<p>
+  The program should be hand-coded.  Do not use a regular-expression
+  library or a lexical analyzer generator tool such as
+  <code>flex</code>
+  (<code>lex</code>),
+  <code>ANTLR</code>,
+  or regular expressions.
+</p>
+
+<p>
+  Your lexer will probably have a main
+  <code>while</code>
+  loop and selection
+  (<code>switch</code>)
+  on the current input character.
+  Each case should process the particular token kind, possibly with
+  its own inner loop.
+</p>
+
+<p>
+  Your test data should include at least one of each token kind.
+</p>
+
+<p>
+  Example:
+</p>
+<div class="codebox"><code><pre>xyzzy&amp;&amp;&amp;&amp;&amp;plugh/*elbereth*/3.14
+</pre></code></div>
+<p>
+  should produce ouput such as
+</p>
+<div class="codebox"><code><pre>[1, 1] IDENTIFIER (xyzzy)
+[1, 6] LOGICAL_AND
+[1, 8] LOGICAL_AND
+[1, 10] BITWISE_AND
+[1, 11] IDENTIFIER (plugh)
+[1, 16] FLOAT_LITERAL (3.14)
+</pre></code></div>
+<p>
+  or
+</p>
+<div class="codebox"><code><pre>IDENTIFIER [1, 1] (xyzzy)
+LOGICAL_AND [1, 6]
+LOGICAL_AND [1, 8]
+BITWISE_AND [1, 10]
+IDENTIFIER [1, 11] (plugh)
+FLOAT_LITERAL [1, 16] (3.14)
+</pre></code></div>
+
+
+<h2>Milestone 2: Parser</h2>
+
+<p>
+  Build the abstract syntax tree using recursive descent.  You may
+  have to modify the grammar to make it workable (i.e. eliminate any
+  left recursions).  Your program should include reporting of syntax
+  errors and should attempt reasonable error recovery.
+</p>
+<p>
+  Output should be a text representation of the AST.
+</p>
+
+<p>
+  For example, this test input
+</p>
+<div class="codebox"><code><pre>function fib1(n int32) int32 {
+  var curr = 1;
+  var prev = 0;
+  while ((n = n - 1) &gt; 0) {
+    var swap = curr;
+    prev = curr;
+    curr = prev + swap;
+  }
+  return curr;
+}
+
+print "n\tfib(n)\n";
+var x int32;
+for (x = 0; x &lt; 10; x = x + 1) {
+  print x;
+  print '\t';
+  var result = fib1(x);
+  print result;
+  print '\n';
+}
+
+</pre></code></div>
+<p>
+  should produce output something like this:
+</p>
+<div class="codebox"><code><pre>root node 0x1cf3030
+ (0, 0) 0x1cf3030 list
++--- (1, 14) 0x1cf9af0 function declaration
++---+--- name
++---+---+--- (1, 14) 0x1cf9b90 symbol: fib1 (function) defined at: 0x1cf9af0
++---+--- parameters
++---+---+--- (0, 0) 0x1cf8350 list
++---+---+---+--- (1, 16) 0x1cf81d0 variable declaration
++---+---+---+---+--- name
++---+---+---+---+---+--- (1, 16) 0x1cf8270 symbol: n (variable) defined at: 0x1cf81d0
++---+---+---+---+--- type
++---+---+---+---+---+--- (1, 22) 0x1cf82e0 type: int32
++---+---+---+---+--- initializer
++---+--- return type
++---+---+--- (1, 29) 0x1cf83c0 type: int32
++---+--- body
++---+---+--- (0, 0) 0x1cf8450 list
++---+---+---+--- (2, 42) 0x1cf8500 variable declaration
++---+---+---+---+--- name
++---+---+---+---+---+--- (2, 42) 0x1cf85a0 symbol: curr (variable) defined at: 0x1cf8500
++---+---+---+---+--- type
++---+---+---+---+--- initializer
++---+---+---+---+---+--- (0, 0) 0x1cf8630 int32 0
++---+---+---+--- (3, 58) 0x1cf8700 variable declaration
++---+---+---+---+--- name
++---+---+---+---+---+--- (3, 58) 0x1cf87a0 symbol: prev (variable) defined at: 0x1cf8700
++---+---+---+---+--- type
++---+---+---+---+--- initializer
++---+---+---+---+---+--- (0, 0) 0x1cf8830 int32 0
++---+---+---+--- (4, 71) 0x1cf98c0 while statement
++---+---+---+---+--- test
++---+---+---+---+---+--- (4, 86) 0x1cf8d30 greater than
++---+---+---+---+---+---+---+--- (4, 77) 0x1cf8c30 assign
++---+---+---+---+---+---+---+---+---+--- (4, 75) 0x1cf8960 variable
++---+---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+---+--- (4, 75) 0x1cf8a00 symbol: n (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+---+---+---+---+---+---+--- (4, 81) 0x1cf8be0 subtract
++---+---+---+---+---+---+---+---+---+---+---+--- (4, 79) 0x1cf8ab0 variable
++---+---+---+---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+---+---+---+--- (4, 79) 0x1cf8b00 symbol: n (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+---+---+---+---+---+---+---+---+--- (0, 0) 0x1cf8b70 int32 0
++---+---+---+---+---+---+---+--- (0, 0) 0x1cf8cc0 int32 0
++---+---+---+---+--- body
++---+---+---+---+---+--- (0, 0) 0x1cf8dc0 list
++---+---+---+---+---+---+--- (5, 104) 0x1cf8e70 variable declaration
++---+---+---+---+---+---+---+--- name
++---+---+---+---+---+---+---+---+--- (5, 104) 0x1cf8f10 symbol: swap (variable) defined at: 0x1cf8e70
++---+---+---+---+---+---+---+--- type
++---+---+---+---+---+---+---+--- initializer
++---+---+---+---+---+---+---+---+--- (5, 111) 0x1cf8fe0 variable
++---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+--- (5, 111) 0x1cf9080 symbol: curr (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+---+---+---+--- (6, 123) 0x1cf93c0 expression statement
++---+---+---+---+---+---+---+--- (6, 123) 0x1cf9370 assign
++---+---+---+---+---+---+---+---+---+--- (6, 121) 0x1cf9130 variable
++---+---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+---+--- (6, 121) 0x1cf91d0 symbol: prev (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+---+---+---+---+---+---+--- (6, 128) 0x1cf9280 variable
++---+---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+---+--- (6, 128) 0x1cf9320 symbol: curr (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+---+---+---+--- (7, 140) 0x1cf9850 expression statement
++---+---+---+---+---+---+---+--- (7, 140) 0x1cf9800 assign
++---+---+---+---+---+---+---+---+---+--- (7, 138) 0x1cf9470 variable
++---+---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+---+--- (7, 138) 0x1cf94c0 symbol: curr (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+---+---+---+---+---+---+--- (7, 147) 0x1cf97b0 add
++---+---+---+---+---+---+---+---+---+---+---+--- (7, 145) 0x1cf9570 variable
++---+---+---+---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+---+---+---+--- (7, 145) 0x1cf9610 symbol: prev (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+---+---+---+---+---+---+---+---+--- (7, 152) 0x1cf96c0 variable
++---+---+---+---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+---+---+---+--- (7, 152) 0x1cf9760 symbol: swap (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+--- (9, 166) 0x1cf9a80 return
++---+---+---+---+--- (9, 171) 0x1cf9990 variable
++---+---+---+---+---+--- symbol
++---+---+---+---+---+---+--- (9, 171) 0x1cf9a30 symbol: curr (variable) defined at: (nil)
++---+---+---+---+---+--- subscript
++---+---+---+---+---+--- fields
++--- (12, 181) 0x1cf9c90 print
++---+--- (0, 0) 0x1cf9c20 string &lt;&lt;(null)&gt;&gt;
++--- (13, 202) 0x1cf9d40 variable declaration
++---+--- name
++---+---+--- (13, 202) 0x1cf9de0 symbol: x (variable) defined at: 0x1cf9d40
++---+--- type
++---+---+--- (13, 208) 0x1cf9e50 type: int32
++---+--- initializer
++--- (14, 213) 0x1cfb0f0 for statement
++---+--- init
++---+---+--- (14, 218) 0x1cfa090 assign
++---+---+---+---+--- (14, 216) 0x1cf9f60 variable
++---+---+---+---+---+--- symbol
++---+---+---+---+---+---+--- (14, 216) 0x1cf9fb0 symbol: x (variable) defined at: 0x1cf9d40
++---+---+---+---+---+--- subscript
++---+---+---+---+---+--- fields
++---+---+---+---+--- (0, 0) 0x1cfa020 int32 0
++---+--- test
++---+---+--- (14, 225) 0x1cfa270 less than
++---+---+---+---+--- (14, 223) 0x1cfa140 variable
++---+---+---+---+---+--- symbol
++---+---+---+---+---+---+--- (14, 223) 0x1cfa190 symbol: x (variable) defined at: 0x1cf9d40
++---+---+---+---+---+--- subscript
++---+---+---+---+---+--- fields
++---+---+---+---+--- (0, 0) 0x1cfa200 int32 0
++---+--- incr
++---+---+--- (14, 233) 0x1cfa5a0 assign
++---+---+---+---+--- (14, 231) 0x1cfa320 variable
++---+---+---+---+---+--- symbol
++---+---+---+---+---+---+--- (14, 231) 0x1cfa370 symbol: x (variable) defined at: 0x1cf9d40
++---+---+---+---+---+--- subscript
++---+---+---+---+---+--- fields
++---+---+---+---+--- (14, 237) 0x1cfa550 add
++---+---+---+---+---+---+--- (14, 235) 0x1cfa420 variable
++---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+--- (14, 235) 0x1cfa470 symbol: x (variable) defined at: 0x1cf9d40
++---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+--- fields
++---+---+---+---+---+---+--- (0, 0) 0x1cfa4e0 int32 0
++---+--- body
++---+---+--- (0, 0) 0x1cfa630 list
++---+---+---+--- (15, 250) 0x1cfa7f0 print
++---+---+---+---+--- (15, 252) 0x1cfa700 variable
++---+---+---+---+---+--- symbol
++---+---+---+---+---+---+--- (15, 252) 0x1cfa7a0 symbol: x (variable) defined at: (nil)
++---+---+---+---+---+--- subscript
++---+---+---+---+---+--- fields
++---+---+---+--- (16, 261) 0x1cfa8f0 print
++---+---+---+---+--- (0, 0) 0x1cfa880 byte \t 0x20
++---+---+---+--- (17, 280) 0x1cfa9a0 variable declaration
++---+---+---+---+--- name
++---+---+---+---+---+--- (17, 280) 0x1cfaa40 symbol: result (variable) defined at: 0x1cfa9a0
++---+---+---+---+--- type
++---+---+---+---+--- initializer
++---+---+---+---+---+--- (17, 287) 0x1cfad00 function call
++---+---+---+---+---+---+--- function
++---+---+---+---+---+---+---+--- (17, 287) 0x1cfada0 symbol: fib1 (function) defined at: (nil)
++---+---+---+---+---+---+--- operands
++---+---+---+---+---+---+---+--- (0, 0) 0x1cfacb0 expression statement
++---+---+---+---+---+---+---+---+--- (0, 0) 0x1cfac60 list
++---+---+---+---+---+---+---+---+---+--- (17, 289) 0x1cfab70 variable
++---+---+---+---+---+---+---+---+---+---+--- symbol
++---+---+---+---+---+---+---+---+---+---+---+--- (17, 289) 0x1cfac10 symbol: x (variable) defined at: (nil)
++---+---+---+---+---+---+---+---+---+---+--- subscript
++---+---+---+---+---+---+---+---+---+---+--- fields
++---+---+---+--- (18, 299) 0x1cfaf80 print
++---+---+---+---+--- (18, 306) 0x1cfae90 variable
++---+---+---+---+---+--- symbol
++---+---+---+---+---+---+--- (18, 306) 0x1cfaf30 symbol: result (variable) defined at: (nil)
++---+---+---+---+---+--- subscript
++---+---+---+---+---+--- fields
++---+---+---+--- (19, 315) 0x1cfb080 print
++---+---+---+---+--- (0, 0) 0x1cfb010 byte '\n' 0x20
+</pre></code></div>
+
+<p>
+  Hint: if you are working in a team, consider separating the grammar
+  into statements and expressions to divide up the workload.
+  Add a pseudo token for expressions into the lexer (controlled by a
+  flag) for testing.
+</p>
+
+
+<h2>Milestone 3: Semantic Analyzer</h2>
+
+<p>
+  Walk the tree, decorating the nodes with semantic information.
+  Build the symbol table.
+  Validate variable references and type information.
+  Insert type conversion nodes as required.
+</p>
+
+
+<h2>Complete Project</h2>
+
+
+<p>
+  The final step is the code generator.  Walk the decorated AST and
+  emit the intermediate representation as a pseudo-assembler text
+  file.  The format should be readable by the
+  <a href="http://courses.washington.edu/css448/bernstein/project/src/interpreter/interpreter.py">interpreter.py</a>
+  program.
+</p>
+
+<p>
+  Provide sufficient test cases written in
+  <code>CSS448 Programming Language</code>
+</p>
+
+<p>
+  Your compiler will be tested against the instructor's
+  <a href="https://en.wikipedia.org/wiki/Test_suite" target="_blank">test suite</a>.
+</p>
+
+
+<h2>Readability</h2>
+
+<p>
+  Your code should be
+  <em>readable</em>,
+  which means
+  <em>understandable</em>
+  by someone reading the code.
+</p>
+
+<p>
+  Choose meaningful names that are neither too long nor too short.  Be
+  concise without being cryptic.
+</p>
+
+<p>
+  Comments should add value to the program, not just repeat what the
+  code does.  The code says what it is doing; comments should explain
+  why.
+  A good variable name can eliminate the need for multiple lines of
+  comments.
+</p>
+
+<p>
+  Decompose your program into smaller, understandable chunks.
+</p>
+
+<p>
+  Your humble instructor eshews arbitrary coding standards but
+  whatever style you chose, be consistent. Indentation, comments,
+  and decomposition should enhance the understandability of your
+  code.
+</p>
+
+<p>
+  This is
+  <em>really important</em>
+  not only because your instructor has to read your program, but also
+  because you and your partner(s) also have to be able to read and
+  understand your code.
+</p>
+
+
+<h2>Additional Advice</h2>
+
+<p>
+  This is a software engineering project: you will be writing a a
+  relatively large program of several thousand lines.  No-one knows
+  how to make large programs work.  Your only hope is to make small
+  programs and small piecemeal changes.  If you are always only a
+  dozen or so lines away from working code, you will never even need
+  to fire up the debugger.
+</p>
+
+<p>
+  Write small,
+  <a href="https://en.wikipedia.org/wiki/Modular_programming" target="_blank">modular components</a>
+  that can be
+  <a href="https://en.wikipedia.org/wiki/Unit_testing" target="_blank">tested separately</a>.
+</p>
+
+<p>
+  When you create a data structure,
+  <em>always</em>
+  write support routines that
+  let you dump the structure in a human-(programmer-)readable format.
+  Instrument your code for debugging.  If not using a logging
+  libarary, print log messages to standard error (they can be filtered
+  out with the appropriate incantation in the shell command that
+  invokes the program).
+</p>
+
+<p>
+  <a href="https://en.wikipedia.org/wiki/Test_automation" target="_blank">Automate your tests</a>
+  so that they are repeatable.
+  Consider using
+  <a href="https://en.wikipedia.org/wiki/Test-driven_development" target="_blank">test-driven development</a>.
+</p>
+
+<p>
+  Consider using a
+  <a href="https://en.wikipedia.org/wiki/Version_control" target="_blank">source code management system</a>
+  such as
+  <a href="https://en.wikipedia.org/wiki/Git" target="_blank">Git</a><a name="text_2"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#footnote_2" class="footnote_link"><sup class="footnote">2</sup></a>.
+</p>
+
+<p>
+  Embrace
+  <a href="https://en.wikipedia.org/wiki/Code_refactoring" target="_blank">refactoring</a>
+  as a Way of Life
+  to eliminate
+  <a href="https://en.wikipedia.org/wiki/Code_smell" target="_blank">malodorous code</a>.
+  Just as you were taught to draft and revise your
+  essays, you should draft and revise your programs until they are
+  clear and succinct.
+</p>
+
+<p>
+  If you are working in a team, consider doing systematic
+  <a href="https://en.wikipedia.org/wiki/Code_review" target="_blank">code reviews</a>
+  for each other
+  or even
+  <a href="https://en.wikipedia.org/wiki/Pair_programming" target="blank">pair programming</a>.
+</p>
+
+<p>
+  None of this is a hard requirement for this project, but they are
+  the tools that will make it possible for you to complete the
+  project.
+</p>
+
+
+
+<h2>Footnotes</h2>
+
+<ul class="footnote_list">
+
+<li class="footnote"><a name="footnote_1"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#text_1">1</a>&nbsp;&nbsp;Do <em>not</em> modify the script with the instructor's permission.  It was dashed off quickly, so there may be revisions to follow, but your compiler output must work on the instructor's version of the VM.</li>
+<li class="footnote"><a name="footnote_2"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#text_2">2</a>&nbsp;&nbsp;Please do <em>not</em> use github or similar open source sites.  Give next year's class a chance to implement their version.</li>
+<li class="footnote"><a name="footnote_3"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#text_3">3</a>&nbsp;&nbsp;Welcome to the wonderful world of software engineering. If you haven't already had the pleasure, you should find that it will be far easier to modify working code than it was to get the code working in the first place. </li>
+<li class="footnote"><a name="footnote_4"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#text_4">4</a>&nbsp;&nbsp;A C++ solution can be more concise, readable, <em>and</em> efficient than Java but it will be your choice.</li>
+<li class="footnote"><a name="footnote_5"></a><a href="http://courses.washington.edu/css448/bernstein/project/index.html#text_5">5</a>&nbsp;&nbsp;Optimization is usually the subject matter of a second, graduate-level compiler course.</li>
+</ul>
+
+
+<div class="menu">
+  <p>
+    <a href="http://courses.washington.edu/css448/bernstein/index.html">Home</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/syllabus.html">Syllabus</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/lectures/index.html">Lecture Notes</a>
+    |
+    <a href="http://courses.washington.edu/css448/bernstein/project/index.html">Assignments</a>
+    |
+    <a href="http://www.washington.edu/online/privacy" target="_blank">Privacy Policy</a>
+    |
+    <a href="http://www.washington.edu/online/terms" target="_blank">Terms of Use</a>
+  </p>
+</div>
+
+
+</body></html>
