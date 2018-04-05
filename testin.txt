@@ -1,4 +1,3 @@
-
 var a record b byte, c int32, d record f int32 end end;
 
 var john int32;
