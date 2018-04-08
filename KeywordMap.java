@@ -10,17 +10,19 @@
  * @author Destiny Boyer
  * @author John Zoeller
  * @version 1.0
+ * @todo : redo map initialization
  *
  */
 
 //package tokens;
+
 
 import java.util.HashMap;
 import java.util.Map;
 
 public final class KeywordMap {
 	public static Map<String, String> keywords = 
-	new HashMap<String, String>(){{
+	new HashMap<String, String>() {{
 
         	put("byte", "KEYWORD_BYTE");
                 put("const", "KEYWORD_CONST");

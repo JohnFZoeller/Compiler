@@ -15,14 +15,14 @@ public class Main{
 
 		printLexer(iter);
 
-		SyntaxParser par = new SyntaxParser(lexer);
+		//SyntaxParser par = new SyntaxParser(lexer);
 		//mainTable contains the root GlobalScope, which is the bottom of the stack
 		//of each of its childrens scope stacks : Page 134, 146
 
-		SymbolTable mainTable = new SymbolTable();	//move this?
+		//SymbolTable mainTable = new SymbolTable();	//move this?
 
-		par.parse();								//create the tree structure
-		par.decorate(mainTable);					//walk it
+		//par.parse();								//create the tree structure
+		//par.decorate(mainTable);					//walk it
 	}
 
 	private static void printLexer(Iterator<Token> iter) {
@@ -31,11 +31,9 @@ public class Main{
 		while(iter.hasNext()){
 		  	temp = iter.next();
 
-		 	if(temp != null)
-		  		System.out.println(temp.getTokenType() + "    " + temp.getName());
+		 	if(temp != null) System.out.println(temp.toString());
 		}
 
 		System.out.println("\n DONE LEXING");
-		System.exit(0);
 	}
 }

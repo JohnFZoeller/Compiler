@@ -1,7 +1,7 @@
 public class StringIdentifier extends Token {
 
 	public StringIdentifier(String s, int r, int c){
-		super("StringIdentifier", r, c);
+		super(s, r, c);
 		setName(s);
 		setVal(s);
 	}
