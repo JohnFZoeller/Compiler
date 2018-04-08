@@ -25,9 +25,9 @@ class Lex implements Iterable<Token> {
 	private OperatorMap opMap;										//language-specific Operators Map
 	private KeywordMap kMap;										//language-specific Keyword Map
 	private int col = 0, row = 1;									//track row and column of file
-	private char currentChar = ' ', nextChar = ' ';					//track characters from reader
+	private char currChar = ' ', nextChar = ' ';					//track characters from reader
 	private boolean isKeyword = false;								//for digit / string eater
-	private boolean processPending = false;							//unfinished this.currentChar processing
+	private boolean processPending = false;							//unfinished this.currChar processing
 	private boolean readOk = true;									//reader should read() new char
 
 	private boolean leftOver = false;
@@ -62,6 +62,7 @@ class Lex implements Iterable<Token> {
 	private Token getNextT() throws IOException{
 		Token returnToken = null;						//return Token variable
 		int column = col, tempCol = col;
+		String op;
 
 		if(processPending == true) {					//if true then a digit char must be processed
 			returnToken = createDigit();
@@ -70,36 +71,33 @@ class Lex implements Iterable<Token> {
 
 	      	readOk = true;								//can now keep reading
 	      	
-	      	while(isEscapeChar()) parseEscape();		//should be after comment check 
+	      	while(isEscapeChar()) parseEscape();		//after comment check?
 	      
-	      	if(this.currentChar == '/') {				//possible comment
-		      	returnToken = commentCheck();			//token = next char after comment
+	      	if(this.currChar == '/') {					//possible comment
+		      	returnToken = commentCheck();			//token = char after comment
 
 		      	if(returnToken != null) {				//thus not a comment
-		      		return returnToken;					//returning a BACKSLASH operator
+		      		return returnToken;					//returning a BACKSLASH
 		      	} //else : comment parsed
 	      	}
 
-	      	if(opMap.operators.containsKey(String.valueOf(this.currentChar))) {	//cur in opMap?
+	      	if(opMap.operators.containsKey(op = String.valueOf(this.currChar))) {
 	      		tempCol = col;
 
 	      		if(isSpecialOperator()) {
-	      			if(col == 0) {
-	      				tempCol++;
-	      				col++;
-	      			}
-	      			return new Op(opMap.operators.get(checkOperator()), row, tempCol);
+	      			if(col == 0) { tempCol++; col++; }
+
+	      			return new Op(opMap.operators.get(doubleOp()), row, tempCol);
 	      		} else {
-	      			return new Op(opMap.operators.get(String.valueOf(this.currentChar)), row, tempCol);
+	      			return new Op(opMap.operators.get(op), row, tempCol);
 	      		}
-	      	} else if(Character.isDigit(this.currentChar)) {				//checks if this.currentChar isDigit
-	      		returnToken = createDigit();					//creates digit identifier
-	      	} else if(Character.isLetter(this.currentChar)) {		//checks if this.currentChar isLetter
+	      	} else if(Character.isDigit(this.currChar)) {
+	      		returnToken = createDigit();					//creates digitID
+	      	} else if(Character.isLetter(this.currChar)) {
 	      		returnToken = createStringIdentifier();			//either stringIdentifier or keyword
-			} else if(this.currentChar == '"' || this.currentChar == '\'')	{
+			} else if(this.currChar == '"' || this.currChar == '\'')	{
 				returnToken = createStringIdentifier();
 			}
-
 		}
 
 		/* SPECIAL CASE
@@ -108,31 +106,28 @@ class Lex implements Iterable<Token> {
 		  eaten and lost by accident. Thus, if createDigit() has just been
 		 called (meaning readOk is false), and reader.ready() is false,
 		 and the last character of the reader stream is a semicolon...
-		  we must process that semicolon.  
+		  we must process that semicolon. reader.mark(x) reader.reset 
 		*/
-		if(!reader.ready() && !readOk && this.currentChar == ';'){
-			leftOver = true;
-			lastRow = row;
-			lastCol = col;
+		if(!reader.ready() && !readOk && this.currChar == ';'){
+			leftOver = true; lastRow = row; lastCol = col;
 		}
 
 		return returnToken;
 	}
 
 	private void readNextChar() throws IOException{
-		this.currentChar = (char)this.reader.read();
+		this.currChar = (char)this.reader.read();
 		increaseColumn(1);
 	}
 
 	/**
-	*
-	* <h1>checkOperator()</h1>
+	* <h1>doubleOp()</h1>
 	*
 	* Method reads a new character from the BufferedReader and checks to see if
-	* this.currentChar + nextChar are one of the two character operators in the Operators
-	* map. Returns a string equal to the two character operator if the map lookup
-	* is successful, original operator otherwise. If the two character operator is not
-	* in the operators map, then the readOk is set to false, indicating that this.currentChar
+	* currChar + next are one of the two character operators in the Operators
+	* map. Returns a string to the two character operator if the map lookup
+	* is successful, original operator otherwise. If two character op is not
+	* in the operators map, then the readOk is set to false, thus currChar
 	* must be processed before reading a new character from the BufferedReader.
 	* 
 	* @return String
@@ -140,34 +135,33 @@ class Lex implements Iterable<Token> {
 	* @author Destiny Boyer
 	* @author John Zoeller
 	* @version %G%
-	*
+	* @todo eliminate next char replace with last char
 	*/
-	private String checkOperator() throws IOException {
-		nextChar = (char)reader.read();			//reads the nextChar from the BufferedReader
-		increaseColumn(1);
-		String retVal = "";									//string return value
-		String lookup = Character.toString(this.currentChar) + 	//string to lookup = this.currentChar + nextChar
-						Character.toString(nextChar);
+	private String doubleOp() throws IOException {
+		col++;
+		this.nextChar = (char)this.reader.read();		//reads the nextChar
+		String retVal = "";								//string return val
+		String lookup = String.valueOf(this.currChar) + //doubleOperator
+						String.valueOf(this.nextChar);
 
-		if(opMap.operators.get(lookup) != null) {			//checks if lookup is in the Operators Map
-			retVal = lookup;								//sets retVal to lookup
-		} else {											//otherwise the operator was only one char
-			readOk = false;									//indicates this.currentChar  to be processed
-			retVal = Character.toString(this.currentChar);		//retVal equal to operator
-			this.currentChar = nextChar;
+		if(opMap.operators.containsKey(lookup)) {		//lookup exists eg-> ==
+			retVal = lookup;							//sets retVal to lookup
+		} else {										//eg ->  =a
+			readOk = false;								//freeze input reader
+			retVal = String.valueOf(this.currChar);		//retVal = singleOp
+			this.currChar = this.nextChar;				//update currChar
 		}
-		nextChar = ' ';										//resets nextChar
+
+		nextChar = ' ';									//resets nextChar
 		return retVal;
 	}
 
 	/**
-	*
 	* <h1>isSpecialOperator()</h1>
 	*
-	* Method returns a boolean indicating whether this.currentChar matches any of the
-	* operators that have a special case. Special case is defined as an operator
-	* that may exist as a single character, or may be concatenated with another
-	* character to form a two character operator.
+	* Method returns a boolean indicating whether this.currChar matches any
+	* operators that may exist as a single character, or may be concatenated 
+	* with another character to form a two character operator.
 	* 
 	* @return isSpecial
 	* @author Destiny Boyer
@@ -175,16 +169,15 @@ class Lex implements Iterable<Token> {
 	* @version %G%
 	*
 	*/
-
 	private boolean isSpecialOperator() {
-		char c = this.currentChar;
+		char c = this.currChar;
 
 		return (c == '<' || c == '>' || c == '&' ||
 			c == '=' || c == '!' || c == '|');
 	}
 
 	private boolean isEscapeChar() throws IOException {
-		char c = this.currentChar;
+		char c = this.currChar;
 
 		return (c == ' ' || c == '\n' || c == '\t' || c == '\r');
 	}
@@ -198,7 +191,7 @@ class Lex implements Iterable<Token> {
 	* @version %G%
 	*/
 	private void parseEscape() throws IOException {
-		char c = this.currentChar;
+		char c = this.currChar;
 		int tabW = (!this.isWin) ? 8 : 4;
 
 		switch(c) {
@@ -211,15 +204,15 @@ class Lex implements Iterable<Token> {
 							this.col++; break;
 				default:	break; }
 
-		this.currentChar = (char)this.reader.read();
+		this.currChar = (char)this.reader.read();
 	}
 
 	/**
 	*
 	* <h1>commentCheck()</h1>
 	*
-	* If a comment found: return null, this.currentChar will be correct
-	* If just a backslash: return a backslash, this.currentChar wont be correct
+	* If a comment found: return null, this.currChar will be correct
+	* If just a backslash: return a backslash, this.currChar wont be correct
 	*	Created a bool to fix this problem. The backslash will return from
 	*	getNextT(), thus completing the current iteration. The next iteration
 	*	will not be allowed to read a new character because this function
@@ -233,12 +226,12 @@ class Lex implements Iterable<Token> {
 	*
 	*/
 	private Token commentCheck() throws IOException {
-		this.currentChar = (char)this.reader.read();
+		this.currChar = (char)this.reader.read();
 
-	    if(this.currentChar == '*') {
+	    if(this.currChar == '*') {
 			parseBlockComment();									
 	    	return null;	
-	    } else if(this.currentChar == '/') {	
+	    } else if(this.currChar == '/') {	
 	    	parseLineComment();
 	    	return null;		
 	    } else { 											  //no comment	
@@ -249,8 +242,8 @@ class Lex implements Iterable<Token> {
 
 	/**
 	* <h1>comment()</h1>
-	* Preconditions: this.currentChar = '/', nextChar = '*'
-	* Postconditions: this.currentChar = newCurrent; nextChar = ' ';
+	* Preconditions: this.currChar = '/', nextChar = '*'
+	* Postconditions: this.currChar = newCurrent; nextChar = ' ';
 	* 
 	* @return Token
 	* @throws IOException
@@ -263,28 +256,28 @@ class Lex implements Iterable<Token> {
 		char last = 'i';									//temp valu
 
 		while(this.reader.ready()) {						//until a return or EOF
-			this.currentChar = (char)this.reader.read();	//get char
+			this.currChar = (char)this.reader.read();	//get char
 
-			if(this.currentChar == '/' && last == '*') {	//exit
+			if(this.currChar == '/' && last == '*') {	//exit
 				readNextChar();
 				return;										//done
 			}
 
 			while(isEscapeChar()) parseEscape();
 
-			last = this.currentChar;
+			last = this.currChar;
 		}
 	}
 
-	//Preconditions		:	this.currentChar == '/'
-	//Postconditions 	:   this.currentChar == the one after \n
+	//Preconditions		:	this.currChar == '/'
+	//Postconditions 	:   this.currChar == the one after \n
 	private void parseLineComment() throws IOException {
-		while(this.currentChar != '\n') {
-			this.currentChar = (char)this.reader.read();
+		while(this.currChar != '\n') {
+			this.currChar = (char)this.reader.read();
 			col++;
 		}
 
-		this.currentChar = (char)this.reader.read();
+		this.currChar = (char)this.reader.read();
 		col = 1; row++;
 	}
 
@@ -306,48 +299,49 @@ class Lex implements Iterable<Token> {
 	private Token createDigit() throws IOException {
 		int result, column = col;
 		double dResult;
-		String convert = "";									//final int to string value
+		String stringNum = "";									//final int to string value
 		boolean isInt = true;
 
 		if(processPending == true) {							//thus atleast the curChar isDigit
-			convert += this.currentChar;								//append this.currentChar bc its a digit
+			stringNum += this.currChar;								//append this.currChar bc its a digit
 			if(Character.isDigit(nextChar)) {					//check if nextChar is also a digit
-				convert += nextChar;							//if so append to convert
+				stringNum += nextChar;							//if so append to stringNum
 				nextChar = ' ';									//reset nextChar
 				readNextChar();										//increment col
 
-				while(Character.isDigit(this.currentChar)) {			//while digit
-					convert += this.currentChar;						//append char to convert
+				while(Character.isDigit(this.currChar)) {			//while digit
+					stringNum += this.currChar;						//append char to stringNum
 					readNextChar();								//increment col
-					if(this.currentChar == '.') {					//checks for decimal number
-						convert += this.currentChar;					//appends decimal to convert
+					if(this.currChar == '.') {					//checks for decimal number
+						stringNum += this.currChar;					//appends decimal to stringNum
 						readNextChar();
 						isInt = false;
 					}
 				}
 			} else {											//otherwise nextChar is not a digit
-				this.currentChar = nextChar;							//set this.currentChar to nextChar
+				this.currChar = nextChar;							//set this.currChar to nextChar
 				nextChar = ' ';									//reset nextChar
 			}
 			processPending = false;									//reset processPending
 		} else {
-			while(Character.isDigit(this.currentChar)) {				//while digit
-				convert += this.currentChar;							//append char to convert
+			while(Character.isDigit(this.currChar)) {				//while digit
+				stringNum += this.currChar;							//append char to stringNum
 				readNextChar();								//increment col
 
-				if(this.currentChar == '.') {					//checks for decimal number
-					convert += this.currentChar;					//appends decimal to convert
+				if(this.currChar == '.') {					//is decimal?
+					stringNum += this.currChar;				//appends decimal
 					readNextChar();
 					isInt = false;
 				}
 			}
 		}
+
 		if(isInt) {
-			result = Integer.parseInt(convert);
+			result = Integer.parseInt(stringNum);
 			readOk = false;
 			return new IntIdentifier(result, row, column);
 		} else {
-			dResult = Float.parseFloat(convert);
+			dResult = Float.parseFloat(stringNum);
 			readOk = false;
 			return new FloatIdentifier((float)dResult, row, column);
 		}
@@ -356,27 +350,27 @@ class Lex implements Iterable<Token> {
 	//JOHN: 
 	//		ADDED readOK = false if a new stringIdentifier is created
 	private Token createStringIdentifier() throws IOException {
-		String result = "" + this.currentChar + "";
+		String result = "" + this.currChar + "";
 		String possibleKeyword = "";
 		int tempCol = col;
 
 		if(col == 0)
 			tempCol++;
 
-		if(this.currentChar == '"'){
+		if(this.currChar == '"'){
 			do{
 				readNextChar();								//a, b, c
-				result += this.currentChar;						//"abc"
-			} while(this.currentChar != '"');
+				result += this.currChar;						//"abc"
+			} while(this.currChar != '"');
 
 			return new StringLiteral(result, row, tempCol);
 		}
 
-		if(this.currentChar == '\'') {
-			char cResult = this.currentChar;
+		if(this.currChar == '\'') {
+			char cResult = this.currChar;
 			readNextChar();
-			while (this.currentChar != '\'') {
-				cResult = this.currentChar;
+			while (this.currChar != '\'') {
+				cResult = this.currChar;
 				readNextChar();
 			}
 
@@ -386,9 +380,9 @@ class Lex implements Iterable<Token> {
 		readNextChar();
 
 
-		//upon exiting while loop this.currentChar will NOT be equal to a letter
-		while(Character.isLetter(this.currentChar)) {	//while this.currentChar is a letter
-			result += this.currentChar;					//append this.currentChar to result
+		//upon exiting while loop this.currChar will NOT be equal to a letter
+		while(Character.isLetter(this.currChar)) {	//while this.currChar is a letter
+			result += this.currChar;					//append this.currChar to result
 			readNextChar();							//increment col
 		}
 
@@ -397,22 +391,22 @@ class Lex implements Iterable<Token> {
 		//that are past the end of the string (result) IFF the first character after the end of
 		//the string is a digit.
 
-		if(Character.isDigit(this.currentChar)){			//checks if this.currentChar is a digit
+		if(Character.isDigit(this.currChar)){			//checks if this.currChar is a digit
 			possibleKeyword = result;				//sets possibleKeyword string to our result string						
 			nextChar = (char)reader.read();			//reads the nextChar from the BufferedReader
 			increaseColumn(1);								//increments col
-			//result += this.currentChar;
+			//result += this.currChar;
 
-			//KEYWORD CASE: both this.currentChar and nextChar are digits
-			//if true we must append this.currentChar and nextChar to possibleKeyword and check
+			//KEYWORD CASE: both this.currChar and nextChar are digits
+			//if true we must append this.currChar and nextChar to possibleKeyword and check
 			//to see if it matches any keys in the KeywordMap
 			if(Character.isDigit(nextChar)) {
-				possibleKeyword += this.currentChar;		//appends this.currentChar
+				possibleKeyword += this.currChar;		//appends this.currChar
 				possibleKeyword += nextChar;		//appends nextChar
 			}
 			else if(!Character.isDigit(nextChar)){	//covers fib1 case
-				result += this.currentChar;
-				this.currentChar = nextChar;
+				result += this.currChar;
+				this.currChar = nextChar;
 				nextChar = ' ';
 				readOk = false;
 				return new StringIdentifier(result, row, tempCol);
@@ -425,7 +419,7 @@ class Lex implements Iterable<Token> {
 				//readOk = false;
 				return new Keyword(possibleKeyword, kMap.keywords.get(possibleKeyword), row, tempCol);
 			} else {
-				processPending = true;		//indicates that we must process this.currentChar & nextChar
+				processPending = true;		//indicates that we must process this.currChar & nextChar
 				isKeyword = false;			//before reading new character from BufferedReader
 			}
 		}
