@@ -9,11 +9,11 @@ import java.io.*;
 
 class Lex implements Iterable<Token> { 
 
-	/************************************************************************************************
-	*																								*
- 	* 									Class data members											*
- 	*																								*
- 	************************************************************************************************/
+	/**************************************************************************
+	*
+ 	* 							Class data members
+ 	*	
+ 	***************************************************************************/
 
 	private String OSName = System.getProperty("os.name");			//stores OS name
 	private boolean isWin = OSName.startsWith("Windows");	//true if OS is Windows
@@ -24,28 +24,26 @@ class Lex implements Iterable<Token> {
 	private KeywordMap kMap;										//language-specific Keyword Map
 	private int col = 0, row = 1;									//track row and column of file
 	private char currChar = ' ', nextChar = ' ';					//track characters from reader
-	private boolean isKeyword = false;								//for digit / string eater
-	private boolean processPending = false;							//unfinished this.currChar processing
 	private boolean readOk = true;									//reader should read() new char
 
 	private boolean leftOver = false;
 	private int lastRow, lastCol;
 
 
-	/************************************************************************************************
-	*																								*
- 	* 										Private Methods											*
- 	*																								*
- 	************************************************************************************************/
+	/*************************************************************************
+	*
+ 	* 								Private Methods
+ 	*
+ 	**************************************************************************/
 
 	/**
 	*
 	* <h1>getNextT()</h1>
 	*
-	* getNextT() is the main processing method for the Lexical Analyzer. This method reads a
-	* Character from reader (BufferedReader) and processes the Character into a Token based on
-	* the Character's respective type. Returned Token's can be of type StringIdentifier,
-	* DigitIdentifier, Keyword, or Operator.
+	* getNextT() is the main processing method for the Lexical Analyzer. Reads a
+	* Character from reader and processes the Character into a Token based on
+	* the Character's respective type. Returned Token's can be of type
+	* DigitIdentifier, Keyword, or Operator, etc...
 	* 
 	* @return Token
 	* @throws IOException
@@ -54,9 +52,6 @@ class Lex implements Iterable<Token> {
 	* @version %G%
 	*
 	*/	
-
-
-	//JOHN: LINE 104, LINE 129
 	private Token getNextT() throws IOException{
 		Token returnToken = null;						//return Token variable
 		int column = col, tempCol = col;
@@ -280,7 +275,7 @@ class Lex implements Iterable<Token> {
 	/**
 	* <h1>createDigit()</h1>
 	*
-	* Method reads Characters from the BufferedReader until a non-digit  is encountered.
+	* Method reads Characters from the BufferedReader until a non-digit
 	* A new DigitIdentifier is then created and returned.
 	* 
 	* @return DigitIdentifier
@@ -302,15 +297,11 @@ class Lex implements Iterable<Token> {
 			readNextChar();
 
 			if(this.currChar == '.') {				//checks for decimal number
-				stringNum += this.currChar;			//appends decimal to stringNum
+				stringNum += this.currChar;			//appends decimal to stringN
 				readNextChar();						//prep for next iter
 				isInt = false;
 			}
 		}
-
-		//if(currChar == ';' && !reader.ready()) {
-		//	//
-		//}
 
 		this.readOk = false;
 
@@ -323,70 +314,49 @@ class Lex implements Iterable<Token> {
 		}
 	}
 
-	//JOHN: 
-	//		ADDED readOK = false if a new stringIdentifier is created
 	private Token createStringIdentifier() throws IOException {
 		String result = "" + this.currChar + "";
-		String possibleKeyword = "";
-		int tempCol = col;
+		String possibleKey = "", val = "";
 
-		if(col == 0) tempCol++;
-
-		if(this.currChar == '"'){
-			return createStringLiteral();
-
-		}
-
-		if(this.currChar == '\'') {
-			return createCharLiteral();
-		}
+		if(this.currChar == '"') return createStringLiteral();
+		if(this.currChar == '\'') return createCharLiteral();
 
 		readNextChar();
 
-		//upon exiting while loop this.currChar will NOT be equal to a letter
-		while(Character.isLetter(this.currChar)) {	//while this.currChar is a letter
-			result += this.currChar;					//append this.currChar to result
+		while(Character.isLetter(this.currChar)) {
+			result += this.currChar;				//append currChar to result
 			readNextChar();							//increment col
 		}
 
-		if(Character.isDigit(this.currChar)){		//checks if this.currChar is a digit
-			possibleKeyword = result;				//sets possibleKeyword to "result"					
-			this.nextChar = (char)reader.read();	//reads nextChar from BufferedReader
+		if(Character.isDigit(this.currChar)){		//eg a keyword = int32
+			possibleKey = result;					
+			this.nextChar = (char)reader.read();	//reads nextChar from reader
 			increaseColumn(1);
 
-			//KEYWORD CASE: both this.currChar and nextChar are digits
-			//if true we must append this.currChar and nextChar to possibleKeyword and check
-			//to see if it matches any keys in the KeywordMap
+			//currChar and nextChar are digits - append and check existence
 			if(Character.isDigit(this.nextChar)) {
-				possibleKeyword += this.currChar;		//appends this.currChar
-				possibleKeyword += this.nextChar;		//appends nextChar
+				possibleKey += this.currChar;	
+				possibleKey += this.nextChar;
+				this.nextChar = ' ';		
 
-				if(KeywordMap.keywords.containsKey(possibleKeyword)) {
-					isKeyword = true;
-					this.nextChar = ' ';
-					return new Keyword(possibleKeyword, kMap.keywords.get(possibleKeyword), row, tempCol);
-				} else {	
-					this.nextChar = ' ';					//john32 for instance. 
-					//this.processPending = true;	//indicates must process this.currChar & nextChar
-					this.isKeyword = false;		//before reading new character from BufferedReader
-					return new StringIdentifier(possibleKeyword, row, tempCol);
-				}
-			} else if(!Character.isDigit(this.nextChar)) {	//covers fib1 case
+				//sorry future John
+				if(!Objects.equals(null, val = kMap.keywords.get(possibleKey)))
+					return new Keyword(possibleKey, val, row, col);
+				return new StringIdentifier(possibleKey, row, col);
+			} else {
 				result += this.currChar;
 				this.currChar = nextChar;
 				nextChar = ' ';
 				readOk = false;
-				return new StringIdentifier(result, row, tempCol);
+				return new StringIdentifier(result, row, col);
 			}
 		}
 
-		//if there were no digits, result could still be a keyword
-		this.readOk = false;
+		this.readOk = false;		//no digits? result could still be a keyword
 
-		if(KeywordMap.keywords.containsKey(result)) {
-			return new Keyword(result, KeywordMap.keywords.get(result), row, tempCol);
-		} 
-		return new StringIdentifier(result, row, tempCol);
+		if(kMap.keywords.containsKey(result))
+			return new Keyword(result, kMap.keywords.get(result), row, col);
+		return new StringIdentifier(result, row, col);
 	}
 
 	private Token createStringLiteral() throws IOException {
