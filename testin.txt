@@ -1,6 +1,4 @@
-var a record b byte, c int32, d record f int32 end end;
 var john int32;
-var poop = 4;
-/* ads;fj*/
-//a;dsflkjasdjf	
-var some float64;
+var poop = 4324.111;
+var some32 float64;
+var j = 'p';

@@ -28,7 +28,7 @@ public class Main{
 	private static void printLexer(Iterator<Token> iter) {
 		Token temp;
 
-		while(iter.hasNext()){
+		while(iter.hasNext()) {
 		  	temp = iter.next();
 
 		 	if(temp != null) System.out.println(temp.toString());

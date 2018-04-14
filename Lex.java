@@ -1,9 +1,7 @@
 /**
- *
  * @author Destiny Boyer
  * @author John Zoeller
- * @version 1.0
- *
+ * @version 
  */
 
 import java.util.*;
@@ -64,40 +62,37 @@ class Lex implements Iterable<Token> {
 		int column = col, tempCol = col;
 		String op;
 
-		if(processPending == true) {					//if true then a digit char must be processed
-			returnToken = createDigit();
-		} else {
-			if(readOk) readNextChar();							
 
-	      	readOk = true;								//can now keep reading
-	      	
-	      	while(isEscapeChar()) parseEscape();		//after comment check?
-	      
-	      	if(this.currChar == '/') {					//possible comment
-		      	returnToken = commentCheck();			//token = char after comment
+		if(readOk) readNextChar();							
 
-		      	if(returnToken != null) {				//thus not a comment
-		      		return returnToken;					//returning a BACKSLASH
-		      	} //else : comment parsed
-	      	}
+      	readOk = true;								//can now keep reading
+      	
+      	while(isEscapeChar()) parseEscape();		//after comment check?
+      
+      	if(this.currChar == '/') {					//possible comment
+	      	returnToken = commentCheck();			//token = char after comment
 
-	      	if(opMap.operators.containsKey(op = String.valueOf(this.currChar))) {
-	      		tempCol = col;
+	      	if(returnToken != null) {				//thus not a comment
+	      		return returnToken;					//returning a BACKSLASH
+	      	} //else : comment parsed
+      	}
 
-	      		if(isSpecialOperator()) {
-	      			if(col == 0) { tempCol++; col++; }
+      	if(opMap.operators.containsKey(op = String.valueOf(this.currChar))) {
+      		tempCol = col;
 
-	      			return new Op(opMap.operators.get(doubleOp()), row, tempCol);
-	      		} else {
-	      			return new Op(opMap.operators.get(op), row, tempCol);
-	      		}
-	      	} else if(Character.isDigit(this.currChar)) {
-	      		returnToken = createDigit();					//creates digitID
-	      	} else if(Character.isLetter(this.currChar)) {
-	      		returnToken = createStringIdentifier();			//either stringIdentifier or keyword
-			} else if(this.currChar == '"' || this.currChar == '\'')	{
-				returnToken = createStringIdentifier();
-			}
+      		if(isSpecialOperator()) {
+      			if(col == 0) { tempCol++; col++; }
+
+      			return new Op(opMap.operators.get(doubleOp()), row, tempCol);
+      		} else {
+      			return new Op(opMap.operators.get(op), row, tempCol);
+      		}
+      	} else if(Character.isDigit(this.currChar)) {
+      		returnToken = createDigit();					//creates digitID
+      	} else if(Character.isLetter(this.currChar)) {
+      		returnToken = createStringIdentifier();			//stringId or keyword
+		} else if(this.currChar == '"' || this.currChar == '\'')	{
+			returnToken = createStringIdentifier();
 		}
 
 		/* SPECIAL CASE
@@ -109,7 +104,8 @@ class Lex implements Iterable<Token> {
 		  we must process that semicolon. reader.mark(x) reader.reset 
 		*/
 		if(!reader.ready() && !readOk && this.currChar == ';'){
-			leftOver = true; lastRow = row; lastCol = col;
+			//reader.mark(1);
+
 		}
 
 		return returnToken;
@@ -282,7 +278,6 @@ class Lex implements Iterable<Token> {
 	}
 
 	/**
-	*
 	* <h1>createDigit()</h1>
 	*
 	* Method reads Characters from the BufferedReader until a non-digit  is encountered.
@@ -299,50 +294,31 @@ class Lex implements Iterable<Token> {
 	private Token createDigit() throws IOException {
 		int result, column = col;
 		double dResult;
-		String stringNum = "";									//final int to string value
+		String stringNum = "";
 		boolean isInt = true;
 
-		if(processPending == true) {							//thus atleast the curChar isDigit
-			stringNum += this.currChar;								//append this.currChar bc its a digit
-			if(Character.isDigit(nextChar)) {					//check if nextChar is also a digit
-				stringNum += nextChar;							//if so append to stringNum
-				nextChar = ' ';									//reset nextChar
-				readNextChar();										//increment col
+		while(Character.isDigit(this.currChar)) {
+			stringNum += this.currChar;
+			readNextChar();
 
-				while(Character.isDigit(this.currChar)) {			//while digit
-					stringNum += this.currChar;						//append char to stringNum
-					readNextChar();								//increment col
-					if(this.currChar == '.') {					//checks for decimal number
-						stringNum += this.currChar;					//appends decimal to stringNum
-						readNextChar();
-						isInt = false;
-					}
-				}
-			} else {											//otherwise nextChar is not a digit
-				this.currChar = nextChar;							//set this.currChar to nextChar
-				nextChar = ' ';									//reset nextChar
-			}
-			processPending = false;									//reset processPending
-		} else {
-			while(Character.isDigit(this.currChar)) {				//while digit
-				stringNum += this.currChar;							//append char to stringNum
-				readNextChar();								//increment col
-
-				if(this.currChar == '.') {					//is decimal?
-					stringNum += this.currChar;				//appends decimal
-					readNextChar();
-					isInt = false;
-				}
+			if(this.currChar == '.') {				//checks for decimal number
+				stringNum += this.currChar;			//appends decimal to stringNum
+				readNextChar();						//prep for next iter
+				isInt = false;
 			}
 		}
 
+		//if(currChar == ';' && !reader.ready()) {
+		//	//
+		//}
+
+		this.readOk = false;
+
 		if(isInt) {
 			result = Integer.parseInt(stringNum);
-			readOk = false;
 			return new IntIdentifier(result, row, column);
 		} else {
 			dResult = Float.parseFloat(stringNum);
-			readOk = false;
 			return new FloatIdentifier((float)dResult, row, column);
 		}
 	}
@@ -354,31 +330,18 @@ class Lex implements Iterable<Token> {
 		String possibleKeyword = "";
 		int tempCol = col;
 
-		if(col == 0)
-			tempCol++;
+		if(col == 0) tempCol++;
 
 		if(this.currChar == '"'){
-			do{
-				readNextChar();								//a, b, c
-				result += this.currChar;						//"abc"
-			} while(this.currChar != '"');
+			return createStringLiteral();
 
-			return new StringLiteral(result, row, tempCol);
 		}
 
 		if(this.currChar == '\'') {
-			char cResult = this.currChar;
-			readNextChar();
-			while (this.currChar != '\'') {
-				cResult = this.currChar;
-				readNextChar();
-			}
-
-			return new CharLiteral(cResult, row, tempCol);
+			return createCharLiteral();
 		}
-		
-		readNextChar();
 
+		readNextChar();
 
 		//upon exiting while loop this.currChar will NOT be equal to a letter
 		while(Character.isLetter(this.currChar)) {	//while this.currChar is a letter
@@ -386,51 +349,69 @@ class Lex implements Iterable<Token> {
 			readNextChar();							//increment col
 		}
 
-		//code below checks the cases for keywords that contain both letters and numbers
-		//ex: int32, float64. Requires checking the two characters in the BufferedReader
-		//that are past the end of the string (result) IFF the first character after the end of
-		//the string is a digit.
-
-		if(Character.isDigit(this.currChar)){			//checks if this.currChar is a digit
-			possibleKeyword = result;				//sets possibleKeyword string to our result string						
-			nextChar = (char)reader.read();			//reads the nextChar from the BufferedReader
-			increaseColumn(1);								//increments col
-			//result += this.currChar;
+		if(Character.isDigit(this.currChar)){		//checks if this.currChar is a digit
+			possibleKeyword = result;				//sets possibleKeyword to "result"					
+			this.nextChar = (char)reader.read();	//reads nextChar from BufferedReader
+			increaseColumn(1);
 
 			//KEYWORD CASE: both this.currChar and nextChar are digits
 			//if true we must append this.currChar and nextChar to possibleKeyword and check
 			//to see if it matches any keys in the KeywordMap
-			if(Character.isDigit(nextChar)) {
+			if(Character.isDigit(this.nextChar)) {
 				possibleKeyword += this.currChar;		//appends this.currChar
-				possibleKeyword += nextChar;		//appends nextChar
-			}
-			else if(!Character.isDigit(nextChar)){	//covers fib1 case
+				possibleKeyword += this.nextChar;		//appends nextChar
+
+				if(KeywordMap.keywords.containsKey(possibleKeyword)) {
+					isKeyword = true;
+					this.nextChar = ' ';
+					return new Keyword(possibleKeyword, kMap.keywords.get(possibleKeyword), row, tempCol);
+				} else {	
+					this.nextChar = ' ';					//john32 for instance. 
+					//this.processPending = true;	//indicates must process this.currChar & nextChar
+					this.isKeyword = false;		//before reading new character from BufferedReader
+					return new StringIdentifier(possibleKeyword, row, tempCol);
+				}
+			} else if(!Character.isDigit(this.nextChar)) {	//covers fib1 case
 				result += this.currChar;
 				this.currChar = nextChar;
 				nextChar = ' ';
 				readOk = false;
 				return new StringIdentifier(result, row, tempCol);
 			}
-
-			//checks if the resulting string (possibleKeyword) matches a key in the KeywordMap
-			//if true then we must return a new Keyword rather than a new stringIdentifier
-			if(KeywordMap.keywords.containsKey(possibleKeyword)) {
-				isKeyword = true;
-				//readOk = false;
-				return new Keyword(possibleKeyword, kMap.keywords.get(possibleKeyword), row, tempCol);
-			} else {
-				processPending = true;		//indicates that we must process this.currChar & nextChar
-				isKeyword = false;			//before reading new character from BufferedReader
-			}
 		}
 
 		//if there were no digits, result could still be a keyword
+		this.readOk = false;
+
 		if(KeywordMap.keywords.containsKey(result)) {
-			readOk = false;
 			return new Keyword(result, KeywordMap.keywords.get(result), row, tempCol);
-		}
-		readOk = false;
+		} 
 		return new StringIdentifier(result, row, tempCol);
+	}
+
+	private Token createStringLiteral() throws IOException {
+		String result = "\"" + "";
+
+		do{
+			readNextChar();								//a, b, c
+			result += this.currChar;					//"abc"
+		} while(this.currChar != '"');
+
+		return new StringLiteral(result, this.row, this.col);
+	}
+
+	//@todo: 'asdfa' is obviously an invalid char.
+	//but this parser fails to recognize that
+	private Token createCharLiteral() throws IOException {
+		char cResult = this.currChar;
+
+		readNextChar();
+		while (this.currChar != '\'') {
+			cResult = this.currChar;
+			readNextChar();
+		}
+
+		return new CharLiteral(cResult, this.row, this.col);
 	}
 
 	//JOHN: changed to set to 0. 
