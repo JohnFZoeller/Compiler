@@ -15,16 +15,15 @@ class Lex implements Iterable<Token> {
  	*	
  	***************************************************************************/
 
-	private String OSName = System.getProperty("os.name");			//stores OS name
-	private boolean isWin = OSName.startsWith("Windows");	//true if OS is Windows
-	private boolean unixMachine = OSName.startsWith("Linux");		//true if OS is Unix
+	private String OSName = System.getProperty("os.name");
+	private boolean isWin = OSName.startsWith("Windows");
 
-	private Reader reader;											//BufferedStream reader
-	private OperatorMap opMap;										//language-specific Operators Map
-	private KeywordMap kMap;										//language-specific Keyword Map
-	private int col = 0, row = 1;									//track row and column of file
-	private char currChar = ' ', nextChar = ' ';					//track characters from reader
-	private boolean readOk = true;									//reader should read() new char
+	private Reader reader;
+	private OperatorMap opMap;
+	private KeywordMap kMap;
+	private int col = 0, row = 1;						//track row/col of file
+	private char currChar = ' ', nextChar = ' ';		//chars from reader
+	private boolean readOk = true;						//reader should read()
 
 	private boolean leftOver = false;
 	private int lastRow, lastCol;
