@@ -4,8 +4,12 @@
  * @version 
  */
 
-import java.util.*;
-import java.io.*;
+import java.io.Reader;
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.util.Iterator;
 
 class Lex implements Iterable<Token> { 
 
