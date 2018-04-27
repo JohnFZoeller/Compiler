@@ -51,13 +51,14 @@ class Lex implements Iterable<Token> {
 	* @version %G%
 	*
 	*/	
+	//I think this whole thing should be a switch statement
 	private Token getNextT() throws IOException{
 		Token returnToken = null;						//return Token variable
 		int column = col, tempCol = col;
 		String op;
+		char c;
 
-
-		if(readOk) readNextChar();							
+		if(readOk) readCurrChar();							
 
       	readOk = true;								//can now keep reading
       	
@@ -85,29 +86,25 @@ class Lex implements Iterable<Token> {
       		returnToken = createDigit();					//creates digitID
       	} else if(Character.isLetter(this.currChar)) {
       		returnToken = createStringIdentifier();			//stringId or keyword
-		} else if(this.currChar == '"' || this.currChar == '\'')	{
-			returnToken = createStringIdentifier();
-		}
-
-		/* SPECIAL CASE
-		 Because createDigit() must eat one character ahead, if the last
-		 line in the reader stream is "var a = 55;", the semicolon will be 
-		  eaten and lost by accident. Thus, if createDigit() has just been
-		 called (meaning readOk is false), and reader.ready() is false,
-		 and the last character of the reader stream is a semicolon...
-		  we must process that semicolon. reader.mark(x) reader.reset 
-		*/
-		if(!reader.ready() && !readOk && this.currChar == ';'){
-			//reader.mark(1);
-
+		} else if(this.currChar == '"')	{
+			returnToken = createStringLiteral();
+		} else if(this.currChar == '\'') {
+			returnToken = createCharLiteral();
 		}
 
 		return returnToken;
 	}
 
-	private void readNextChar() throws IOException{
+	private char readCurrChar() throws IOException {
 		this.currChar = (char)this.reader.read();
 		increaseColumn(1);
+		return this.currChar;
+	}
+
+	private char readNextChar() throws IOException {
+		this.nextChar = (char)this.reader.read();
+		this.col++;
+		return this.nextChar;
 	}
 
 	/**
@@ -246,10 +243,10 @@ class Lex implements Iterable<Token> {
 		char last = 'i';									//temp valu
 
 		while(this.reader.ready()) {						//until a return or EOF
-			this.currChar = (char)this.reader.read();	//get char
+			this.currChar = (char)this.reader.read();	    //get char
 
-			if(this.currChar == '/' && last == '*') {	//exit
-				readNextChar();
+			if(this.currChar == '/' && last == '*') {	    //exit
+				readCurrChar();
 				return;										//done
 			}
 
@@ -284,7 +281,6 @@ class Lex implements Iterable<Token> {
 	* @version %G%
 	*
 	*/
-
 	private Token createDigit() throws IOException {
 		int result, column = col;
 		double dResult;
@@ -293,11 +289,11 @@ class Lex implements Iterable<Token> {
 
 		while(Character.isDigit(this.currChar)) {
 			stringNum += this.currChar;
-			readNextChar();
+			readCurrChar();
 
 			if(this.currChar == '.') {				//checks for decimal number
 				stringNum += this.currChar;			//appends decimal to stringN
-				readNextChar();						//prep for next iter
+				readCurrChar();						//prep for next iter
 				isInt = false;
 			}
 		}
@@ -314,44 +310,15 @@ class Lex implements Iterable<Token> {
 	}
 
 	private Token createStringIdentifier() throws IOException {
-		String result = "" + this.currChar + "";
-		String possibleKey = "", val = "";
+		String result = "";
+		char c = this.currChar;
 
-		if(this.currChar == '"') return createStringLiteral();
-		if(this.currChar == '\'') return createCharLiteral();
-
-		readNextChar();
-
-		while(Character.isLetter(this.currChar)) {
-			result += this.currChar;				//append currChar to result
-			readNextChar();							//increment col
+		while(Character.isLetter(c) || Character.isDigit(c) || c == '_') {
+			result += this.currChar;
+			c = readCurrChar();	
 		}
 
-		if(Character.isDigit(this.currChar)){		//eg a keyword = int32
-			possibleKey = result;					
-			this.nextChar = (char)reader.read();	//reads nextChar from reader
-			increaseColumn(1);
-
-			//currChar and nextChar are digits - append and check existence
-			if(Character.isDigit(this.nextChar)) {
-				possibleKey += this.currChar;	
-				possibleKey += this.nextChar;
-				this.nextChar = ' ';		
-
-				//sorry future John
-				if(!Objects.equals(null, val = kMap.keywords.get(possibleKey)))
-					return new Keyword(possibleKey, val, row, col);
-				return new StringIdentifier(possibleKey, row, col);
-			} else {
-				result += this.currChar;
-				this.currChar = nextChar;
-				nextChar = ' ';
-				readOk = false;
-				return new StringIdentifier(result, row, col);
-			}
-		}
-
-		this.readOk = false;		//no digits? result could still be a keyword
+		this.readOk = false;
 
 		if(kMap.keywords.containsKey(result))
 			return new Keyword(result, kMap.keywords.get(result), row, col);
@@ -362,7 +329,7 @@ class Lex implements Iterable<Token> {
 		String result = "\"" + "";
 
 		do{
-			readNextChar();								//a, b, c
+			readCurrChar();								//a, b, c
 			result += this.currChar;					//"abc"
 		} while(this.currChar != '"');
 
@@ -374,10 +341,10 @@ class Lex implements Iterable<Token> {
 	private Token createCharLiteral() throws IOException {
 		char cResult = this.currChar;
 
-		readNextChar();
+		readCurrChar();
 		while (this.currChar != '\'') {
 			cResult = this.currChar;
-			readNextChar();
+			readCurrChar();
 		}
 
 		return new CharLiteral(cResult, this.row, this.col);
