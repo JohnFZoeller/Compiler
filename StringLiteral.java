@@ -2,7 +2,7 @@ public class StringLiteral extends Token {
 	private String value;
 	
 	public StringLiteral(String i, int r, int c) {
-		super(i, r, c);
+		super("StringLiteral", r, c);
 		this.val = i;
 		name = i;
 	}
@@ -17,7 +17,7 @@ public class StringLiteral extends Token {
 
 	@Override
 	public String toString(){
-		return super.toString() + " STRING LITERAL (" + this.input + ")";
+		return super.toString() + " STRING LITERAL (" + this.val + ")";
 	}
 
 	@Override

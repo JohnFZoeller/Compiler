@@ -29,10 +29,6 @@ class Lex implements Iterable<Token> {
 	private char currChar = ' ', nextChar = ' ';		//chars from reader
 	private boolean readOk = true;						//reader should read()
 
-	private boolean leftOver = false;
-	private int lastRow, lastCol;
-
-
 	/*************************************************************************
 	*
  	* 								Private Methods
@@ -40,27 +36,23 @@ class Lex implements Iterable<Token> {
  	**************************************************************************/
 
 	/**
-	*
 	* <h1>getNextT()</h1>
 	*
 	* getNextT() is the main processing method for the Lexical Analyzer. Reads a
 	* Character from reader and processes the Character into a Token based on
-	* the Character's respective type. Returned Token's can be of type
-	* DigitIdentifier, Keyword, or Operator, etc...
+	* the Character's respective type.
 	* 
 	* @return Token
 	* @throws IOException
-	* @author Destiny Boyer
-	* @author John Zoeller
+	* @author John Zoeller, Destiny Boyer
 	* @version %G%
 	*
 	*/	
-	//I think this whole thing should be a switch statement
+	//Types : escape, comment, alpha, number, single, double, operator
 	private Token getNextT() throws IOException{
 		Token returnToken = null;						//return Token variable
 		int column = col, tempCol = col;
 		String op;
-		char c;
 
 		if(readOk) readCurrChar();							
 
@@ -340,8 +332,6 @@ class Lex implements Iterable<Token> {
 		return new StringLiteral(result, this.row, this.col);
 	}
 
-	//@todo: 'asdfa' is obviously an invalid char.
-	//but this parser fails to recognize that
 	private Token createCharLiteral() throws IOException {
 		char cResult = this.currChar;
 
@@ -361,10 +351,6 @@ class Lex implements Iterable<Token> {
 
 	private void increaseColumn(int count) {
 		this.col = this.col + count;
-	}
-
-	private void increaseRow() {
-		this.row = this.row + 1;
 	}
 
 	/************************************************************************************************
@@ -416,22 +402,9 @@ class Lex implements Iterable<Token> {
 				throw new UnsupportedOperationException();
 			}
 		};
+
 		return iter;									//return the instance
 	}
-
-	public boolean leftOverSemi(){
-		return leftOver;
-	}
-
-	public int getLastRow(){
-		return lastRow;
-	}
-
-	public int getLastCol(){
-		return lastCol;
-	}
-
-
 }
 
 

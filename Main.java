@@ -1,9 +1,5 @@
-import java.io.*;
-import java.util.*;
+import java.util.Iterator;
 
-/**
-* @ISSUE : LEXER NOT PERFECT : semicolons not read if on last line
-**/
 public class Main{
 	public static void main(String[] args) {
 		new Main().run("testin.txt");
@@ -15,14 +11,14 @@ public class Main{
 
 		printLexer(iter);
 
-		//SyntaxParser par = new SyntaxParser(lexer);
+		//SyntaxParser parser = new SyntaxParser(lexer);
 		//mainTable contains the root GlobalScope, which is the bottom of the stack
 		//of each of its childrens scope stacks : Page 134, 146
 
 		//SymbolTable mainTable = new SymbolTable();	//move this?
 
-		//par.parse();								//create the tree structure
-		//par.decorate(mainTable);					//walk it
+		//parser.parse();								//create the tree structure
+		//parser.decorate(mainTable);					//walk it
 	}
 
 	private static void printLexer(Iterator<Token> iter) {
@@ -34,6 +30,6 @@ public class Main{
 		 	if(temp != null) System.out.println(temp.toString());
 		}
 
-		System.out.println("\n DONE LEXING");
+		System.out.println("\n DONE LEXING\n\n");
 	}
 }

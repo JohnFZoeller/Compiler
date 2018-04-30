@@ -1,7 +1,7 @@
 public class StringIdentifier extends Token {
 
 	public StringIdentifier(String s, int r, int c){
-		super(s, r, c);
+		super("StringIdentifier", r, c);
 		setName(s);
 		setVal(s);
 	}
@@ -13,6 +13,6 @@ public class StringIdentifier extends Token {
 
 	@Override
 	public String toString(){
-		return super.toString() + " IDENTIFIER (" + this.input + ")";
+		return super.toString() + " IDENTIFIER (" + this.val + ")";
 	}
 }

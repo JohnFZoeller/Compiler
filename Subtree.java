@@ -819,7 +819,7 @@ class Function extends Subtree {
 class Var extends Subtree{
 	public boolean [] locks = new boolean[2];//[0] = static, [1] = const;
 
-	public Var(Token t, Iterator<Token> i){
+	public Var(Token t, Iterator<Token> i) {
 		super(t, i);
 
 		if(token.getTokenType().equals("static")){

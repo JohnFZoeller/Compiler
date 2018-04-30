@@ -20,27 +20,21 @@ public class SyntaxParser {
 		row = col = 0;
 	}
 
-	/*
-		Main match function for the program. Logic is based off of the fact that the only
-		time this match function will be called is in the case of a new statement in the program.
-	*/
-	public void decorate(SymbolTable mainTable) {
+	public void parse(){
+		root = new Subtree(i);
 
-		//Bernsteins recommendation for how to decorate
-		//0th pass = lexing and parsing							-> already done
-		//1st pass = type/var/func declaration statements (all declarations)
-			//Think these would be identifiers	-> ie. use resolve()
-		//2nd pass = initializers, statements, function bodies
-			//these would by symbols -> ie. use define()
+		if(i.hasNext()) readNextTok();
 
-		//throw new Error("terminated");
-		root.beginDecorateFirst(mainTable);
-		root.beginDecorateSecond(mainTable);
-		root.emitAssemblyCode(constantValues, subroutines);
+		for(int j = 0; i.hasNext(); j++){
+			if(currentTok != null) match();
+
+			currentTok = root.children.get(j).token;
+		}	
+
+		root.printTree();
+		System.out.println('\n');
 	}
 
-	//the string identifier case (along with a new byte identifier case) 
-	//needs to be commented back in	
 	public void match(){
 		switch(currentTok.getTokenType()) {
 			case "for":		root.addChild(new For(currentTok, i));
@@ -78,25 +72,6 @@ public class SyntaxParser {
 							break;
 		}
 	}
-	
-	public void parse(){
-		root = new Subtree(i);
-
-		if(i.hasNext())
-			readNextTok();
-
-		for(int j = 0; i.hasNext(); j++){
-
-			if(currentTok != null)
-				match();
-
-			currentTok = root.children.get(j).token;
-		}	
-
-		//this just becomes a debugging tool
-		//root.printTree();
-		System.out.println('\n');
-	}
 
 	public void match(String expect){
 		if(currentTok.getTokenType().equals(expect)){
@@ -109,13 +84,26 @@ public class SyntaxParser {
 	public void readNextTok() {
 		if(i.hasNext()){
 			currentTok = i.next();
-
 			// if(currentTok != null)
 				// System.err.println(currentTok.getTokenType() + " " 
 				// 	+ currentTok.getName());
 		}
-		else 
-			throw new Error("Parsers readNextTok failed ");
+		else throw new Error("Parsers readNextTok failed ");
+	}
+
+	public void decorate(SymbolTable mainTable) {
+
+		//Bernsteins recommendation for how to decorate
+		//0th pass = lexing and parsing							-> already done
+		//1st pass = type/var/func declaration statements (all declarations)
+			//Think these would be identifiers	-> ie. use resolve()
+		//2nd pass = initializers, statements, function bodies
+			//these would by symbols -> ie. use define()
+
+		//throw new Error("terminated");
+		root.beginDecorateFirst(mainTable);
+		root.beginDecorateSecond(mainTable);
+		root.emitAssemblyCode(constantValues, subroutines);
 	}
 
 }
