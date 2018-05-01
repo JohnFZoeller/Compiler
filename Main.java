@@ -8,17 +8,16 @@ public class Main{
 	public static void run(String in) {
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
+		SymbolTable symbolTable = new SymbolTable();
 
-		printLexer(iter);
+		//printLexer(iter);
 
-		//SyntaxParser parser = new SyntaxParser(lexer);
+		SyntaxParser parser = new SyntaxParser(lexer);
 		//mainTable contains the root GlobalScope, which is the bottom of the stack
 		//of each of its childrens scope stacks : Page 134, 146
 
-		//SymbolTable mainTable = new SymbolTable();	//move this?
-
-		//parser.parse();								//create the tree structure
-		//parser.decorate(mainTable);					//walk it
+		parser.parse();								//create the tree structure
+		//parser.decorate(symbolTable);					//walk it
 	}
 
 	private static void printLexer(Iterator<Token> iter) {

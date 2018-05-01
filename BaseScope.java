@@ -60,7 +60,7 @@ public class BaseScope implements Scope {
 	 *	@see 		BaseScope#getScopeName()
 	 */
 
-	public String toString(){
+	public String toString() {
 		return getScopeName() + ": ";
 	}
 
@@ -73,7 +73,7 @@ public class BaseScope implements Scope {
 	 *	@see		Scope
 	 */
 
-	public String getScopeName(){
+	public String getScopeName() {
 		return ""; 
 	}
 
@@ -84,7 +84,7 @@ public class BaseScope implements Scope {
 	 *	@see		Scope
 	 */
 
-	public Scope getEnclosingScope(){
+	public Scope getEnclosingScope() {
 		return enclosingScope;
 	}
 
@@ -95,7 +95,7 @@ public class BaseScope implements Scope {
 	 *	@see		Scope
 	 */
 
-	public void define(Symbol sym){ 
+	public void define(Symbol sym) { 
 		syms.put(sym.name, sym); 
 		//sym.scope = this;			//this only would have been 
 		//applicable if we were using classes, you would have had to

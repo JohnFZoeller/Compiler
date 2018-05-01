@@ -172,22 +172,20 @@ public class Subtree {
 	}
 
 	public void match(String expect){
-		if(token.getTokenType().equals(expect)){
+		if(this.token.getTokenType().equals(expect)) {
 			readNextTok();
-			if(token == null) {
-				readNextTok();
-			}
-		} else {
-			throw new Error("Expected: " + expect + " Got: " + token.getTokenType());
-		}
+
+			if(token == null) readNextTok();
+
+		} else throw new 
+			Error("Expected: " + expect + " Got: " + token.getTokenType());
 	}
 
 	public void readNextTok() {
 		if(it.hasNext()){
 			token = it.next();
 			if(token != null) {
-				System.err.println(token.getTokenType() + " " 
-					+ token.getName());
+				System.err.println(token.toString());
 			}
 		} else {
 			return;
@@ -833,7 +831,7 @@ class Var extends Subtree{
 		}
 
 		match("var");
-		addChild(new Name(token));
+		addChild(new Name(token)); 
 		match("StringIdentifier");
 
 		if(token.getTokenType().equals("ASSIGNMENT_OPERATOR")){
@@ -1940,6 +1938,7 @@ class Expressions extends Subtree {
 	//then again... i dont know expressions so well, so maybe it does work 
 	private boolean keepReading(Token current) {
 		boolean keepReading = true;
+
 		switch(current.getTokenType()) {
 			case "CLOSE_PARENTHESIS":
 				keepReading = false;
@@ -2226,8 +2225,12 @@ class Expression extends Subtree {
 	protected void readExpression() {
 		if(isUnary())
 			addChild(new UnaryExpression(token, it));
-		else
+		else {
+			System.out.println(token.getTokenType() + " line 2232");
+
 			addOperandChild();
+		}
+
 		if(continueReading())
 			readRemainingExpr();
 

@@ -1,5 +1,4 @@
 var john int32;
 var poop = 4324.111;
 var some32 float64;
-var j = 'p';
-var aaa2 record;
+var string = "a";

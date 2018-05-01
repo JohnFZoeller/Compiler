@@ -26,12 +26,12 @@ public class SyntaxParser {
 		if(i.hasNext()) readNextTok();
 
 		for(int j = 0; i.hasNext(); j++){
-			if(currentTok != null) match();
+			if(this.currentTok != null) match();
 
 			currentTok = root.children.get(j).token;
 		}	
 
-		root.printTree();
+		//root.printTree();
 		System.out.println('\n');
 	}
 

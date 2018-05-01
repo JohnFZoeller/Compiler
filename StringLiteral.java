@@ -2,7 +2,7 @@ public class StringLiteral extends Token {
 	private String value;
 	
 	public StringLiteral(String i, int r, int c) {
-		super("StringLiteral", r, c);
+		super("String_Literal", r, c);
 		this.val = i;
 		name = i;
 	}
