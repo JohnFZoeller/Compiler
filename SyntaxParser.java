@@ -1,27 +1,28 @@
-import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class SyntaxParser {
-	private Token currentTok;
-	private Iterator<Token> i;
-	private boolean firstOne;
-	private String indent;
 	private int row, col;
+	private String indent;
+	private Token currentTok;
 	private Subtree root;
-	List<String> constantValues = new ArrayList<String>();
-	List<String> subroutines = new ArrayList<String>();
+	private Iterator<Token> i;
+	private List<String> constantValues;
+	private List<String> subroutines;
 
 
-	public SyntaxParser(Lex lex){
-		currentTok = null;
-		i = lex.iterator();
-		firstOne = true;
-		indent = "";
-		row = col = 0;
+	public SyntaxParser(Lex lexer){
+		this.currentTok = null;
+		this.i = lexer.iterator();
+		this.indent = "";
+		this.row = this.col = 0;
+		this.constantValues = new ArrayList<String>();
+		this.subroutines = new ArrayList<String>();
 	}
 
 	public void parse(){
-		root = new Subtree(i);
+		this.root = new Subtree(this.i);
 
 		if(i.hasNext()) readNextTok();
 
@@ -31,6 +32,7 @@ public class SyntaxParser {
 			currentTok = root.children.get(j).token;
 		}	
 
+		System.out.println('\n');
 		root.printTree();
 		System.out.println('\n');
 	}
