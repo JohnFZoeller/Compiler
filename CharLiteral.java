@@ -2,7 +2,7 @@ public class CharLiteral extends Token {
 	private char value;
 	
 	public CharLiteral(char i, int r, int c) {
-		super(String.valueOf(i), r, c);
+		super("Char_Literal", r, c);
 		value = i;
 		setVal(i);
 	}
@@ -21,7 +21,7 @@ public class CharLiteral extends Token {
 
 	@Override
 	public String toString(){
-		return super.toString() + " CHARACTER LITERAL (" + this.input + ")";
+		return super.toString() + " CHARACTER LITERAL (" + this.val + ")";
 	}
 
 	@Override

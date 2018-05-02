@@ -2,3 +2,4 @@ var john int32;
 var poop = 4324.111;
 var some32 float64;
 var string = "a";
+var other = 'a';

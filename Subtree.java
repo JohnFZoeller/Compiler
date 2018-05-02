@@ -2226,7 +2226,6 @@ class Expression extends Subtree {
 		if(isUnary())
 			addChild(new UnaryExpression(token, it));
 		else {
-			System.out.println(token.getTokenType() + " line 2232");
 
 			addOperandChild();
 		}

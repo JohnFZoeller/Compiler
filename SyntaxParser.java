@@ -31,7 +31,7 @@ public class SyntaxParser {
 			currentTok = root.children.get(j).token;
 		}	
 
-		//root.printTree();
+		root.printTree();
 		System.out.println('\n');
 	}
 

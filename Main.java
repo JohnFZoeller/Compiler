@@ -13,7 +13,7 @@ public class Main{
 		//printLexer(iter);
 
 		SyntaxParser parser = new SyntaxParser(lexer);
-		//mainTable contains the root GlobalScope, which is the bottom of the stack
+		//mainTable contains the root GlobalScope, which is bottom of the stack
 		//of each of its childrens scope stacks : Page 134, 146
 
 		parser.parse();								//create the tree structure
