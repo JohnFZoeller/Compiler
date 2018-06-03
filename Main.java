@@ -9,15 +9,10 @@ public class Main{
 		Lex lexer = new Lex(in);
 		Iterator<Token> iter = lexer.iterator();
 		SymbolTable symbolTable = new SymbolTable();
-
-		//printLexer(iter);
-
 		SyntaxParser parser = new SyntaxParser(lexer);
-		//mainTable contains the root GlobalScope, which is bottom of the stack
-		//of each of its childrens scope stacks : Page 134, 146
 
 		parser.parse();								//create the tree structure
-		//parser.decorate(symbolTable);					//walk it
+		parser.decorate(symbolTable);				//walk it	
 	}
 
 	private static void printLexer(Iterator<Token> iter) {
@@ -30,5 +25,7 @@ public class Main{
 		}
 
 		System.out.println("\n DONE LEXING\n\n");
+		//mainTable contains the root GlobalScope, which is bottom of the stack
+		//of each of its childrens scope stacks : Page 134, 146
 	}
 }
